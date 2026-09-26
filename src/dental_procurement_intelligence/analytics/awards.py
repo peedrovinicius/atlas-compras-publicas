@@ -9,7 +9,10 @@ from typing import Any
 import duckdb
 import polars as pl
 
-from dental_procurement_intelligence.identity import assess_price_normalization, parse_product
+from dental_procurement_intelligence.identity import (
+    assess_price_normalization,
+    parse_product,
+)
 from dental_procurement_intelligence.ingestion.bundle import (
     ContractBundle,
     load_contract_bundle,
