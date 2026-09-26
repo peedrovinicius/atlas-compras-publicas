@@ -47,7 +47,9 @@ Um item é `fully_structured` quando possui:
 - medida física;
 - atributo crítico, quando aplicável.
 
-Quantidade por embalagem não é obrigatória, pois a ausência desse dado pode representar legitimamente uma unidade simples.
+Quantidade por embalagem não é obrigatória para o score semântico, pois a ausência pode representar legitimamente uma unidade simples.
+
+Essa ausência, porém, é tratada separadamente na normalização de preço físico. Quando a unidade de compra indica uma embalagem, como `CAIXA`, e a descrição não informa quantas unidades existem dentro dela, o preço por g/ml não é calculado automaticamente.
 
 ## Níveis
 
@@ -75,6 +77,9 @@ A visão `normalization_quality_summary` apresenta:
 - cobertura de medida;
 - proporção totalmente estruturada;
 - proporção com preço fisicamente normalizável;
+- quantidade com base física `defensible`;
+- quantidade em `review`;
+- quantidade `unavailable`;
 - score médio.
 
 A visão `normalization_quality_by_category` apresenta a mesma lógica segmentada por categoria.
@@ -109,8 +114,6 @@ Por isso, a evolução futura deverá medir separadamente:
 4. estabilidade entre versões;
 5. distribuição de itens em `review`.
 
-## Próxima etapa de validação
+## Status da validação
 
-A próxima versão deverá criar um conjunto de avaliação manual versionado com descrições reais anonimizadas ou publicamente disponíveis e rótulos revisados.
-
-Esse conjunto servirá como referência para medir precisão, recall por categoria e regressões da taxonomia.
+A taxonomia possui benchmarks manuais versionados e um holdout independente v5 preservado sem tuning. A confiança da base física de preço é medida separadamente da acurácia de categoria.
