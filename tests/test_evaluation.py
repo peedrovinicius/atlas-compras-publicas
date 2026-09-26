@@ -59,6 +59,35 @@ def test_evaluation_report_calculates_category_and_attribute_metrics(
     assert report.concentration_accuracy == 1.0
 
 
+def test_evaluation_includes_predicted_only_labels_in_macro_metrics(
+    tmp_path: Path,
+) -> None:
+    dataset = tmp_path / "evaluation.jsonl"
+    dataset.write_text(
+        json.dumps(
+            {
+                "id": "x",
+                "description": "EUGENOL",
+                "expected_category": "unknown",
+                "expected_shade": None,
+                "expected_concentration_percent": None,
+                "source_url": "https://example.test/x",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = evaluate_dataset(dataset)
+
+    assert set(report.per_category) == {"eugenol", "unknown"}
+    assert report.per_category["eugenol"]["support"] == 0
+    assert report.per_category["eugenol"]["false_positive"] == 1
+    assert report.macro_precision == 0.0
+    assert report.macro_recall == 0.0
+    assert report.macro_f1 == 0.0
+
+
 def test_evaluation_errors_returns_only_category_mismatches(tmp_path: Path) -> None:
     dataset = tmp_path / "evaluation.jsonl"
     dataset.write_text(
