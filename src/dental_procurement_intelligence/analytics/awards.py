@@ -42,6 +42,8 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "concentration_percent": pl.Float64,
     "procurement_unit": pl.String,
     "package_count": pl.Int64,
+    "measurement_candidate_count": pl.Int64,
+    "measurement_resolution": pl.String,
     "unit_quantity_value": pl.Float64,
     "unit_quantity_unit": pl.String,
     "supplier_name": pl.String,
@@ -246,6 +248,8 @@ def build_award_frame(
                     ),
                     "procurement_unit": item.unit,
                     "package_count": product.package_count,
+                    "measurement_candidate_count": len(product.measurement_candidates),
+                    "measurement_resolution": product.measurement_resolution,
                     "unit_quantity_value": (
                         float(product.unit_quantity.value)
                         if product.unit_quantity is not None
