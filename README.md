@@ -14,7 +14,8 @@ A odontologia é a primeira vertical implementada e funciona como um domínio de
 | Rastreabilidade | Evidências imutáveis com SHA-256 e manifestos de proveniência |
 | Consolidação | Múltiplas contratações com chaves estáveis, deduplicação e reconstrução idempotente |
 | Normalização | Padronização de descrições, apresentações, medidas e atributos técnicos |
-| Identidade | Product Identity Engine com regras explícitas e decisões auditáveis |
+| Identidade | Product Identity Engine com regras explícitas, embalagem e quantidade física |
+| Preço físico | Normalização somente quando a base em g/ml é defensável |
 | Análise | Comparação de preços com contexto geográfico e temporal |
 | Qualidade | Score determinístico, métricas de cobertura e fila de itens não reconhecidos |
 | Sinais | Detecção estatística com MAD e IQR, sem tratar sinal como prova de irregularidade |
@@ -90,7 +91,7 @@ quantidade_unitaria: 4 g
 quantidade_total: 8 g
 ~~~
 
-Quando a descrição permite, o pipeline também normaliza o preço pela quantidade física, mantendo massa e volume como dimensões distintas.
+Quando descrição e unidade de compra sustentam a conversão, o pipeline normaliza o preço pela quantidade física. Casos ambíguos ficam em `review` e não entram nos sinais estatísticos.
 
 ## Uso rápido
 
@@ -160,8 +161,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- reforçar comparabilidade de embalagem e quantidade física
-- qualificar a confiança da normalização de preço por unidade física
+- tratar descrições com múltiplas medidas físicas e kits complexos
+- modelar atributos técnicos específicos por categoria
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
