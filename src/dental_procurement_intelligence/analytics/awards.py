@@ -9,6 +9,10 @@ from typing import Any
 import duckdb
 import polars as pl
 
+from dental_procurement_intelligence.analytics.numeric import (
+    ANALYTIC_DECIMAL_DTYPE,
+    analytic_decimal,
+)
 from dental_procurement_intelligence.identity import (
     assess_price_normalization,
     parse_product,
@@ -62,17 +66,17 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "modality": pl.String,
     "result_status_id": pl.Int64,
     "result_status_name": pl.String,
-    "estimated_unit_value": pl.Float64,
-    "awarded_unit_value": pl.Float64,
+    "estimated_unit_value": ANALYTIC_DECIMAL_DTYPE,
+    "awarded_unit_value": ANALYTIC_DECIMAL_DTYPE,
     "awarded_quantity": pl.Float64,
-    "awarded_total_value": pl.Float64,
-    "estimated_total_equivalent": pl.Float64,
-    "economy_total": pl.Float64,
-    "economy_percent": pl.Float64,
+    "awarded_total_value": ANALYTIC_DECIMAL_DTYPE,
+    "estimated_total_equivalent": ANALYTIC_DECIMAL_DTYPE,
+    "economy_total": ANALYTIC_DECIMAL_DTYPE,
+    "economy_percent": ANALYTIC_DECIMAL_DTYPE,
     "normalized_quantity_value": pl.Float64,
     "normalized_quantity_unit": pl.String,
-    "estimated_price_per_base_unit": pl.Float64,
-    "awarded_price_per_base_unit": pl.Float64,
+    "estimated_price_per_base_unit": ANALYTIC_DECIMAL_DTYPE,
+    "awarded_price_per_base_unit": ANALYTIC_DECIMAL_DTYPE,
     "price_normalization_status": pl.String,
     "price_normalization_reason": pl.String,
 }
@@ -137,10 +141,6 @@ def load_raw_results(path: str | Path) -> tuple[list[PNCPItemResult], str]:
     payload = json.loads(content)
     records = _result_records(payload)
     return [PNCPItemResult.model_validate(record) for record in records], _hash(content)
-
-
-def _decimal_float(value: Decimal | None) -> float | None:
-    return float(value) if value is not None else None
 
 
 def _quarter(value: date | None) -> str | None:
@@ -280,25 +280,29 @@ def build_award_frame(
                     "modality": contract.modality_name if contract else None,
                     "result_status_id": result.status_id,
                     "result_status_name": result.status_name,
-                    "estimated_unit_value": _decimal_float(item.estimated_unit_value),
-                    "awarded_unit_value": _decimal_float(result.awarded_unit_value),
-                    "awarded_quantity": _decimal_float(result.awarded_quantity),
-                    "awarded_total_value": _decimal_float(awarded_total),
-                    "estimated_total_equivalent": _decimal_float(
+                    "estimated_unit_value": analytic_decimal(item.estimated_unit_value),
+                    "awarded_unit_value": analytic_decimal(result.awarded_unit_value),
+                    "awarded_quantity": (
+                        float(result.awarded_quantity)
+                        if result.awarded_quantity is not None
+                        else None
+                    ),
+                    "awarded_total_value": analytic_decimal(awarded_total),
+                    "estimated_total_equivalent": analytic_decimal(
                         estimated_total_equivalent
                     ),
-                    "economy_total": _decimal_float(economy_total),
-                    "economy_percent": _decimal_float(economy_percent),
+                    "economy_total": analytic_decimal(economy_total),
+                    "economy_percent": analytic_decimal(economy_percent),
                     "normalized_quantity_value": (
                         float(basis.value) if basis is not None else None
                     ),
                     "normalized_quantity_unit": (
                         basis.unit if basis is not None else None
                     ),
-                    "estimated_price_per_base_unit": _decimal_float(
+                    "estimated_price_per_base_unit": analytic_decimal(
                         estimated_normalized
                     ),
-                    "awarded_price_per_base_unit": _decimal_float(
+                    "awarded_price_per_base_unit": analytic_decimal(
                         awarded_normalized
                     ),
                     "price_normalization_status": price_assessment.status.value,
