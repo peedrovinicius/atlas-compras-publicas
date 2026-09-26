@@ -12,6 +12,7 @@ A odontologia é a primeira vertical implementada e funciona como um domínio de
 | --- | --- |
 | Coleta | Captura de contratações, itens e resultados diretamente do PNCP |
 | Rastreabilidade | Evidências imutáveis com SHA-256 e manifestos de proveniência |
+| Consolidação | Múltiplas contratações com chaves estáveis, deduplicação e rebuild idempotente |
 | Normalização | Padronização de descrições, apresentações, medidas e atributos técnicos |
 | Identidade | Product Identity Engine com regras explícitas e decisões auditáveis |
 | Análise | Comparação de preços com contexto geográfico e temporal |
@@ -116,13 +117,11 @@ dpi build-analytics \
   --database data/analytics.duckdb
 ~~~
 
-Construir homologações:
+Consolidar todas as contratações capturadas:
 
 ~~~bash
-dpi build-awards \
-  --contract-raw <CONTRATACAO> \
-  --items-raw <ITENS> \
-  --results-raw <RESULTADOS...> \
+dpi build-award-dataset \
+  --bundles-root data/raw/contracts \
   --database data/analytics.duckdb
 ~~~
 
@@ -154,14 +153,15 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Documentação técnica
 
 - [Arquitetura](docs/architecture.md)
+- [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
 - [Qualidade do normalizador](docs/qualidade-normalizador.md)
 - [Benchmarks e validação](docs/benchmark-v5.md)
 
 ## Próximos passos
 
-- consolidar múltiplas contratações com chaves estáveis e deduplicação
-- tornar a reconstrução do dataset idempotente
+- reforçar comparabilidade de embalagem e quantidade física
+- qualificar a confiança da normalização de preço por unidade física
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
