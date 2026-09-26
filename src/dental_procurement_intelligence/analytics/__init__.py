@@ -5,7 +5,9 @@ from .anomalies import (
 )
 from .awards import (
     AwardBuildResult,
+    AwardDatasetBuildResult,
     award_summary,
+    build_award_dataset,
     build_award_frame,
     build_awards,
     load_raw_contract,
@@ -29,11 +31,13 @@ from .quality import (
 __all__ = [
     "AnalyticsBuildResult",
     "AwardBuildResult",
+    "AwardDatasetBuildResult",
     "DuckDBWarehouse",
     "PriceSignalBuildResult",
     "anomaly_summary",
     "award_summary",
     "build_analytics",
+    "build_award_dataset",
     "build_award_frame",
     "build_awards",
     "build_item_frame",
