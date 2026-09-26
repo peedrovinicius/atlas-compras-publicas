@@ -88,6 +88,23 @@ O score é determinístico e não probabilístico.
 
 Itens com atributo crítico ausente não são considerados totalmente estruturados.
 
+
+## Precisão monetária
+
+Valores financeiros entram pelos modelos PNCP como `Decimal` e permanecem decimais nas camadas analíticas.
+
+O schema Silver utiliza `DECIMAL(38,12)` para:
+
+- valores unitários;
+- valores totais;
+- economia monetária;
+- percentuais derivados persistidos;
+- preços normalizados por unidade física.
+
+A escala analítica é arredondada explicitamente com `ROUND_HALF_EVEN`. Nenhuma dessas colunas passa por `float` antes de Parquet ou DuckDB.
+
+Ponto flutuante continua permitido para escores estatísticos derivados, como modified z-score, porque esses valores não representam dinheiro.
+
 ## Gold
 
 A tabela `gold_price_signals` seleciona, para cada resultado elegível, o grupo geográfico-temporal mais específico com amostra suficiente.
