@@ -240,3 +240,34 @@ def test_engine_rejects_different_normalized_mass() -> None:
 
     assert result.decision == IdentityDecision.INCOMPATIBLE
     assert any("unit quantity differs" in conflict for conflict in result.conflicts)
+
+
+def test_engine_rejects_different_package_counts() -> None:
+    result = ProductIdentityEngine().compare(
+        "RESINA COMPOSTA A2 C/1 SERINGA 4G",
+        "RESINA COMPOSTA A2 C/2 SERINGAS 4G",
+    )
+
+    assert result.decision == IdentityDecision.INCOMPATIBLE
+    assert any("package count differs" in conflict for conflict in result.conflicts)
+
+
+def test_engine_requires_review_when_package_count_is_missing_on_one_side() -> None:
+    result = ProductIdentityEngine().compare(
+        "RESINA COMPOSTA A2 SERINGA 4G",
+        "RESINA COMPOSTA A2 C/2 SERINGAS 4G",
+    )
+
+    assert result.decision == IdentityDecision.REVIEW
+    assert any("package count missing" in item for item in result.missing_evidence)
+
+
+def test_engine_matches_same_explicit_package_configuration() -> None:
+    result = ProductIdentityEngine().compare(
+        "RESINA COMPOSTA A2 C/2 SERINGAS 4G",
+        "RES FOTOP A2 COM 2 SERINGAS 4G",
+    )
+
+    assert result.decision == IdentityDecision.MATCH
+    assert "same package count: 2" in result.supporting_evidence
+    assert "same total package quantity: 8 g" in result.supporting_evidence
