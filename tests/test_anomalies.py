@@ -1,3 +1,4 @@
+from decimal import Decimal
 from pathlib import Path
 
 import duckdb
@@ -31,7 +32,7 @@ def _create_awards_table(
                 unit_quantity_value DOUBLE,
                 normalized_quantity_unit VARCHAR,
                 normalized_quantity_value DOUBLE,
-                awarded_price_per_base_unit DOUBLE,
+                awarded_price_per_base_unit DECIMAL(38, 12),
                 price_normalization_status VARCHAR,
                 state_code VARCHAR,
                 macroregion VARCHAR,
@@ -52,7 +53,7 @@ def _create_awards_table(
                 [
                     index,
                     concentration_percent,
-                    price,
+                    Decimal(str(price)),
                     state_code,
                     macroregion,
                     year,
@@ -82,7 +83,12 @@ def test_modified_z_score_uses_most_specific_sufficient_scope(tmp_path: Path) ->
             """
         ).fetchone()
 
-    assert row == (40.0, "uf_trimestre", "modified_z_score", True)
+    assert row == (
+        Decimal("40.000000000000"),
+        "uf_trimestre",
+        "modified_z_score",
+        True,
+    )
 
 
 def test_small_groups_do_not_generate_signals(tmp_path: Path) -> None:
@@ -184,3 +190,42 @@ def test_old_awards_schema_requires_rebuild(tmp_path: Path) -> None:
 
     assert "measurement_candidate_count" in message
     assert "measurement_resolution" in message
+
+
+def test_float_price_schema_requires_rebuild(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards (
+                item_number BIGINT,
+                product_category VARCHAR,
+                presentation VARCHAR,
+                shade VARCHAR,
+                concentration_percent DOUBLE,
+                package_count BIGINT,
+                measurement_candidate_count BIGINT,
+                measurement_resolution VARCHAR,
+                unit_quantity_unit VARCHAR,
+                unit_quantity_value DOUBLE,
+                normalized_quantity_unit VARCHAR,
+                normalized_quantity_value DOUBLE,
+                awarded_price_per_base_unit DOUBLE,
+                price_normalization_status VARCHAR,
+                state_code VARCHAR,
+                macroregion VARCHAR,
+                analysis_year BIGINT,
+                analysis_quarter VARCHAR
+            )
+            """
+        )
+
+    try:
+        build_price_signals(database)
+    except ValueError as error:
+        message = str(error)
+    else:
+        raise AssertionError("Preço em DOUBLE deveria exigir reconstrução")
+
+    assert "DECIMAL" in message
