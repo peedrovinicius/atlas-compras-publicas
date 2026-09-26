@@ -210,3 +210,25 @@ def test_normalized_price_uses_decimal_rounding_not_binary_float() -> None:
 
     assert row["estimated_unit_value"] == Decimal("0.100000000000")
     assert row["normalized_price_per_base_unit"] == Decimal("0.033333333333")
+
+
+def test_item_frame_exposes_technical_attributes() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": (
+                "RESINA COMPOSTA NANOHIBRIDA A2 "
+                "FOTOPOLIMERIZAVEL SERINGA 4G"
+            ),
+            "quantidade": 1,
+            "unidadeMedida": "UNIDADE",
+            "valorUnitarioEstimado": "40.00",
+        }
+    )
+
+    row = build_item_frame([item], source_sha256="hash").to_dicts()[0]
+
+    assert row["technical_attribute_count"] == 2
+    assert row["resin_technology"] == "nanohybrid"
+    assert row["curing_mode"] == "light_cure"
+    assert row["adhesive_strategy"] is None
