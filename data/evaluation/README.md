@@ -39,3 +39,26 @@ Para listar somente erros de categoria:
 ~~~bash
 dpi evaluation-errors --dataset data/evaluation/v1.jsonl
 ~~~
+
+
+## Atributos técnicos
+
+O arquivo `technical-attributes-v1.jsonl` avalia a extração de atributos técnicos separadamente da taxonomia principal.
+
+A amostra contém 33 descrições e 61 campos revisados manualmente. A baseline independente original está preservada em `technical-attributes-v1-baseline.json`.
+
+Execução:
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v1.jsonl
+~~~
+
+Para listar divergências:
+
+~~~bash
+dpi technical-attribute-errors \
+  --dataset data/evaluation/technical-attributes-v1.jsonl
+~~~
+
+A baseline publicada não deve ser sobrescrita por resultados pós-tuning.
