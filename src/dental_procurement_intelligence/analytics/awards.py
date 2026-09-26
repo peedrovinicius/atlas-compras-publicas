@@ -9,7 +9,7 @@ from typing import Any
 import duckdb
 import polars as pl
 
-from dental_procurement_intelligence.identity import parse_product
+from dental_procurement_intelligence.identity import assess_price_normalization, parse_product
 from dental_procurement_intelligence.ingestion.bundle import (
     ContractBundle,
     load_contract_bundle,
@@ -37,6 +37,10 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "presentation": pl.String,
     "shade": pl.String,
     "concentration_percent": pl.Float64,
+    "procurement_unit": pl.String,
+    "package_count": pl.Int64,
+    "unit_quantity_value": pl.Float64,
+    "unit_quantity_unit": pl.String,
     "supplier_name": pl.String,
     "supplier_document": pl.String,
     "brand": pl.String,
@@ -64,6 +68,8 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "normalized_quantity_unit": pl.String,
     "estimated_price_per_base_unit": pl.Float64,
     "awarded_price_per_base_unit": pl.Float64,
+    "price_normalization_status": pl.String,
+    "price_normalization_reason": pl.String,
 }
 
 
@@ -172,7 +178,8 @@ def build_award_frame(
                 )
 
             product = parse_product(item.description)
-            basis = product.total_quantity or product.unit_quantity
+            price_assessment = assess_price_normalization(product, item.unit)
+            basis = price_assessment.basis
             analysis_date = result.result_date or publication_date
             awarded_total = result.awarded_total_value
 
@@ -234,6 +241,18 @@ def build_award_frame(
                         if product.concentration_percent is not None
                         else None
                     ),
+                    "procurement_unit": item.unit,
+                    "package_count": product.package_count,
+                    "unit_quantity_value": (
+                        float(product.unit_quantity.value)
+                        if product.unit_quantity is not None
+                        else None
+                    ),
+                    "unit_quantity_unit": (
+                        product.unit_quantity.unit
+                        if product.unit_quantity is not None
+                        else None
+                    ),
                     "supplier_name": result.supplier_name,
                     "supplier_document": result.supplier_document,
                     "brand": result.brand,
@@ -275,6 +294,8 @@ def build_award_frame(
                     "awarded_price_per_base_unit": _decimal_float(
                         awarded_normalized
                     ),
+                    "price_normalization_status": price_assessment.status.value,
+                    "price_normalization_reason": price_assessment.reason,
                 }
             )
 
