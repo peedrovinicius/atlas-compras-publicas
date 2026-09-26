@@ -6,7 +6,7 @@ O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar
 
 ## Status atual
 
-**v1.0.0 — validação independente congelada**
+**v1.1.0 — precedência semântica e correção dos erros do v2**
 
 O repositório já inclui:
 
@@ -32,7 +32,10 @@ O repositório já inclui:
 - avaliação separada de cor e concentração;
 - relatório de erros de classificação rastreável à fonte;
 - benchmark independente v2 congelado antes da avaliação;
-- comparação explícita entre regressão interna e generalização.
+- comparação explícita entre regressão interna e generalização;
+- precedência semântica para distinguir produto comprado de termos citados no contexto;
+- suporte a resina microhíbrida e anestésicos por princípio ativo;
+- benchmark v2 pós-tuning preservado separadamente da baseline independente.
 
 O GitHub Actions permanece desativado nesta fase para evitar consumo desnecessário de minutos de CI.
 
@@ -308,6 +311,46 @@ dpi evaluation-errors --dataset data/evaluation/v2.jsonl
 
 O snapshot está em `data/evaluation/v2-baseline.json` e a análise detalhada em `docs/benchmark-v2.md`.
 
+## Resultado pós-tuning da v1.1.0
+
+A v1.1.0 usa os 13 erros observados no benchmark v2 para melhorar a taxonomia, **sem alterar nenhum rótulo do dataset congelado**.
+
+Mudanças principais:
+
+- resina microhíbrida passa a ser reconhecida como `composite_resin`;
+- descrições iniciadas por `ADESIVO` ganham precedência sobre menções contextuais a “resina composta”;
+- kits de acabamento e polimento deixam de ser confundidos com a própria resina;
+- lidocaína, articaína e mepivacaína passam a identificar `local_anesthetic`;
+- apresentação `ampola` passa a ser reconhecida como cartucho/recipiente clínico equivalente na camada de apresentação.
+
+Revalidação determinística:
+
+~~~text
+benchmark v1
+  amostras:               37
+  categorias corretas:    37
+  erros:                   0
+  acurácia:                100,00%
+
+benchmark v2 pós-tuning
+  amostras:               48
+  categorias corretas:    48
+  erros:                   0
+  acurácia:                100,00%
+  macro precision:         1,0000
+  macro recall:            1,0000
+  macro F1:                1,0000
+  cor:                     7/7
+  concentração:            5/5
+~~~
+
+O resultado pós-tuning **não substitui** a baseline independente original de 72,92%. Os dois snapshots permanecem no repositório:
+
+- `data/evaluation/v2-baseline.json` — medição independente antes de qualquer ajuste;
+- `data/evaluation/v2-post-v1.1.json` — desempenho depois das correções guiadas pelos erros do v2.
+
+O próximo teste relevante precisa ser um **v3 com fontes novas**, congelado antes de qualquer ajuste, para verificar se a melhora generaliza.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -463,7 +506,9 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Benchmark de regressão com métricas por categoria
 - [x] Criar amostra de validação independente e congelada
 - [x] Executar baseline independente v2
-- [ ] Melhorar regras usando os erros do v2 sem alterar seus rótulos
+- [x] Melhorar regras usando os erros do v2 sem alterar seus rótulos
+- [x] Revalidar v1 sem regressão
+- [x] Registrar desempenho pós-tuning do v2
 - [ ] Criar benchmark v3 com novas fontes ainda não vistas
 - [ ] Modelar atributos técnicos específicos por categoria
 - [ ] Adicionar recuperação semântica de candidatos
