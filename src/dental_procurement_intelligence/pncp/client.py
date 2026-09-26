@@ -43,7 +43,7 @@ class PNCPClient:
             transport=transport,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "dental-procurement-intelligence/0.3",
+                "User-Agent": "dental-procurement-intelligence/0.5",
             },
         )
 
@@ -77,6 +77,16 @@ class PNCPClient:
         for record in payload:
             if not isinstance(record, dict):
                 raise ValueError("Unexpected PNCP payload: array entries must be objects")
+            yield record
+
+    @staticmethod
+    def _ensure_result_list(payload: Any) -> Iterable[dict[str, Any]]:
+        records = payload.get("listaResultados") if isinstance(payload, dict) else payload
+        if not isinstance(records, list):
+            raise ValueError("Unexpected PNCP result payload")
+        for record in records:
+            if not isinstance(record, dict):
+                raise ValueError("Unexpected PNCP result entry")
             yield record
 
     def get_items_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
@@ -117,4 +127,7 @@ class PNCPClient:
             f"{item_number}/resultados"
         )
         payload = self._get_json(path)
-        return [PNCPItemResult.model_validate(record) for record in self._ensure_list(payload)]
+        return [
+            PNCPItemResult.model_validate(record)
+            for record in self._ensure_result_list(payload)
+        ]
