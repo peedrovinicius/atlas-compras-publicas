@@ -5,6 +5,7 @@ from .models import (
     ProductCategory,
     Quantity,
     QuantityDimension,
+    TechnicalAttributes,
 )
 from .parser import assess_normalization_quality, parse_product
 from .physical import (
@@ -25,6 +26,7 @@ __all__ = [
     "PriceNormalizationAssessment",
     "Quantity",
     "QuantityDimension",
+    "TechnicalAttributes",
     "assess_normalization_quality",
     "parse_product",
 ]
