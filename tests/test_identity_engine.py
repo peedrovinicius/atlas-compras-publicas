@@ -434,3 +434,14 @@ def test_engine_rejects_vasoconstrictor_conflict() -> None:
         "anesthetic vasoconstrictor differs" in conflict
         for conflict in result.conflicts
     )
+
+
+def test_technical_attribute_work_does_not_tune_v5_category_failures() -> None:
+    descriptions = (
+        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+        "PASTA PROFIATICA",
+        "FLUORETO DE SODIO 2% GEL NEUTRO",
+    )
+
+    for description in descriptions:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
