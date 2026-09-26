@@ -21,6 +21,21 @@ def build_quality_views(database_path: str | Path) -> None:
                 "A tabela silver_items não existe. Execute build-analytics primeiro."
             )
 
+        column_types = {
+            row[1]: str(row[2]).upper()
+            for row in connection.execute(
+                "PRAGMA table_info('silver_items')"
+            ).fetchall()
+        }
+        price_type = column_types.get("normalized_price_per_base_unit", "")
+        estimated_type = column_types.get("estimated_unit_value", "")
+        if not price_type.startswith("DECIMAL(") or not estimated_type.startswith(
+            "DECIMAL("
+        ):
+            raise ValueError(
+                "silver_items precisa ser reconstruída com precisão decimal."
+            )
+
         connection.execute("DROP VIEW IF EXISTS normalization_quality_summary")
         connection.execute("DROP VIEW IF EXISTS normalization_quality_by_category")
         connection.execute("DROP VIEW IF EXISTS unrecognized_items")
