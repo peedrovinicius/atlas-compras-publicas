@@ -95,29 +95,18 @@ class ProductIdentityEngine:
             missing,
         )
 
-        if left.unit_quantity is None or right.unit_quantity is None:
-            missing.append("unit quantity missing for at least one item")
-        elif left.unit_quantity.dimension != right.unit_quantity.dimension:
-            conflicts.append(
-                "quantity dimension differs: "
-                f"{left.unit_quantity.dimension} vs {right.unit_quantity.dimension}"
-            )
-        elif left.unit_quantity.value == right.unit_quantity.value:
-            support.append(
-                "same normalized unit quantity: "
-                f"{left.unit_quantity.value} {left.unit_quantity.unit}"
-            )
-            score += Decimal("0.25")
-        else:
-            conflicts.append(
-                "normalized unit quantity differs: "
-                f"{left.unit_quantity.value} {left.unit_quantity.unit} vs "
-                f"{right.unit_quantity.value} {right.unit_quantity.unit}"
-            )
+        physical_score, packaging_missing = self._compare_physical_configuration(
+            left,
+            right,
+            support,
+            conflicts,
+            missing,
+        )
+        score += physical_score
 
         if conflicts:
             decision = IdentityDecision.INCOMPATIBLE
-        elif critical_missing:
+        elif critical_missing or packaging_missing:
             decision = IdentityDecision.REVIEW
         elif score >= Decimal("0.75"):
             decision = IdentityDecision.MATCH
@@ -133,6 +122,84 @@ class ProductIdentityEngine:
             conflicts=tuple(conflicts),
             missing_evidence=tuple(missing),
         )
+
+    @staticmethod
+    def _compare_physical_configuration(
+        left: CanonicalProduct,
+        right: CanonicalProduct,
+        support: list[str],
+        conflicts: list[str],
+        missing: list[str],
+    ) -> tuple[Decimal, bool]:
+        if left.unit_quantity is None or right.unit_quantity is None:
+            missing.append("unit quantity missing for at least one item")
+            return Decimal("0"), False
+
+        if left.unit_quantity.dimension != right.unit_quantity.dimension:
+            conflicts.append(
+                "quantity dimension differs: "
+                f"{left.unit_quantity.dimension} vs {right.unit_quantity.dimension}"
+            )
+            return Decimal("0"), False
+
+        if left.package_count is None and right.package_count is None:
+            if left.unit_quantity.value != right.unit_quantity.value:
+                conflicts.append(
+                    "normalized unit quantity differs: "
+                    f"{left.unit_quantity.value} {left.unit_quantity.unit} vs "
+                    f"{right.unit_quantity.value} {right.unit_quantity.unit}"
+                )
+                return Decimal("0"), False
+
+            support.append(
+                "same normalized unit quantity: "
+                f"{left.unit_quantity.value} {left.unit_quantity.unit}"
+            )
+            return Decimal("0.25"), False
+
+        if (left.package_count is None) != (right.package_count is None):
+            missing.append("package count missing for one item")
+            return Decimal("0"), True
+
+        if left.package_count != right.package_count:
+            conflicts.append(
+                f"package count differs: {left.package_count} vs {right.package_count}"
+            )
+            return Decimal("0"), False
+
+        if left.unit_quantity.value != right.unit_quantity.value:
+            conflicts.append(
+                "normalized unit quantity differs: "
+                f"{left.unit_quantity.value} {left.unit_quantity.unit} vs "
+                f"{right.unit_quantity.value} {right.unit_quantity.unit}"
+            )
+            return Decimal("0"), False
+
+        if left.total_quantity is None or right.total_quantity is None:
+            missing.append("total package quantity missing for at least one item")
+            return Decimal("0"), True
+
+        if left.total_quantity.dimension != right.total_quantity.dimension:
+            conflicts.append(
+                "total quantity dimension differs: "
+                f"{left.total_quantity.dimension} vs {right.total_quantity.dimension}"
+            )
+            return Decimal("0"), False
+
+        if left.total_quantity.value != right.total_quantity.value:
+            conflicts.append(
+                "total package quantity differs: "
+                f"{left.total_quantity.value} {left.total_quantity.unit} vs "
+                f"{right.total_quantity.value} {right.total_quantity.unit}"
+            )
+            return Decimal("0"), False
+
+        support.append(f"same package count: {left.package_count}")
+        support.append(
+            "same total package quantity: "
+            f"{left.total_quantity.value} {left.total_quantity.unit}"
+        )
+        return Decimal("0.25"), False
 
     @staticmethod
     def _compare_optional(
