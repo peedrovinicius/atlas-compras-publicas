@@ -63,6 +63,20 @@ def assess_price_normalization(
 ) -> PriceNormalizationAssessment:
     """Define se o preço pode ser dividido por uma quantidade física defensável."""
 
+    if "MIXED_KIT" in product.matched_terms:
+        return PriceNormalizationAssessment(
+            status=PriceNormalizationStatus.REVIEW,
+            reason="mixed_product_kit",
+            basis=None,
+        )
+
+    if product.measurement_resolution == "ambiguous":
+        return PriceNormalizationAssessment(
+            status=PriceNormalizationStatus.REVIEW,
+            reason="multiple_physical_measurements",
+            basis=None,
+        )
+
     if product.unit_quantity is None:
         return PriceNormalizationAssessment(
             status=PriceNormalizationStatus.UNAVAILABLE,
