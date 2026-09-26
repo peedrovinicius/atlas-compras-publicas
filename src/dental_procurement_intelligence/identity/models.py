@@ -42,6 +42,8 @@ class CanonicalProduct:
     shade: str | None
     concentration_percent: Decimal | None
     package_count: int | None
+    measurement_candidates: tuple[Quantity, ...]
+    measurement_resolution: str
     unit_quantity: Quantity | None
     total_quantity: Quantity | None
     matched_terms: tuple[str, ...]
