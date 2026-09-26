@@ -175,3 +175,10 @@ Exemplos tratados:
 - kits com famílias de produtos diferentes ficam em revisão.
 
 Somente resoluções `single`, `package_derived` e `package_total_confirmed` podem chegar à camada de sinais, e ainda precisam de `price_normalization_status = defensible`.
+
+
+## Precisão numérica
+
+O preço homologado normalizado é armazenado como `DECIMAL(38,12)`.
+
+Medianas, quartis e valores monetários de origem partem dessa representação decimal. Escores como modified z-score podem ser representados em ponto flutuante, pois são medidas estatísticas adimensionais e não valores financeiros.
