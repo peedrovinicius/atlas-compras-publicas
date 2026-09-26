@@ -1,0 +1,37 @@
+{
+  "dataset": "data/evaluation/v3.jsonl",
+  "dataset_version": "v3",
+  "frozen_dataset_commit": "aec504cc8df7bf2750b83321d17c0f123672ceb0",
+  "baseline_commit": "5c20985868c524eae059d4b7e89b71e37c0aa2fe",
+  "post_tuning_taxonomy_commit": "5bd71557043f16d6cc77dfd2889e4d7cc09e925f",
+  "sample_count": 42,
+  "category_correct": 42,
+  "category_error_count": 0,
+  "category_accuracy": 1.0,
+  "macro_precision": 1.0,
+  "macro_recall": 1.0,
+  "macro_f1": 1.0,
+  "shade": {
+    "support": 1,
+    "accuracy": 1.0
+  },
+  "concentration_percent": {
+    "support": 6,
+    "accuracy": 1.0
+  },
+  "regression": {
+    "v1": {
+      "sample_count": 37,
+      "category_correct": 37,
+      "category_error_count": 0,
+      "category_accuracy": 1.0
+    },
+    "v2": {
+      "sample_count": 48,
+      "category_correct": 48,
+      "category_error_count": 0,
+      "category_accuracy": 1.0
+    }
+  },
+  "interpretation": "Post-tuning result on v3. It is not an independent generalization estimate because v3 errors guided the v1.4.0 changes."
+}

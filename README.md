@@ -6,7 +6,7 @@ O projeto constrói um motor reprodutível para coletar, normalizar, comparar e 
 
 ## Status atual
 
-**v1.3.0: benchmark independente v3 e avaliação corrigida**
+**v1.4.0: negação, kits mistos e variantes lexicais**
 
 O núcleo genérico já inclui:
 
@@ -398,6 +398,58 @@ A baseline original permanece preservada em `data/evaluation/v3-baseline.json`.
 
 O próximo passo é corrigir os quatro erros **sem alterar o v3** e depois criar um v4 com fontes ainda não vistas.
 
+## Resultado pós-tuning da v1.4.0
+
+A v1.4.0 corrige os quatro erros revelados pelo benchmark v3 sem alterar nenhum rótulo congelado.
+
+Mudanças aplicadas:
+
+- `OXIDO ZINCO` passa a ser reconhecido como `zinc_oxide`;
+- `FIXADOR RADIOLOGICO` passa a ser reconhecido como `radiographic_fixer`;
+- termos explicitamente negados, como `SEM EUGENOL`, deixam de ativar a categoria;
+- kits que combinam famílias diferentes, como resinas e adesivo, passam a ser tratados como `unknown` em vez de serem reduzidos a uma categoria única.
+
+A regra de negação cobre atualmente padrões como:
+
+~~~text
+SEM <termo>
+ISENTO DE <termo>
+LIVRE DE <termo>
+NAO CONTEM <termo>
+~~~
+
+Revalidação após as correções:
+
+~~~text
+benchmark v1
+  amostras:               37
+  corretas:               37
+  erros:                   0
+  acurácia:                100,00%
+
+benchmark v2
+  amostras:               48
+  corretas:               48
+  erros:                   0
+  acurácia:                100,00%
+
+benchmark v3 pós-tuning
+  amostras:               42
+  corretas:               42
+  erros:                   0
+  acurácia:                100,00%
+  macro precision:         1,0000
+  macro recall:            1,0000
+  macro F1:                1,0000
+~~~
+
+O resultado pós-tuning do v3 não substitui sua baseline independente original de 90,48%. Os dois snapshots permanecem separados:
+
+- `data/evaluation/v3-baseline.json`: medição independente anterior às correções;
+- `data/evaluation/v3-post-v1.4.json`: desempenho depois das correções guiadas pelos quatro erros.
+
+A próxima validação relevante deve usar um v4 composto por fontes ainda não vistas.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -558,7 +610,9 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Registrar desempenho pós-tuning do v2
 - [x] Criar benchmark v3 com novas fontes ainda não vistas
 - [x] Corrigir cálculo macro para classes previstas sem suporte
-- [ ] Corrigir os quatro erros do v3 sem alterar seus rótulos
+- [x] Corrigir os quatro erros do v3 sem alterar seus rótulos
+- [x] Revalidar v1, v2 e v3 sem regressão
+- [x] Registrar desempenho pós-tuning do v3
 - [ ] Criar benchmark v4 com fontes ainda não vistas
 - [ ] Extrair contrato formal de plugins de domínio
 - [ ] Adicionar segunda vertical além de odontologia
