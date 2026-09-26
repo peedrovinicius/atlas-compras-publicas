@@ -47,6 +47,7 @@ class ProductIdentityEngine:
         conflicts: list[str] = []
         missing: list[str] = []
         score = Decimal("0")
+        critical_missing = False
 
         same_known_category = False
         if ProductCategory.UNKNOWN in (left.category, right.category):
@@ -59,6 +60,7 @@ class ProductIdentityEngine:
             score += Decimal("0.45")
 
         if same_known_category and left.category in _SHADE_CRITICAL:
+            critical_missing = left.shade is None or right.shade is None
             score += self._compare_optional(
                 "shade",
                 left.shade,
@@ -69,6 +71,10 @@ class ProductIdentityEngine:
                 missing,
             )
         elif same_known_category and left.category in _CONCENTRATION_CRITICAL:
+            critical_missing = (
+                left.concentration_percent is None
+                or right.concentration_percent is None
+            )
             score += self._compare_optional(
                 "concentration_percent",
                 left.concentration_percent,
@@ -111,6 +117,8 @@ class ProductIdentityEngine:
 
         if conflicts:
             decision = IdentityDecision.INCOMPATIBLE
+        elif critical_missing:
+            decision = IdentityDecision.REVIEW
         elif score >= Decimal("0.75"):
             decision = IdentityDecision.MATCH
         else:
