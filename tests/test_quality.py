@@ -17,7 +17,7 @@ def _create_silver_items(database: Path) -> None:
                 item_number BIGINT,
                 original_description VARCHAR,
                 procurement_unit VARCHAR,
-                estimated_unit_value DOUBLE,
+                estimated_unit_value DECIMAL(38, 12),
                 product_category VARCHAR,
                 category_identified BOOLEAN,
                 presentation_identified BOOLEAN,
@@ -25,7 +25,7 @@ def _create_silver_items(database: Path) -> None:
                 normalization_quality_score DOUBLE,
                 normalization_quality_level VARCHAR,
                 fully_structured BOOLEAN,
-                normalized_price_per_base_unit DOUBLE,
+                normalized_price_per_base_unit DECIMAL(38, 12),
                 price_normalization_status VARCHAR,
                 missing_fields VARCHAR,
                 source_sha256 VARCHAR
@@ -77,3 +77,39 @@ def test_quality_by_category_and_unknown_queue(tmp_path: Path) -> None:
     }
     assert len(unknown) == 1
     assert unknown[0]["item_number"] == 2
+
+
+def test_quality_rejects_float_money_schema(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_items (
+                item_number BIGINT,
+                original_description VARCHAR,
+                procurement_unit VARCHAR,
+                estimated_unit_value DOUBLE,
+                product_category VARCHAR,
+                category_identified BOOLEAN,
+                presentation_identified BOOLEAN,
+                measurement_identified BOOLEAN,
+                normalization_quality_score DOUBLE,
+                normalization_quality_level VARCHAR,
+                fully_structured BOOLEAN,
+                normalized_price_per_base_unit DOUBLE,
+                price_normalization_status VARCHAR,
+                missing_fields VARCHAR,
+                source_sha256 VARCHAR
+            )
+            """
+        )
+
+    try:
+        quality_summary(database)
+    except ValueError as error:
+        message = str(error)
+    else:
+        raise AssertionError("Schema monetário em DOUBLE deveria ser rejeitado")
+
+    assert "precisão decimal" in message
