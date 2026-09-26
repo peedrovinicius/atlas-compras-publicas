@@ -8,7 +8,7 @@ Ela não determina fraude, corrupção, superfaturamento jurídico ou irregulari
 
 ## Métrica analisada
 
-A métrica é o preço homologado por unidade física normalizada, quando a descrição fornece informação suficiente para essa normalização.
+A métrica é o preço homologado por unidade física normalizada, somente quando descrição, embalagem e unidade de compra sustentam uma base física defensável.
 
 Exemplos:
 
@@ -25,19 +25,28 @@ Antes da análise estatística, o registro precisa ter:
 - apresentação identificada;
 - quantidade física identificada;
 - unidade física identificada;
+- `price_normalization_status = defensible`;
 - preço homologado positivo;
 - referência temporal.
 
-A chave de produto da v0.8.0 combina:
+Os demais estados são:
+
+- `review`: existe medida física, mas a base do preço é ambígua;
+- `unavailable`: não existe medida física suficiente para normalizar o preço.
+
+A chave técnica do produto combina:
 
 - categoria;
 - apresentação;
 - cor;
 - concentração;
-- unidade física;
-- quantidade física.
+- quantidade por embalagem quando explícita;
+- quantidade unitária;
+- unidade da quantidade unitária;
+- quantidade física total usada como base do preço;
+- unidade física.
 
-Isso impede, por exemplo, que produtos da mesma categoria e embalagem sejam agrupados quando a concentração informada é diferente.
+Isso impede, por exemplo, que `1 seringa de 4 g` e `2 seringas de 4 g` sejam tratados como a mesma configuração comercial.
 
 A ausência de atributo técnico permanece explícita.
 
