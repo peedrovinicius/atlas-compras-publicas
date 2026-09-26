@@ -21,6 +21,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RES FLOW",
             "FLOWABLE",
             "RESINA FLUIDA",
+            "RESINAS FLUIDAS",
             "RESINA COMPOSTA FLUIDA",
             "RESINA NATURAL FLOW",
         ),
@@ -46,11 +47,17 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "ADESIVO ODONTOLOGICO",
             "ADESIVO FOTOPOLIMERIZAVEL",
             "ADESIVO UNIVERSAL",
+            "ADESIVOS",
         ),
     ),
     (
         ProductCategory.GLASS_IONOMER,
-        ("IONOMERO DE VIDRO", "CIMENTO IONOMERO", "CIV RESTAURADOR"),
+        (
+            "IONOMERO DE VIDRO",
+            "IONOMEROS DE VIDRO",
+            "CIMENTO IONOMERO",
+            "CIV RESTAURADOR",
+        ),
     ),
     (
         ProductCategory.PHOSPHORIC_ACID,
@@ -62,7 +69,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.FLUORIDE_GEL,
-        ("FLUOR GEL", "FLUOR EM GEL", "GEL FLUORETADO"),
+        ("FLUOR GEL", "FLUOR EM GEL", "FLUOR ACIDO GEL", "GEL FLUORETADO"),
     ),
     (
         ProductCategory.PROPHYLAXIS_PASTE,
@@ -100,6 +107,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "ANESTESICO LOCAL",
             "ANESTESICO TOPICO",
             "ANESTESICO ARTICAINE",
+            "ANESTESICO",
             "LIDOCAINA",
             "ARTICAINA",
             "ARTICAINE",
@@ -156,6 +164,7 @@ _COMPOSITE_CONTEXT_EXCLUSIONS = (
 
 _ADHESIVE_HINTS = (
     "ADESIVO",
+    "ADESIVOS",
     "PRIMER",
     "BOND",
 )
@@ -176,6 +185,9 @@ _MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
     ("HIDROXIDO DE CALCIO",),
 )
 
+_RESIN_HEAD_TERMS = ("RESINA", "RESINAS")
+_FLUID_RESIN_TERMS = ("FLUIDA", "FLUIDAS", "FLOW", "FLOWABLE")
+
 
 def _term_present(text: str, term: str) -> bool:
     pattern = rf"(?<![A-Z0-9]){re.escape(term)}(?![A-Z0-9])"
@@ -193,6 +205,7 @@ def _term_negated(text: str, term: str) -> bool:
         rf"\bISENTO(?:\s+DE)?\s+{escaped}\b",
         rf"\bLIVRE\s+DE\s+{escaped}\b",
         rf"\bNAO\s+CONTEM\s+{escaped}\b",
+        rf"\bNAO\s+{escaped}\b",
     )
     return any(re.search(pattern, text) for pattern in patterns)
 
@@ -213,6 +226,28 @@ def _composite_context_excluded(text: str) -> bool:
     return any(pattern.search(text) for pattern in _COMPOSITE_CONTEXT_EXCLUSIONS)
 
 
+def _looks_like_flowable_resin(text: str) -> bool:
+    if not _has_any(text, _RESIN_HEAD_TERMS):
+        return False
+
+    return any(
+        _term_present(text, term) and not _term_negated(text, term)
+        for term in _FLUID_RESIN_TERMS
+    )
+
+
+def _alginate_context_excluded(text: str) -> bool:
+    if not _term_present(text, "ISOLANTE"):
+        return False
+    if not _term_present(text, "ALGINATO"):
+        return False
+
+    return (
+        _term_present(text, "COMPOSICAO")
+        or re.search(r"\bA\s+BASE\s+DE\b", text) is not None
+    )
+
+
 def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
     if _is_mixed_kit(text):
         return ProductCategory.UNKNOWN, ("MIXED_KIT",)
@@ -223,13 +258,25 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
         )
         return ProductCategory.LOCAL_ANESTHETIC, matches
 
-    if _term_present(text, "ADESIVO") and not _term_negated(text, "ADESIVO"):
+    if _has_any(text, ("ADESIVO", "ADESIVOS")):
         matches = tuple(
             term
             for term in _ADHESIVE_HINTS
             if _term_present(text, term) and not _term_negated(text, term)
         )
-        return ProductCategory.ADHESIVE, matches or ("ADESIVO",)
+        if matches:
+            return ProductCategory.ADHESIVE, matches
+
+    if _term_present(text, "ANESTESICO") and not _term_negated(text, "ANESTESICO"):
+        return ProductCategory.LOCAL_ANESTHETIC, ("ANESTESICO",)
+
+    if _looks_like_flowable_resin(text):
+        matches = tuple(
+            term
+            for term in (*_RESIN_HEAD_TERMS, *_FLUID_RESIN_TERMS)
+            if _term_present(text, term)
+        )
+        return ProductCategory.FLOWABLE_RESIN, matches
 
     for category, terms in _CATEGORY_RULES:
         matches = tuple(
@@ -243,6 +290,8 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
             category == ProductCategory.COMPOSITE_RESIN
             and _composite_context_excluded(text)
         ):
+            continue
+        if category == ProductCategory.ALGINATE and _alginate_context_excluded(text):
             continue
         return category, matches
 

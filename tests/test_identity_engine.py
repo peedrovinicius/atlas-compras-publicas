@@ -23,6 +23,53 @@ def test_parser_structures_abbreviated_composite_resin() -> None:
     assert product.total_quantity.value == Decimal("8")
 
 
+def test_plural_domain_terms_are_recognized() -> None:
+    cases = {
+        "MATERIAL ODONTOLOGICO RESINAS FLUIDAS": ProductCategory.FLOWABLE_RESIN,
+        "MATERIAL ODONTOLOGICO ADESIVOS": ProductCategory.ADHESIVE,
+        "IONOMEROS DE VIDRO RESTAURADOR": ProductCategory.GLASS_IONOMER,
+    }
+
+    for description, expected in cases.items():
+        assert parse_product(description).category == expected
+
+
+def test_bulk_fill_fluid_resin_has_flowable_precedence() -> None:
+    product = parse_product(
+        "RESINA COMPOSTA TIPO BULK FILL ASPECTO FISICO FLUIDA "
+        "BAIXA VISCOSIDADE SERINGA 2G"
+    )
+
+    assert product.category == ProductCategory.FLOWABLE_RESIN
+
+
+def test_generic_anesthetic_product_is_recognized() -> None:
+    product = parse_product("CAIXAS DE ANESTESICO SS.WHITI100")
+
+    assert product.category == ProductCategory.LOCAL_ANESTHETIC
+
+
+def test_fluoride_gel_accepts_acid_word_order() -> None:
+    product = parse_product("FLUOR ACIDO GEL")
+
+    assert product.category == ProductCategory.FLUORIDE_GEL
+
+
+def test_alginate_in_isolator_composition_is_not_product_identity() -> None:
+    product = parse_product(
+        "ISOLANTE USO ODONTOLOGICO COMPOSICAO BASICA "
+        "ALGINATO DE SODIO E AGUA"
+    )
+
+    assert product.category == ProductCategory.UNKNOWN
+
+
+def test_real_alginate_product_remains_recognized() -> None:
+    product = parse_product("ALGINATO USO ODONTOLOGICO PRESA RAPIDA 453G")
+
+    assert product.category == ProductCategory.ALGINATE
+
+
 def test_microhybrid_resin_is_composite_resin() -> None:
     product = parse_product("RESINA MICROHIBRIDA A3,5 SERINGA C/ 4G")
 
