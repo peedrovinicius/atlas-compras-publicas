@@ -1,4 +1,6 @@
-# Atlas Compras Públicas
+# Inteligência de dados auditável para compras públicas no Brasil
+
+**Projeto:** Atlas Compras Públicas
 
 **Repositório:** `atlas-compras-publicas`
 
