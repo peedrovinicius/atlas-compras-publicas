@@ -98,7 +98,9 @@ def build_item_frame(
             and price_basis is not None
             and price_basis.value > 0
         ):
-            normalized_price = analytic_decimal(item.estimated_unit_value / price_basis.value)
+            normalized_price = analytic_decimal(
+                item.estimated_unit_value / price_basis.value
+            )
 
         rows.append(
             {
@@ -107,7 +109,9 @@ def build_item_frame(
                 "original_description": item.description,
                 "normalized_description": product.normalized_description,
                 "procurement_quantity_decimal": _decimal_to_text(item.quantity),
-                "procurement_quantity": float(item.quantity) if item.quantity is not None else None,
+                "procurement_quantity": (
+                    float(item.quantity) if item.quantity is not None else None
+                ),
                 "procurement_unit": item.unit,
                 "estimated_unit_value_decimal": _decimal_to_text(
                     item.estimated_unit_value
