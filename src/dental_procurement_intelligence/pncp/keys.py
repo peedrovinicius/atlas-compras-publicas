@@ -59,7 +59,7 @@ def procurement_key_from_contract(contract: PNCPContract) -> str | None:
 
 def _stable_value(value: Any) -> Any:
     if isinstance(value, Decimal):
-        return format(value, "f")
+        return format(value.normalize(), "f")
     if hasattr(value, "isoformat"):
         return value.isoformat()
     return value
