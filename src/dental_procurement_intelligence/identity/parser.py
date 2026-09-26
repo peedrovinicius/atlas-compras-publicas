@@ -114,9 +114,14 @@ _CONCENTRATION_CRITICAL = {
 }
 
 
+def _term_present(text: str, term: str) -> bool:
+    pattern = rf"(?<![A-Z0-9]){re.escape(term)}(?![A-Z0-9])"
+    return re.search(pattern, text) is not None
+
+
 def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
     for category, terms in _CATEGORY_RULES:
-        matches = tuple(term for term in terms if term in text)
+        matches = tuple(term for term in terms if _term_present(text, term))
         if matches:
             return category, matches
     return ProductCategory.UNKNOWN, ()
@@ -124,7 +129,7 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
 
 def _presentation(text: str) -> str | None:
     for canonical, terms in _PRESENTATION_RULES:
-        if any(re.search(rf"\b{re.escape(term)}\b", text) for term in terms):
+        if any(_term_present(text, term) for term in terms):
             return canonical
     return None
 
@@ -251,19 +256,19 @@ def assess_normalization_quality(product: CanonicalProduct) -> NormalizationQual
 
     normalized_score = (score / denominator).quantize(Decimal("0.001"))
 
-    if normalized_score >= Decimal("0.80"):
-        level = "high"
-    elif normalized_score >= Decimal("0.55"):
-        level = "medium"
-    else:
-        level = "low"
-
     fully_structured = (
         category_ok
         and presentation_ok
         and measurement_ok
         and (critical_ok is not False)
     )
+
+    if normalized_score >= Decimal("0.80") and fully_structured:
+        level = "high"
+    elif normalized_score >= Decimal("0.55"):
+        level = "medium"
+    else:
+        level = "low"
 
     return NormalizationQuality(
         score=normalized_score,
