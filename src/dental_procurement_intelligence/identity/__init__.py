@@ -7,6 +7,11 @@ from .models import (
     QuantityDimension,
 )
 from .parser import assess_normalization_quality, parse_product
+from .physical import (
+    PriceNormalizationAssessment,
+    PriceNormalizationStatus,
+    assess_price_normalization,
+)
 
 __all__ = [
     "CanonicalProduct",
@@ -15,6 +20,9 @@ __all__ = [
     "NormalizationQuality",
     "ProductCategory",
     "ProductIdentityEngine",
+    "assess_price_normalization",
+    "PriceNormalizationStatus",
+    "PriceNormalizationAssessment",
     "Quantity",
     "QuantityDimension",
     "assess_normalization_quality",
