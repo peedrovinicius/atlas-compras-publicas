@@ -64,6 +64,18 @@ def build_quality_views(database_path: str | Path) -> None:
                     / NULLIF(COUNT(*), 0),
                     2
                 ) AS price_normalizable_percent,
+                SUM(
+                    CASE WHEN price_normalization_status = 'defensible'
+                    THEN 1 ELSE 0 END
+                ) AS price_basis_defensible_items,
+                SUM(
+                    CASE WHEN price_normalization_status = 'review'
+                    THEN 1 ELSE 0 END
+                ) AS price_basis_review_items,
+                SUM(
+                    CASE WHEN price_normalization_status = 'unavailable'
+                    THEN 1 ELSE 0 END
+                ) AS price_basis_unavailable_items,
                 ROUND(AVG(normalization_quality_score), 3)
                     AS average_quality_score
             FROM silver_items
@@ -85,7 +97,19 @@ def build_quality_views(database_path: str | Path) -> None:
                     / NULLIF(COUNT(*), 0),
                     2
                 ) AS fully_structured_percent,
-                COUNT(normalized_price_per_base_unit) AS price_normalizable_items
+                COUNT(normalized_price_per_base_unit) AS price_normalizable_items,
+                SUM(
+                    CASE WHEN price_normalization_status = 'defensible'
+                    THEN 1 ELSE 0 END
+                ) AS price_basis_defensible_items,
+                SUM(
+                    CASE WHEN price_normalization_status = 'review'
+                    THEN 1 ELSE 0 END
+                ) AS price_basis_review_items,
+                SUM(
+                    CASE WHEN price_normalization_status = 'unavailable'
+                    THEN 1 ELSE 0 END
+                ) AS price_basis_unavailable_items
             FROM silver_items
             GROUP BY product_category
             ORDER BY item_count DESC, product_category
