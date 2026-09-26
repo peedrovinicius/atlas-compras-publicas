@@ -116,3 +116,49 @@ def test_box_without_explicit_package_count_is_not_price_normalized() -> None:
         row["price_normalization_reason"]
         == "package_count_missing_for_procurement_package"
     )
+
+
+def test_multiple_physical_measurements_are_sent_to_review() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": (
+                "KIT RESINA COMPOSTA A2 SERINGA 4G "
+                "MAIS ADESIVO FRASCO 5ML"
+            ),
+            "quantidade": 1,
+            "unidadeMedida": "KIT",
+            "valorUnitarioEstimado": "120.00",
+        }
+    )
+
+    row = build_item_frame([item], source_sha256="hash").to_dicts()[0]
+
+    assert row["measurement_candidate_count"] == 2
+    assert row["measurement_resolution"] == "ambiguous"
+    assert row["normalized_total_quantity_value"] is None
+    assert row["normalized_price_per_base_unit"] is None
+    assert row["price_normalization_status"] == "review"
+    assert row["price_normalization_reason"] == "mixed_product_kit"
+
+
+def test_explicit_total_measurement_is_used_as_price_basis() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": (
+                "RESINA COMPOSTA A2 C/2 SERINGAS 4G "
+                "CONTEUDO TOTAL 8G"
+            ),
+            "quantidade": 1,
+            "unidadeMedida": "CAIXA",
+            "valorUnitarioEstimado": "80.00",
+        }
+    )
+
+    row = build_item_frame([item], source_sha256="hash").to_dicts()[0]
+
+    assert row["measurement_resolution"] == "package_total_confirmed"
+    assert row["normalized_total_quantity_value"] == 8.0
+    assert row["normalized_price_per_base_unit"] == 10.0
+    assert row["price_normalization_status"] == "defensible"
