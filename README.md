@@ -6,7 +6,7 @@ O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar
 
 ## Status atual
 
-**v0.4.0 — camada analítica com Parquet e DuckDB**
+**v0.5.0 — resultados homologados e economia auditável**
 
 O repositório já inclui:
 
@@ -21,7 +21,10 @@ O repositório já inclui:
 - transformação analítica em Parquet;
 - catálogo SQL local com DuckDB;
 - cálculo de preço normalizado por unidade física;
-- testes automatizados para as principais regras.
+- integração de resultados homologados;
+- cálculo de valor estimado equivalente, valor homologado e economia;
+- exclusão de resultados cancelados dos indicadores por padrão;
+- rastreabilidade separada para evidência do item e do resultado.
 
 O GitHub Actions continua desativado nesta fase. As validações foram desenhadas para execução local, evitando consumo desnecessário de minutos de CI.
 
@@ -60,17 +63,18 @@ flowchart LR
     E --> F[Normalização de unidades]
     F --> G[Parquet]
     G --> H[DuckDB]
-    H --> I[Grupos comparáveis]
-    I --> J[Análise robusta de preços]
-    J --> K[API de evidências]
-    K --> L[Dashboard]
+    H --> I[Itens + homologações]
+    I --> J[Economia e preços comparáveis]
+    J --> K[Análise robusta de preços]
+    K --> L[API de evidências]
+    L --> M[Dashboard]
 ~~~
 
 ### Camadas de dados
 
 - **raw** — resposta original e imutável da fonte;
 - **bronze** — registros tipados e estruturalmente validados;
-- **silver** — atributos de produto, unidades e medidas normalizadas;
+- **silver** — atributos, unidades, itens e homologações normalizados;
 - **gold** — grupos comparáveis, estatísticas e alertas explicáveis.
 
 ## Product Identity Engine
@@ -79,7 +83,7 @@ Uma descrição como:
 
 `RES FOTOP A2 C/2 SERINGAS 4G`
 
-já pode ser transformada em uma representação estruturada:
+pode ser transformada em:
 
 ~~~text
 categoria: composite_resin
@@ -107,7 +111,29 @@ Conteúdo total: 8 g
 Preço normalizado: R$ 10,00/g
 ~~~
 
-Esse valor permite comparações mais defensáveis entre embalagens diferentes.
+## Estimado x homologado
+
+A v0.5.0 cruza a estimativa do item com o resultado homologado.
+
+Exemplo:
+
+~~~text
+Valor unitário estimado:   R$ 80,00
+Valor unitário homologado: R$ 72,00
+Quantidade homologada:     10
+
+Valor estimado equivalente: R$ 800,00
+Valor homologado:           R$ 720,00
+Economia:                   R$ 80,00
+Economia percentual:        10,00%
+~~~
+
+Cada linha dessa camada mantém dois identificadores de proveniência:
+
+- SHA-256 da resposta bruta do item;
+- SHA-256 da resposta bruta do resultado homologado.
+
+Resultados marcados como cancelados pelo PNCP não entram nos indicadores de economia por padrão.
 
 ## Início rápido
 
@@ -129,31 +155,59 @@ pip install -e ".[dev]"
 pytest
 ~~~
 
-Consultar itens de uma contratação conhecida:
+Consultar itens:
 
 ~~~bash
 dpi items --cnpj 10000000000003 --year 2021 --sequence 1
 ~~~
 
-Capturar a resposta bruta com manifesto SHA-256:
+Capturar itens como evidência:
 
 ~~~bash
 dpi capture-items --cnpj 10000000000003 --year 2021 --sequence 1
 ~~~
 
-Construir a camada analítica a partir de um arquivo bruto capturado:
+Consultar resultados homologados:
+
+~~~bash
+dpi results --cnpj 10000000000003 --year 2021 --sequence 1 --item 1
+~~~
+
+Capturar resultados como evidência:
+
+~~~bash
+dpi capture-results \
+  --cnpj 10000000000003 \
+  --year 2021 \
+  --sequence 1 \
+  --item 1
+~~~
+
+Construir a camada analítica de itens:
 
 ~~~bash
 dpi build-analytics \
-  --raw data/raw/objects/sha256/xx/arquivo.json \
+  --raw data/raw/objects/sha256/xx/itens.json \
   --parquet data/silver/items.parquet \
   --database data/analytics.duckdb
 ~~~
 
-Consultar o resumo analítico:
+Construir a camada de homologações:
 
 ~~~bash
-dpi analytics-summary --database data/analytics.duckdb
+dpi build-awards \
+  --items-raw data/raw/objects/sha256/xx/itens.json \
+  --results-raw data/raw/objects/sha256/yy/resultado-item-1.json \
+  --parquet data/silver/awards.parquet \
+  --database data/analytics.duckdb
+~~~
+
+Mais de um arquivo de resultado pode ser informado após `--results-raw`.
+
+Consultar o resumo de economia:
+
+~~~bash
+dpi awards-summary --database data/analytics.duckdb
 ~~~
 
 ## Estrutura do repositório
@@ -164,7 +218,7 @@ src/dental_procurement_intelligence/
   ingestion/        evidência bruta e proveniência
   identity/         identidade canônica e comparabilidade
   normalization/    normalização textual e de medidas
-  analytics/        Parquet, DuckDB e métricas analíticas
+  analytics/        Parquet, DuckDB, homologações e métricas
   cli.py            interface de linha de comando
 
 tests/              testes automatizados
@@ -174,17 +228,17 @@ data/               contrato das camadas locais
 
 ## Princípio de auditabilidade
 
-Cada linha da camada analítica mantém o SHA-256 do arquivo bruto que a originou.
+O projeto preserva a cadeia:
 
-Isso permite rastrear:
+`indicador → resultado homologado → item normalizado → evidência bruta → PNCP`
 
-`indicador → registro analítico → registro normalizado → evidência bruta → PNCP`
+A camada de homologações mantém hashes distintos para as duas fontes envolvidas no cruzamento.
 
 ## Salvaguarda metodológica
 
-Um preço estatisticamente atípico não constitui evidência de fraude, corrupção ou ilegalidade.
+Economia calculada representa diferença entre a estimativa pública e o resultado homologado para a quantidade homologada. Ela não deve ser interpretada isoladamente como medida de eficiência administrativa.
 
-Os futuros mecanismos de detecção de anomalias servirão para priorizar registros que merecem revisão. Cada sinal deverá apresentar população de comparação, método utilizado, tamanho da amostra e evidências de origem.
+Da mesma forma, um preço estatisticamente atípico não constitui evidência de fraude, corrupção ou ilegalidade.
 
 ## Roadmap
 
@@ -199,9 +253,11 @@ Os futuros mecanismos de detecção de anomalias servirão para priorizar regist
 - [x] Camada analítica Parquet
 - [x] Catálogo e consultas locais com DuckDB
 - [x] Preço normalizado por unidade física
+- [x] Resultados homologados integrados à camada analítica
+- [x] Estimado x homologado e economia auditável
+- [ ] Captura automatizada de todos os resultados de uma contratação
 - [ ] Expandir taxonomia odontológica validada
 - [ ] Adicionar recuperação semântica de candidatos
-- [ ] Incorporar resultados homologados à camada analítica
 - [ ] Detecção robusta de preços atípicos
 - [ ] API FastAPI de evidências
 - [ ] Interface analítica em React
