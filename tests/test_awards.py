@@ -252,3 +252,36 @@ def test_build_awards_persists_decimal_money_types(tmp_path: Path) -> None:
         Decimal("0.090000000000"),
         Decimal("0.030000000000"),
     )
+
+
+def test_award_frame_preserves_technical_attributes() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": (
+                "IONOMERO DE VIDRO RESTAURADOR "
+                "AUTOPOLIMERIZAVEL FRASCO 10G"
+            ),
+            "unidadeMedida": "UNIDADE",
+            "valorUnitarioEstimado": "50.00",
+        }
+    )
+    result = PNCPItemResult.model_validate(
+        {
+            "numeroItem": 1,
+            "sequencialResultado": 1,
+            "quantidadeHomologada": "1",
+            "valorUnitarioHomologado": "45.00",
+            "situacaoCompraItemResultadoId": 1,
+        }
+    )
+
+    row = build_award_frame(
+        [item],
+        "itemhash",
+        [([result], "resulthash")],
+    ).to_dicts()[0]
+
+    assert row["technical_attribute_count"] == 2
+    assert row["ionomer_use"] == "restorative"
+    assert row["curing_mode"] == "self_cure"
