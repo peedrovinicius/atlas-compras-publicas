@@ -8,11 +8,28 @@ from dental_procurement_intelligence.ingestion import EvidenceStore, capture_con
 from dental_procurement_intelligence.pncp import PNCPClient
 
 
-def test_capture_contract_collects_items_and_every_result_response(
+def test_capture_contract_collects_metadata_items_and_results(
     tmp_path: Path,
 ) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         path = request.url.path
+
+        if path.endswith("/compras/2021/1"):
+            return httpx.Response(
+                200,
+                json={
+                    "numeroControlePNCP": "example",
+                    "anoCompra": 2021,
+                    "sequencialCompra": 1,
+                    "dataPublicacaoPncp": "2021-08-01",
+                    "unidadeOrgao": {
+                        "municipioId": 2304400,
+                        "municipioNome": "Fortaleza",
+                        "ufSigla": "CE",
+                        "ufNome": "Ceará",
+                    },
+                },
+            )
 
         if path.endswith("/itens"):
             return httpx.Response(
@@ -71,4 +88,5 @@ def test_capture_contract_collects_items_and_every_result_response(
     assert result.result_response_count == 2
     assert result.result_count == 1
     assert len(result.result_evidence) == 2
+    assert Path(result.contract_evidence.object_path).exists()
     assert Path(result.item_evidence.object_path).exists()

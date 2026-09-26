@@ -1,4 +1,10 @@
 from .client import PNCPClient, PNCPRawResponse
-from .models import PNCPItem, PNCPItemResult
+from .models import PNCPContract, PNCPItem, PNCPItemResult
 
-__all__ = ["PNCPClient", "PNCPRawResponse", "PNCPItem", "PNCPItemResult"]
+__all__ = [
+    "PNCPClient",
+    "PNCPContract",
+    "PNCPItem",
+    "PNCPItemResult",
+    "PNCPRawResponse",
+]

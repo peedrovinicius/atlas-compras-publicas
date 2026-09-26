@@ -36,7 +36,7 @@ def build_price_signals(
     modified_z_threshold: float = 3.5,
     iqr_multiplier: float = 1.5,
 ) -> PriceSignalBuildResult:
-    """Cria sinais robustos de preço sobre resultados homologados comparáveis."""
+    """Gera sinais com contexto temporal e geográfico hierárquico."""
 
     _validate_parameters(
         minimum_group_size,
@@ -60,12 +60,15 @@ def build_price_signals(
             )
 
         connection.execute("DROP VIEW IF EXISTS price_anomalies")
+        connection.execute("DROP VIEW IF EXISTS anomaly_scope_summary")
         connection.execute("DROP TABLE IF EXISTS gold_price_signals")
+
         connection.execute(
             f"""
             CREATE TABLE gold_price_signals AS
             WITH eligible AS (
                 SELECT
+                    ROW_NUMBER() OVER () AS analysis_row_id,
                     *,
                     CONCAT(
                         product_category, '|',
@@ -73,7 +76,7 @@ def build_price_signals(
                         COALESCE(shade, '∅'), '|',
                         normalized_quantity_unit, '|',
                         CAST(normalized_quantity_value AS VARCHAR)
-                    ) AS comparison_key
+                    ) AS product_key
                 FROM silver_awards
                 WHERE product_category <> 'unknown'
                   AND presentation IS NOT NULL
@@ -81,61 +84,159 @@ def build_price_signals(
                   AND normalized_quantity_unit IS NOT NULL
                   AND awarded_price_per_base_unit IS NOT NULL
                   AND awarded_price_per_base_unit > 0
+                  AND analysis_year IS NOT NULL
+            ),
+            scope_rows AS (
+                SELECT
+                    *,
+                    1 AS scope_priority,
+                    'uf_trimestre' AS comparison_scope,
+                    state_code AS comparison_geography,
+                    analysis_quarter AS comparison_period,
+                    CONCAT(product_key, '|UF|', state_code, '|', analysis_quarter)
+                        AS scope_group_key
+                FROM eligible
+                WHERE state_code IS NOT NULL AND analysis_quarter IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    *,
+                    2 AS scope_priority,
+                    'regiao_trimestre' AS comparison_scope,
+                    macroregion AS comparison_geography,
+                    analysis_quarter AS comparison_period,
+                    CONCAT(
+                        product_key, '|REGIAO|', macroregion, '|', analysis_quarter
+                    ) AS scope_group_key
+                FROM eligible
+                WHERE macroregion IS NOT NULL AND analysis_quarter IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    *,
+                    3 AS scope_priority,
+                    'brasil_trimestre' AS comparison_scope,
+                    'Brasil' AS comparison_geography,
+                    analysis_quarter AS comparison_period,
+                    CONCAT(product_key, '|BR|', analysis_quarter) AS scope_group_key
+                FROM eligible
+                WHERE analysis_quarter IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    *,
+                    4 AS scope_priority,
+                    'regiao_ano' AS comparison_scope,
+                    macroregion AS comparison_geography,
+                    CAST(analysis_year AS VARCHAR) AS comparison_period,
+                    CONCAT(
+                        product_key, '|REGIAO|', macroregion, '|',
+                        CAST(analysis_year AS VARCHAR)
+                    ) AS scope_group_key
+                FROM eligible
+                WHERE macroregion IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    *,
+                    5 AS scope_priority,
+                    'brasil_ano' AS comparison_scope,
+                    'Brasil' AS comparison_geography,
+                    CAST(analysis_year AS VARCHAR) AS comparison_period,
+                    CONCAT(
+                        product_key, '|BR|', CAST(analysis_year AS VARCHAR)
+                    ) AS scope_group_key
+                FROM eligible
             ),
             group_stats AS (
                 SELECT
-                    comparison_key,
+                    scope_group_key,
                     COUNT(*) AS group_size,
                     MEDIAN(awarded_price_per_base_unit) AS median_price,
                     QUANTILE_CONT(awarded_price_per_base_unit, 0.25) AS q1_price,
                     QUANTILE_CONT(awarded_price_per_base_unit, 0.75) AS q3_price
-                FROM eligible
-                GROUP BY comparison_key
+                FROM scope_rows
+                GROUP BY scope_group_key
             ),
             with_stats AS (
                 SELECT
-                    eligible.*,
+                    scope_rows.*,
                     group_stats.group_size,
                     group_stats.median_price,
                     group_stats.q1_price,
                     group_stats.q3_price,
                     group_stats.q3_price - group_stats.q1_price AS iqr_price
-                FROM eligible
-                JOIN group_stats USING (comparison_key)
+                FROM scope_rows
+                JOIN group_stats USING (scope_group_key)
             ),
             mad_stats AS (
                 SELECT
-                    comparison_key,
+                    scope_group_key,
                     MEDIAN(
                         ABS(awarded_price_per_base_unit - median_price)
                     ) AS mad_price
                 FROM with_stats
-                GROUP BY comparison_key
+                GROUP BY scope_group_key
+            ),
+            ranked AS (
+                SELECT
+                    with_stats.*,
+                    mad_stats.mad_price,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY analysis_row_id
+                        ORDER BY
+                            CASE
+                                WHEN group_size >= {minimum_group_size} THEN 0
+                                ELSE 1
+                            END,
+                            CASE
+                                WHEN group_size >= {minimum_group_size}
+                                THEN scope_priority
+                                ELSE NULL
+                            END,
+                            CASE
+                                WHEN group_size < {minimum_group_size}
+                                THEN group_size
+                                ELSE NULL
+                            END DESC,
+                            scope_priority
+                    ) AS scope_rank
+                FROM with_stats
+                JOIN mad_stats USING (scope_group_key)
+            ),
+            selected AS (
+                SELECT *
+                FROM ranked
+                WHERE scope_rank = 1
             )
             SELECT
-                with_stats.*,
-                mad_stats.mad_price,
+                selected.* EXCLUDE (scope_rank),
                 CASE
-                    WHEN mad_stats.mad_price > 0
+                    WHEN group_size < {minimum_group_size} THEN NULL
+                    WHEN mad_price > 0
                     THEN
                         0.6744897501960817
                         * (awarded_price_per_base_unit - median_price)
-                        / mad_stats.mad_price
+                        / mad_price
                     ELSE NULL
                 END AS modified_z_score,
                 CASE
                     WHEN group_size < {minimum_group_size} THEN 'insufficient_sample'
-                    WHEN mad_stats.mad_price > 0 THEN 'modified_z_score'
+                    WHEN mad_price > 0 THEN 'modified_z_score'
                     WHEN iqr_price > 0 THEN 'iqr_fallback'
                     ELSE 'insufficient_variation'
                 END AS detection_method,
                 CASE
                     WHEN group_size < {minimum_group_size} THEN FALSE
-                    WHEN mad_stats.mad_price > 0 THEN
+                    WHEN mad_price > 0 THEN
                         ABS(
                             0.6744897501960817
                             * (awarded_price_per_base_unit - median_price)
-                            / mad_stats.mad_price
+                            / mad_price
                         ) >= {modified_z_threshold}
                     WHEN iqr_price > 0 THEN
                         awarded_price_per_base_unit
@@ -144,10 +245,10 @@ def build_price_signals(
                             > q3_price + ({iqr_multiplier} * iqr_price)
                     ELSE FALSE
                 END AS is_price_signal
-            FROM with_stats
-            JOIN mad_stats USING (comparison_key)
+            FROM selected
             """
         )
+
         connection.execute(
             """
             CREATE VIEW price_anomalies AS
@@ -159,6 +260,24 @@ def build_price_signals(
                 awarded_price_per_base_unit DESC
             """
         )
+        connection.execute(
+            """
+            CREATE VIEW anomaly_scope_summary AS
+            SELECT
+                comparison_scope,
+                comparison_geography,
+                comparison_period,
+                COUNT(*) AS analyzed_rows,
+                SUM(CASE WHEN is_price_signal THEN 1 ELSE 0 END) AS signal_count,
+                MEDIAN(group_size) AS median_group_size
+            FROM gold_price_signals
+            GROUP BY
+                comparison_scope,
+                comparison_geography,
+                comparison_period
+            ORDER BY comparison_period DESC, comparison_scope
+            """
+        )
 
         eligible_row_count = connection.execute(
             "SELECT COUNT(*) FROM gold_price_signals"
@@ -167,7 +286,7 @@ def build_price_signals(
             "SELECT COUNT(*) FROM price_anomalies"
         ).fetchone()[0]
         comparison_group_count = connection.execute(
-            "SELECT COUNT(DISTINCT comparison_key) FROM gold_price_signals"
+            "SELECT COUNT(DISTINCT scope_group_key) FROM gold_price_signals"
         ).fetchone()[0]
 
     return PriceSignalBuildResult(
@@ -186,14 +305,15 @@ def anomaly_summary(database_path: str | Path) -> list[dict[str, Any]]:
         cursor = connection.execute(
             """
             SELECT
+                comparison_scope,
                 product_category,
                 COUNT(*) AS signal_count,
-                COUNT(DISTINCT comparison_key) AS affected_groups,
+                COUNT(DISTINCT scope_group_key) AS affected_groups,
                 MEDIAN(awarded_price_per_base_unit) AS median_signaled_price,
                 MAX(ABS(modified_z_score)) AS max_abs_modified_z
             FROM price_anomalies
-            GROUP BY product_category
-            ORDER BY signal_count DESC, product_category
+            GROUP BY comparison_scope, product_category
+            ORDER BY signal_count DESC, comparison_scope, product_category
             """
         )
         columns = [column[0] for column in cursor.description]

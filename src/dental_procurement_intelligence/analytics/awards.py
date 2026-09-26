@@ -1,6 +1,7 @@
 import hashlib
 import json
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -9,10 +10,12 @@ import duckdb
 import polars as pl
 
 from dental_procurement_intelligence.identity import parse_product
-from dental_procurement_intelligence.pncp import PNCPItem, PNCPItemResult
+from dental_procurement_intelligence.normalization import macroregion_from_state
+from dental_procurement_intelligence.pncp import PNCPContract, PNCPItem, PNCPItemResult
 
 
 AWARD_SCHEMA: dict[str, pl.DataType] = {
+    "contract_source_sha256": pl.String,
     "item_source_sha256": pl.String,
     "result_source_sha256": pl.String,
     "item_number": pl.Int64,
@@ -25,6 +28,16 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "supplier_document": pl.String,
     "brand": pl.String,
     "result_date": pl.Date,
+    "publication_date": pl.Date,
+    "analysis_date": pl.Date,
+    "analysis_year": pl.Int64,
+    "analysis_quarter": pl.String,
+    "municipality_ibge": pl.String,
+    "municipality_name": pl.String,
+    "state_code": pl.String,
+    "macroregion": pl.String,
+    "government_sphere": pl.String,
+    "modality": pl.String,
     "result_status_id": pl.Int64,
     "result_status_name": pl.String,
     "estimated_unit_value": pl.Float64,
@@ -46,7 +59,10 @@ class AwardBuildResult:
     row_count: int
     active_result_count: int
     item_source_sha256: str
+    contract_source_sha256: str | None
     result_source_count: int
+    geolocated_row_count: int
+    dated_row_count: int
     parquet_path: str
     database_path: str
 
@@ -62,6 +78,14 @@ def _result_records(payload: Any) -> list[dict[str, Any]]:
     if not all(isinstance(record, dict) for record in records):
         raise ValueError("Todos os resultados do PNCP devem ser objetos JSON")
     return records
+
+
+def load_raw_contract(path: str | Path) -> tuple[PNCPContract, str]:
+    content = Path(path).read_bytes()
+    payload = json.loads(content)
+    if not isinstance(payload, dict):
+        raise ValueError("O arquivo bruto da contratação deve conter um objeto JSON")
+    return PNCPContract.model_validate(payload), _hash(content)
 
 
 def load_raw_items(path: str | Path) -> tuple[list[PNCPItem], str]:
@@ -83,13 +107,28 @@ def _decimal_float(value: Decimal | None) -> float | None:
     return float(value) if value is not None else None
 
 
+def _quarter(value: date | None) -> str | None:
+    if value is None:
+        return None
+    quarter = ((value.month - 1) // 3) + 1
+    return f"{value.year}-T{quarter}"
+
+
 def build_award_frame(
     items: list[PNCPItem],
     item_source_sha256: str,
     result_sources: list[tuple[list[PNCPItemResult], str]],
+    *,
+    contract: PNCPContract | None = None,
+    contract_source_sha256: str | None = None,
 ) -> pl.DataFrame:
     item_by_number = {item.item_number: item for item in items}
     rows: list[dict[str, Any]] = []
+
+    unit = contract.organization_unit if contract is not None else None
+    organization = contract.organization if contract is not None else None
+    publication_date = contract.publication_date if contract is not None else None
+    state_code = unit.state_code if unit is not None else None
 
     for results, result_sha256 in result_sources:
         for result in results:
@@ -104,7 +143,9 @@ def build_award_frame(
 
             product = parse_product(item.description)
             basis = product.total_quantity or product.unit_quantity
+            analysis_date = result.result_date or publication_date
             awarded_total = result.awarded_total_value
+
             if (
                 awarded_total is None
                 and result.awarded_unit_value is not None
@@ -115,6 +156,7 @@ def build_award_frame(
             estimated_total_equivalent = None
             economy_total = None
             economy_percent = None
+
             if (
                 item.estimated_unit_value is not None
                 and result.awarded_quantity is not None
@@ -131,6 +173,7 @@ def build_award_frame(
 
             estimated_normalized = None
             awarded_normalized = None
+
             if basis is not None and basis.value > 0:
                 if item.estimated_unit_value is not None:
                     estimated_normalized = item.estimated_unit_value / basis.value
@@ -139,6 +182,7 @@ def build_award_frame(
 
             rows.append(
                 {
+                    "contract_source_sha256": contract_source_sha256,
                     "item_source_sha256": item_source_sha256,
                     "result_source_sha256": result_sha256,
                     "item_number": item.item_number,
@@ -151,6 +195,20 @@ def build_award_frame(
                     "supplier_document": result.supplier_document,
                     "brand": result.brand,
                     "result_date": result.result_date,
+                    "publication_date": publication_date,
+                    "analysis_date": analysis_date,
+                    "analysis_year": analysis_date.year if analysis_date else None,
+                    "analysis_quarter": _quarter(analysis_date),
+                    "municipality_ibge": (
+                        str(unit.municipality_id)
+                        if unit is not None and unit.municipality_id is not None
+                        else None
+                    ),
+                    "municipality_name": unit.municipality_name if unit else None,
+                    "state_code": state_code,
+                    "macroregion": macroregion_from_state(state_code),
+                    "government_sphere": organization.sphere if organization else None,
+                    "modality": contract.modality_name if contract else None,
                     "result_status_id": result.status_id,
                     "result_status_name": result.status_name,
                     "estimated_unit_value": _decimal_float(item.estimated_unit_value),
@@ -185,10 +243,24 @@ def build_awards(
     results_raw_paths: list[str | Path],
     parquet_path: str | Path,
     database_path: str | Path,
+    *,
+    contract_raw_path: str | Path | None = None,
 ) -> AwardBuildResult:
     items, item_sha256 = load_raw_items(items_raw_path)
     sources = [load_raw_results(path) for path in results_raw_paths]
-    frame = build_award_frame(items, item_sha256, sources)
+
+    contract = None
+    contract_sha256 = None
+    if contract_raw_path is not None:
+        contract, contract_sha256 = load_raw_contract(contract_raw_path)
+
+    frame = build_award_frame(
+        items,
+        item_sha256,
+        sources,
+        contract=contract,
+        contract_source_sha256=contract_sha256,
+    )
 
     parquet = Path(parquet_path)
     parquet.parent.mkdir(parents=True, exist_ok=True)
@@ -209,6 +281,8 @@ def build_awards(
             CREATE VIEW award_savings_summary AS
             SELECT
                 product_category,
+                macroregion,
+                analysis_year,
                 COUNT(*) AS result_count,
                 SUM(estimated_total_equivalent) AS estimated_total_equivalent,
                 SUM(awarded_total_value) AS awarded_total_value,
@@ -220,16 +294,22 @@ def build_awards(
                         / SUM(estimated_total_equivalent)
                 END AS economy_percent
             FROM silver_awards
-            GROUP BY product_category
-            ORDER BY ABS(COALESCE(SUM(economy_total), 0)) DESC
+            GROUP BY product_category, macroregion, analysis_year
+            ORDER BY analysis_year DESC, product_category, macroregion
             """
         )
+
+    geolocated = frame.filter(pl.col("state_code").is_not_null()).height
+    dated = frame.filter(pl.col("analysis_date").is_not_null()).height
 
     return AwardBuildResult(
         row_count=frame.height,
         active_result_count=frame.height,
         item_source_sha256=item_sha256,
+        contract_source_sha256=contract_sha256,
         result_source_count=len(sources),
+        geolocated_row_count=geolocated,
+        dated_row_count=dated,
         parquet_path=parquet.as_posix(),
         database_path=database.as_posix(),
     )

@@ -27,6 +27,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    contract = subparsers.add_parser(
+        "contract",
+        help="Consulta metadados de uma contratação no PNCP",
+    )
+    contract.add_argument("--cnpj", required=True)
+    contract.add_argument("--year", required=True, type=int)
+    contract.add_argument("--sequence", required=True, type=int)
+
     items = subparsers.add_parser("items", help="Consulta itens de uma contratação")
     items.add_argument("--cnpj", required=True)
     items.add_argument("--year", required=True, type=int)
@@ -43,7 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     capture_all = subparsers.add_parser(
         "capture-contract",
-        help="Captura itens e resultados de todos os itens da contratação",
+        help="Captura contratação, itens e resultados de todos os itens",
     )
     capture_all.add_argument("--cnpj", required=True)
     capture_all.add_argument("--year", required=True, type=int)
@@ -79,8 +87,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     awards = subparsers.add_parser(
         "build-awards",
-        help="Cruza itens e resultados homologados em uma camada analítica",
+        help="Cruza contratação, itens e resultados homologados",
     )
+    awards.add_argument("--contract-raw")
     awards.add_argument("--items-raw", required=True)
     awards.add_argument("--results-raw", required=True, nargs="+")
     awards.add_argument("--parquet", default="data/silver/awards.parquet")
@@ -88,7 +97,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     signals = subparsers.add_parser(
         "detect-anomalies",
-        help="Gera sinais estatísticos explicáveis de preços atípicos",
+        help="Gera sinais estatísticos com contexto temporal e geográfico",
     )
     signals.add_argument("--database", default="data/analytics.duckdb")
     signals.add_argument("--minimum-group-size", type=int, default=5)
@@ -103,13 +112,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     awards_summary = subparsers.add_parser(
         "awards-summary",
-        help="Exibe economia entre valores estimados e homologados",
+        help="Exibe economia por categoria, região e ano",
     )
     awards_summary.add_argument("--database", default="data/analytics.duckdb")
 
     anomalies_summary = subparsers.add_parser(
         "anomalies-summary",
-        help="Exibe um resumo dos sinais de preços atípicos",
+        help="Exibe resumo dos sinais por escopo de comparação",
     )
     anomalies_summary.add_argument("--database", default="data/analytics.duckdb")
 
@@ -130,6 +139,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.results_raw,
             args.parquet,
             args.database,
+            contract_raw_path=args.contract_raw,
         )
         print(_serialize(asdict(result)))
         return 0
@@ -185,6 +195,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             record = store.capture(raw)
             print(_serialize(asdict(record)))
+            return 0
+
+        if args.command == "contract":
+            record = client.get_contract(args.cnpj, args.year, args.sequence)
+            print(_serialize(record.model_dump(by_alias=True)))
             return 0
 
         if args.command == "items":

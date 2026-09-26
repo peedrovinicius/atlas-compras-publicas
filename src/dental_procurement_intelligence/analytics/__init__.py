@@ -8,6 +8,7 @@ from .awards import (
     award_summary,
     build_award_frame,
     build_awards,
+    load_raw_contract,
     load_raw_results,
 )
 from .lakehouse import (
@@ -31,6 +32,7 @@ __all__ = [
     "build_awards",
     "build_item_frame",
     "build_price_signals",
+    "load_raw_contract",
     "load_raw_items",
     "load_raw_results",
     "write_parquet",

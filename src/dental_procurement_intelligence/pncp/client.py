@@ -6,7 +6,11 @@ from typing import Any
 import httpx
 
 from dental_procurement_intelligence.config import Settings
-from dental_procurement_intelligence.pncp.models import PNCPItem, PNCPItemResult
+from dental_procurement_intelligence.pncp.models import (
+    PNCPContract,
+    PNCPItem,
+    PNCPItemResult,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,7 +47,7 @@ class PNCPClient:
             transport=transport,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "dental-procurement-intelligence/0.6",
+                "User-Agent": "dental-procurement-intelligence/0.7",
             },
         )
 
@@ -88,6 +92,17 @@ class PNCPClient:
             if not isinstance(record, dict):
                 raise ValueError("Unexpected PNCP result entry")
             yield record
+
+    def get_contract_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
+        cnpj = _validate_cnpj(cnpj)
+        return self._get_raw(f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}")
+
+    def get_contract(self, cnpj: str, year: int, sequence: int) -> PNCPContract:
+        cnpj = _validate_cnpj(cnpj)
+        payload = self._get_json(f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}")
+        if not isinstance(payload, dict):
+            raise ValueError("Unexpected PNCP procurement payload")
+        return PNCPContract.model_validate(payload)
 
     def get_items_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
         cnpj = _validate_cnpj(cnpj)

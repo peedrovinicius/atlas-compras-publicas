@@ -10,6 +10,7 @@ class ContractCaptureResult:
     item_count: int
     result_response_count: int
     result_count: int
+    contract_evidence: EvidenceRecord
     item_evidence: EvidenceRecord
     result_evidence: tuple[EvidenceRecord, ...]
 
@@ -30,7 +31,10 @@ def capture_contract(
     year: int,
     sequence: int,
 ) -> ContractCaptureResult:
-    """Captura itens e todas as respostas de resultados de uma contratação."""
+    """Captura metadados, itens e todas as respostas de resultados da contratação."""
+
+    raw_contract = client.get_contract_raw(cnpj, year, sequence)
+    contract_evidence = store.capture(raw_contract)
 
     raw_items = client.get_items_raw(cnpj, year, sequence)
     item_evidence = store.capture(raw_items)
@@ -57,6 +61,7 @@ def capture_contract(
         item_count=len(items),
         result_response_count=len(result_evidence),
         result_count=result_count,
+        contract_evidence=contract_evidence,
         item_evidence=item_evidence,
         result_evidence=tuple(result_evidence),
     )

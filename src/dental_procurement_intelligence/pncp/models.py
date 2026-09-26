@@ -8,6 +8,37 @@ class PNCPBaseModel(BaseModel):
     model_config = ConfigDict(extra="allow", populate_by_name=True)
 
 
+class PNCPOrganization(PNCPBaseModel):
+    cnpj: str | None = None
+    legal_name: str | None = Field(default=None, alias="razaoSocial")
+    branch: str | None = Field(default=None, alias="poderId")
+    sphere: str | None = Field(default=None, alias="esferaId")
+
+
+class PNCPOrganizationUnit(PNCPBaseModel):
+    unit_code: str | None = Field(default=None, alias="codigoUnidade")
+    unit_name: str | None = Field(default=None, alias="nomeUnidade")
+    municipality_id: int | None = Field(default=None, alias="municipioId")
+    municipality_name: str | None = Field(default=None, alias="municipioNome")
+    state_code: str | None = Field(default=None, alias="ufSigla")
+    state_name: str | None = Field(default=None, alias="ufNome")
+
+
+class PNCPContract(PNCPBaseModel):
+    """Subset of procurement metadata used for geographic and temporal analysis."""
+
+    control_number: str | None = Field(default=None, alias="numeroControlePNCP")
+    purchase_year: int | None = Field(default=None, alias="anoCompra")
+    sequence: int | None = Field(default=None, alias="sequencialCompra")
+    modality_name: str | None = Field(default=None, alias="modalidadeNome")
+    status_name: str | None = Field(default=None, alias="situacaoCompraNome")
+    publication_date: date | None = Field(default=None, alias="dataPublicacaoPncp")
+    total_estimated_value: Decimal | None = Field(default=None, alias="valorTotalEstimado")
+    total_awarded_value: Decimal | None = Field(default=None, alias="valorTotalHomologado")
+    organization: PNCPOrganization | None = Field(default=None, alias="orgaoEntidade")
+    organization_unit: PNCPOrganizationUnit | None = Field(default=None, alias="unidadeOrgao")
+
+
 class PNCPItem(PNCPBaseModel):
     """Subset of PNCP procurement-item fields used by the analytical pipeline."""
 
