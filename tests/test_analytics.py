@@ -31,6 +31,10 @@ def test_build_item_frame_normalizes_price_by_total_package_mass() -> None:
     assert row["normalized_total_quantity_unit"] == "g"
     assert row["normalized_price_per_base_unit"] == 10.0
     assert row["price_normalization_status"] == "defensible"
+    assert (
+        row["price_normalization_reason"]
+        == "explicit_package_total_confirmed"
+    )
     assert row["price_normalization_reason"] == "explicit_package_count"
     assert row["source_sha256"] == "abc123"
 
@@ -162,3 +166,7 @@ def test_explicit_total_measurement_is_used_as_price_basis() -> None:
     assert row["normalized_total_quantity_value"] == 8.0
     assert row["normalized_price_per_base_unit"] == 10.0
     assert row["price_normalization_status"] == "defensible"
+    assert (
+        row["price_normalization_reason"]
+        == "explicit_package_total_confirmed"
+    )
