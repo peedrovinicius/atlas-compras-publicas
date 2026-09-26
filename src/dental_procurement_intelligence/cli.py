@@ -9,6 +9,7 @@ from dental_procurement_intelligence.analytics import (
     anomaly_summary,
     award_summary,
     build_analytics,
+    build_award_dataset,
     build_awards,
     build_price_signals,
     quality_by_category,
@@ -19,7 +20,11 @@ from dental_procurement_intelligence.evaluation import (
     evaluate_dataset,
     evaluation_errors,
 )
-from dental_procurement_intelligence.ingestion import EvidenceStore, capture_contract
+from dental_procurement_intelligence.ingestion import (
+    EvidenceStore,
+    capture_contract,
+    discover_contract_bundles,
+)
 from dental_procurement_intelligence.pncp import PNCPClient
 
 
@@ -102,6 +107,24 @@ def build_parser() -> argparse.ArgumentParser:
     awards.add_argument("--parquet", default="data/silver/awards.parquet")
     awards.add_argument("--database", default="data/analytics.duckdb")
 
+    award_dataset = subparsers.add_parser(
+        "build-award-dataset",
+        help="Reconstrói homologações consolidadas de múltiplas contratações",
+    )
+    award_dataset.add_argument(
+        "--bundles-root",
+        default="data/raw/contracts",
+        help="Diretório com manifestos de contratação",
+    )
+    award_dataset.add_argument(
+        "--parquet",
+        default="data/silver/awards.parquet",
+    )
+    award_dataset.add_argument(
+        "--database",
+        default="data/analytics.duckdb",
+    )
+
     signals = subparsers.add_parser(
         "detect-anomalies",
         help="Gera sinais estatísticos com contexto temporal e geográfico",
@@ -174,6 +197,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.parquet,
             args.database,
             contract_raw_path=args.contract_raw,
+        )
+        print(_serialize(asdict(result)))
+        return 0
+
+    if args.command == "build-award-dataset":
+        manifests = discover_contract_bundles(args.bundles_root)
+        result = build_award_dataset(
+            manifests,
+            args.parquet,
+            args.database,
         )
         print(_serialize(asdict(result)))
         return 0
