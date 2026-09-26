@@ -6,7 +6,7 @@ O projeto constrói um motor reprodutível para coletar, normalizar, comparar e 
 
 ## Status atual
 
-**v1.6.0: pluralização, contexto de formulação e resina fluida**
+**v1.7.0: holdout independente v5**
 
 O núcleo genérico já inclui:
 
@@ -547,6 +547,51 @@ O resultado pós-tuning está em `data/evaluation/v4-post-v1.6.json`.
 
 O próximo teste de generalização deve usar um v5 formado por fontes ainda não vistas.
 
+## Holdout independente v5
+
+O v5 foi congelado no commit `0f25fdf` antes de qualquer alteração na taxonomia motivada por seus resultados.
+
+A amostra contém **48 itens de cinco fontes novas**:
+
+- Lago dos Rodrigues/MA, PNCP `01612541000133-1-000047/2026`;
+- Rolim de Moura/RO, PNCP `04394805000118-1-000083/2026`;
+- Jacareí/SP, PNCP `46694139000183-1-000863/2026`;
+- Niterói/RJ, PNCP `34906284000100-1-000015/2026`;
+- Pinhais/PR, PNCP `76416932000181-1-000363/2026`.
+
+Baseline independente da taxonomia v1.6.0:
+
+~~~text
+amostras:                  48
+categorias corretas:       38
+erros de categoria:        10
+acurácia de categoria:     79,17%
+macro precision:           0,7179
+macro recall:              0,6250
+macro F1:                  0,6483
+
+cor:
+  suporte:                  7
+  acurácia:                 42,86%
+
+concentração:
+  suporte:                  1
+  acurácia:                 100,00%
+~~~
+
+Os 10 erros se concentram em quatro padrões:
+
+- `IONOMERO RESTAURADOR` sem a expressão “de vidro”;
+- `PASTA PROFIATICA` com grafia imperfeita;
+- resinas descritas apenas como `RESINA A2`, `RESINA A3`, `RESINA A3,5`, `RESINA B1` ou nome comercial;
+- `FLUORETO DE SODIO 2% GEL`.
+
+O v5 será mantido como **holdout não ajustado** nesta etapa. Diferentemente dos ciclos anteriores, a v1.7.0 não modifica a taxonomia para zerar seus erros.
+
+Essa decisão preserva uma referência independente mais honesta de generalização antes de novas mudanças arquiteturais.
+
+A baseline está em `data/evaluation/v5-baseline.json` e a análise em `docs/benchmark-v5.md`.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -715,7 +760,9 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Corrigir os sete erros do v4 sem alterar seus rótulos
 - [x] Revalidar v1, v2, v3 e v4 sem regressão
 - [x] Registrar desempenho pós-tuning do v4
-- [ ] Criar benchmark v5 com fontes ainda não vistas
+- [x] Criar benchmark v5 com fontes ainda não vistas
+- [x] Registrar holdout independente v5 sem tuning
+- [ ] Implementar dataset multi-contratação com chave estável e deduplicação
 - [ ] Extrair contrato formal de plugins de domínio
 - [ ] Adicionar segunda vertical além de odontologia
 - [ ] Modelar atributos técnicos específicos por categoria

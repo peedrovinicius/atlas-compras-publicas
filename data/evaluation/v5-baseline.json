@@ -1,0 +1,34 @@
+{
+  "dataset": "data/evaluation/v5.jsonl",
+  "dataset_version": "v5",
+  "frozen_dataset_commit": "0f25fdfec21940ff26253a3f225a6feb519f9937",
+  "taxonomy_commit": "f88eede2dcc2cfe1c56d5b3421343444b700dd29",
+  "sample_count": 48,
+  "category_correct": 38,
+  "category_error_count": 10,
+  "category_accuracy": 0.7917,
+  "macro_precision": 0.7179,
+  "macro_recall": 0.625,
+  "macro_f1": 0.6483,
+  "shade": {
+    "support": 7,
+    "accuracy": 0.4286
+  },
+  "concentration_percent": {
+    "support": 1,
+    "accuracy": 1.0
+  },
+  "errors": [
+    {"id":"lr-331","expected_category":"glass_ionomer","predicted_category":"unknown"},
+    {"id":"lr-348","expected_category":"prophylaxis_paste","predicted_category":"unknown"},
+    {"id":"lr-352","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"lr-353","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"lr-354","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"lr-355","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"lr-356","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"lr-357","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"lr-358","expected_category":"composite_resin","predicted_category":"unknown"},
+    {"id":"rm-006","expected_category":"fluoride_gel","predicted_category":"unknown"}
+  ],
+  "interpretation": "Independent holdout baseline. The v5 labels are frozen and are not used to tune the v1.7.0 taxonomy."
+}
