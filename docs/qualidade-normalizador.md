@@ -117,3 +117,20 @@ Por isso, a evolução futura deverá medir separadamente:
 ## Status da validação
 
 A taxonomia possui benchmarks manuais versionados e um holdout independente v5 preservado sem tuning. A confiança da base física de preço é medida separadamente da acurácia de categoria.
+
+
+## Resolução de medidas físicas
+
+O parser preserva todas as medidas físicas distintas após conversão para unidade base.
+
+Estados atuais:
+
+- `missing`: nenhuma medida física foi encontrada;
+- `single`: uma única medida física inequívoca;
+- `package_derived`: quantidade total derivada de quantidade unitária e contagem explícita;
+- `package_total_confirmed`: quantidade unitária e total da embalagem aparecem no texto e são matematicamente consistentes;
+- `ambiguous`: existem múltiplas medidas que não podem ser resolvidas com segurança.
+
+Medidas equivalentes, como `4 g` e `4000 mg`, são deduplicadas após a conversão.
+
+Quando o estado é `ambiguous`, o item não recebe preço normalizado por g/ml e a lacuna aparece como `measurement_ambiguous`.
