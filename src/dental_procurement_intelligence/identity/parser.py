@@ -7,6 +7,7 @@ from dental_procurement_intelligence.identity.models import (
     ProductCategory,
     Quantity,
     QuantityDimension,
+    TechnicalAttributes,
 )
 from dental_procurement_intelligence.normalization import (
     extract_measurements,
@@ -189,6 +190,64 @@ _MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
     ("HIDROXIDO DE CALCIO",),
 )
 
+
+_RESIN_TECHNOLOGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("bulk_fill", ("BULK FILL", "BULKFILL")),
+    ("nanohybrid", ("NANOHIBRIDA", "NANO-HIBRIDA", "NANOHYBRID")),
+    ("microhybrid", ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICROHYBRID")),
+)
+
+_CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("dual_cure", ("CURA DUAL", "DUAL CURE")),
+    (
+        "light_cure",
+        ("FOTOPOLIMERIZAVEL", "FOTOPOLIMERIZACAO", "LIGHT CURE"),
+    ),
+    (
+        "self_cure",
+        ("AUTOPOLIMERIZAVEL", "AUTOPOLIMERIZACAO", "SELF CURE"),
+    ),
+)
+
+_ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("universal", ("ADESIVO UNIVERSAL", "SISTEMA ADESIVO UNIVERSAL")),
+    (
+        "self_etch",
+        ("AUTOCONDICIONANTE", "AUTO CONDICIONANTE", "SELF ETCH"),
+    ),
+    (
+        "etch_and_rinse",
+        ("CONDICIONAMENTO TOTAL", "TOTAL ETCH", "ETCH AND RINSE"),
+    ),
+)
+
+_IONOMER_USE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("restorative", ("RESTAURADOR", "RESTAURATIVO")),
+    ("luting", ("CIMENTACAO", "CIMENTANTE", "FIXACAO")),
+    ("liner_base", ("FORRAMENTO", "FORRADOR", "BASE CAVITARIA")),
+)
+
+_FLUORIDE_FORMULATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("neutral", ("GEL NEUTRO", "FLUOR NEUTRO")),
+    (
+        "acidulated",
+        ("GEL ACIDULADO", "FLUOR ACIDULADO", "FLUOR ACIDO"),
+    ),
+)
+
+_ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("lidocaine", ("LIDOCAINA",)),
+    ("articaine", ("ARTICAINA", "ARTICAINE")),
+    ("mepivacaine", ("MEPIVACAINA",)),
+)
+
+_VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("epinephrine", ("EPINEFRINA", "ADRENALINA")),
+    ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
+    ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
+)
+
+
 _RESIN_HEAD_TERMS = ("RESINA", "RESINAS")
 _FLUID_RESIN_TERMS = ("FLUIDA", "FLUIDAS", "FLOW", "FLOWABLE")
 
@@ -302,6 +361,70 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
     return ProductCategory.UNKNOWN, ()
 
 
+def _first_attribute_match(
+    text: str,
+    rules: tuple[tuple[str, tuple[str, ...]], ...],
+) -> str | None:
+    for canonical, terms in rules:
+        if any(_term_present(text, term) for term in terms):
+            return canonical
+    return None
+
+
+def _technical_attributes(
+    text: str,
+    category: ProductCategory,
+) -> TechnicalAttributes:
+    resin_technology = None
+    curing_mode = None
+    adhesive_strategy = None
+    ionomer_use = None
+    fluoride_formulation = None
+    anesthetic_active_ingredient = None
+    anesthetic_vasoconstrictor = None
+
+    if category in (ProductCategory.COMPOSITE_RESIN, ProductCategory.FLOWABLE_RESIN):
+        resin_technology = _first_attribute_match(text, _RESIN_TECHNOLOGY_RULES)
+        curing_mode = _first_attribute_match(text, _CURING_MODE_RULES)
+
+    elif category == ProductCategory.ADHESIVE:
+        adhesive_strategy = _first_attribute_match(text, _ADHESIVE_STRATEGY_RULES)
+        curing_mode = _first_attribute_match(text, _CURING_MODE_RULES)
+
+    elif category == ProductCategory.GLASS_IONOMER:
+        ionomer_use = _first_attribute_match(text, _IONOMER_USE_RULES)
+        curing_mode = _first_attribute_match(text, _CURING_MODE_RULES)
+
+    elif category == ProductCategory.FLUORIDE_GEL:
+        fluoride_formulation = _first_attribute_match(
+            text,
+            _FLUORIDE_FORMULATION_RULES,
+        )
+
+    elif category == ProductCategory.LOCAL_ANESTHETIC:
+        anesthetic_active_ingredient = _first_attribute_match(
+            text,
+            _ANESTHETIC_INGREDIENT_RULES,
+        )
+        if re.search(r"\bSEM\s+VASOCONSTRITOR\b", text):
+            anesthetic_vasoconstrictor = "none"
+        else:
+            anesthetic_vasoconstrictor = _first_attribute_match(
+                text,
+                _VASOCONSTRICTOR_RULES,
+            )
+
+    return TechnicalAttributes(
+        resin_technology=resin_technology,
+        curing_mode=curing_mode,
+        adhesive_strategy=adhesive_strategy,
+        ionomer_use=ionomer_use,
+        fluoride_formulation=fluoride_formulation,
+        anesthetic_active_ingredient=anesthetic_active_ingredient,
+        anesthetic_vasoconstrictor=anesthetic_vasoconstrictor,
+    )
+
+
 def _presentation(text: str) -> str | None:
     for canonical, terms in _PRESENTATION_RULES:
         if any(_term_present(text, term) for term in terms):
@@ -409,6 +532,7 @@ def parse_product(description: str) -> CanonicalProduct:
         else None
     )
 
+    technical_attributes = _technical_attributes(normalized, category)
     package_count = _package_count(normalized)
     measurement_candidates = _measurement_candidates(normalized)
     unit_quantity, total_quantity, measurement_resolution = _resolve_measurements(
@@ -423,6 +547,7 @@ def parse_product(description: str) -> CanonicalProduct:
         presentation=_presentation(normalized),
         shade=shade,
         concentration_percent=concentration,
+        technical_attributes=technical_attributes,
         package_count=package_count,
         measurement_candidates=measurement_candidates,
         measurement_resolution=measurement_resolution,
