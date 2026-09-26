@@ -17,10 +17,20 @@ def analytic_decimal(value: Decimal | None) -> Decimal | None:
 
     if value is None:
         return None
+    if not value.is_finite():
+        raise ValueError("Valor decimal analítico deve ser finito")
 
     with localcontext() as context:
         context.prec = ANALYTIC_DECIMAL_PRECISION + ANALYTIC_DECIMAL_SCALE
-        return value.quantize(
+        quantized = value.quantize(
             ANALYTIC_DECIMAL_QUANTUM,
             rounding=ROUND_HALF_EVEN,
         )
+
+    integer_digits = 1 if quantized == 0 else max(quantized.adjusted() + 1, 1)
+    max_integer_digits = ANALYTIC_DECIMAL_PRECISION - ANALYTIC_DECIMAL_SCALE
+    if integer_digits > max_integer_digits:
+        raise ValueError(
+            "Valor decimal excede a precisão analítica configurada"
+        )
+    return quantized
