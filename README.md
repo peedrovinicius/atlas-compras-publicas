@@ -15,7 +15,7 @@ A odontologia é a primeira vertical implementada e funciona como um domínio de
 | Consolidação | Múltiplas contratações com chaves estáveis, deduplicação e reconstrução idempotente |
 | Normalização | Padronização de descrições, apresentações, medidas e atributos técnicos |
 | Identidade | Product Identity Engine com regras explícitas, embalagem e quantidade física |
-| Preço físico | Normalização somente quando embalagem e medidas físicas são defensáveis |
+| Preço físico | Base defensável e valores financeiros preservados em decimal |
 | Análise | Comparação de preços com contexto geográfico e temporal |
 | Qualidade | Score determinístico, métricas de cobertura e fila de itens não reconhecidos |
 | Sinais | Detecção estatística com MAD e IQR, sem tratar sinal como prova de irregularidade |
@@ -156,13 +156,14 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 - [Arquitetura](docs/architecture.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
+- [Precisão monetária](docs/precisao-monetaria.md)
 - [Qualidade do normalizador](docs/qualidade-normalizador.md)
 - [Benchmarks e validação](docs/benchmark-v5.md)
 
 ## Próximos passos
 
 - modelar atributos técnicos específicos por categoria
-- reforçar precisão monetária nas camadas analíticas
+- refinar atributos críticos e variações de descrição
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
