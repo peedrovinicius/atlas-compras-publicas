@@ -27,6 +27,11 @@ def build_quality_views(database_path: str | Path) -> None:
                 "PRAGMA table_info('silver_items')"
             ).fetchall()
         }
+        if "technical_attribute_count" not in column_types:
+            raise ValueError(
+                "silver_items precisa ser reconstruída com atributos técnicos."
+            )
+
         price_type = column_types.get("normalized_price_per_base_unit", "")
         estimated_type = column_types.get("estimated_unit_value", "")
         if not price_type.startswith("DECIMAL(") or not estimated_type.startswith(
@@ -68,6 +73,14 @@ def build_quality_views(database_path: str | Path) -> None:
                 ) AS measurement_coverage_percent,
                 SUM(CASE WHEN fully_structured THEN 1 ELSE 0 END)
                     AS fully_structured_items,
+                SUM(CASE WHEN technical_attribute_count > 0 THEN 1 ELSE 0 END)
+                    AS technical_attribute_items,
+                ROUND(
+                    100.0 * SUM(
+                        CASE WHEN technical_attribute_count > 0 THEN 1 ELSE 0 END
+                    ) / NULLIF(COUNT(*), 0),
+                    2
+                ) AS technical_attribute_coverage_percent,
                 ROUND(
                     100.0 * SUM(CASE WHEN fully_structured THEN 1 ELSE 0 END)
                     / NULLIF(COUNT(*), 0),
@@ -107,6 +120,14 @@ def build_quality_views(database_path: str | Path) -> None:
                     AS average_quality_score,
                 SUM(CASE WHEN fully_structured THEN 1 ELSE 0 END)
                     AS fully_structured_items,
+                SUM(CASE WHEN technical_attribute_count > 0 THEN 1 ELSE 0 END)
+                    AS technical_attribute_items,
+                ROUND(
+                    100.0 * SUM(
+                        CASE WHEN technical_attribute_count > 0 THEN 1 ELSE 0 END
+                    ) / NULLIF(COUNT(*), 0),
+                    2
+                ) AS technical_attribute_coverage_percent,
                 ROUND(
                     100.0 * SUM(CASE WHEN fully_structured THEN 1 ELSE 0 END)
                     / NULLIF(COUNT(*), 0),
