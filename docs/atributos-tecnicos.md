@@ -85,3 +85,20 @@ A camada ainda não modela de forma completa:
 - validade e condições logísticas.
 
 Esses fatores continuam sendo motivos possíveis para variação legítima de preço.
+
+
+## Validação independente
+
+O benchmark `technical-attributes-v1` foi congelado antes da primeira medição e usa fontes separadas dos benchmarks de taxonomia v1 a v5.
+
+Baseline:
+
+- 33 exemplos;
+- 61 campos técnicos avaliados;
+- 52 campos corretos;
+- micro accuracy de 85,25%;
+- 9 falsos negativos;
+- nenhum falso positivo;
+- nenhum mismatch.
+
+O relatório completo está em `docs/benchmark-technical-attributes-v1.md`.
