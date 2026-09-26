@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local data and databases
+data/raw/
+data/bronze/
+data/silver/
+data/gold/
+*.duckdb
+*.duckdb.wal
+*.parquet
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
