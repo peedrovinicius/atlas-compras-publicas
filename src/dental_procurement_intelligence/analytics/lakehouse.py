@@ -10,6 +10,7 @@ import polars as pl
 from dental_procurement_intelligence.identity import (
     ProductCategory,
     assess_normalization_quality,
+    assess_price_normalization,
     parse_product,
 )
 from dental_procurement_intelligence.pncp import PNCPItem
@@ -40,6 +41,8 @@ ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
     "normalized_total_quantity_value": pl.Float64,
     "normalized_total_quantity_unit": pl.String,
     "normalized_price_per_base_unit": pl.Float64,
+    "price_normalization_status": pl.String,
+    "price_normalization_reason": pl.String,
     "category_identified": pl.Boolean,
     "presentation_identified": pl.Boolean,
     "measurement_identified": pl.Boolean,
@@ -72,10 +75,6 @@ def _decimal_to_float(value: Any) -> float | None:
     return float(value) if value is not None else None
 
 
-def _price_basis(product: Any) -> Any:
-    return product.total_quantity or product.unit_quantity
-
-
 def build_item_frame(
     items: list[PNCPItem],
     *,
@@ -88,7 +87,8 @@ def build_item_frame(
     for item in items:
         product = parse_product(item.description)
         quality = assess_normalization_quality(product)
-        price_basis = _price_basis(product)
+        price_assessment = assess_price_normalization(product, item.unit)
+        price_basis = price_assessment.basis
         normalized_price = None
 
         if (
@@ -146,6 +146,8 @@ def build_item_frame(
                     price_basis.unit if price_basis is not None else None
                 ),
                 "normalized_price_per_base_unit": normalized_price,
+                "price_normalization_status": price_assessment.status.value,
+                "price_normalization_reason": price_assessment.reason,
                 "category_identified": quality.category_identified,
                 "presentation_identified": quality.presentation_identified,
                 "measurement_identified": quality.measurement_identified,
