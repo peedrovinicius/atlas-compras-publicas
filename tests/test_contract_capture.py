@@ -84,6 +84,8 @@ def test_capture_contract_collects_metadata_items_and_results(
     finally:
         client.close()
 
+    assert result.procurement_key == "pncp:10000000000003:2021:1"
+    assert Path(result.bundle_manifest_path).exists()
     assert result.item_count == 2
     assert result.result_response_count == 2
     assert result.result_count == 1
