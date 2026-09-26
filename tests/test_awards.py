@@ -44,6 +44,8 @@ def test_award_frame_calculates_economy_and_normalized_price() -> None:
     assert row["economy_percent"] == 10.0
     assert row["estimated_price_per_base_unit"] == 10.0
     assert row["awarded_price_per_base_unit"] == 9.0
+    assert row["price_normalization_status"] == "defensible"
+    assert row["package_count"] == 2
     assert row["result_source_sha256"] == "resulthash"
 
 
@@ -91,3 +93,34 @@ def test_load_raw_results_accepts_lista_resultados_wrapper(tmp_path: Path) -> No
     assert len(results) == 1
     assert results[0].item_number == 3
     assert len(digest) == 64
+
+
+def test_award_frame_does_not_normalize_ambiguous_box_price() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": "RESINA COMPOSTA A2 SERINGA 4G",
+            "unidadeMedida": "CAIXA",
+            "valorUnitarioEstimado": "80.00",
+        }
+    )
+    result = PNCPItemResult.model_validate(
+        {
+            "numeroItem": 1,
+            "sequencialResultado": 1,
+            "quantidadeHomologada": "1",
+            "valorUnitarioHomologado": "72.00",
+            "situacaoCompraItemResultadoId": 1,
+        }
+    )
+
+    row = build_award_frame(
+        [item],
+        "itemhash",
+        [([result], "resulthash")],
+    ).to_dicts()[0]
+
+    assert row["unit_quantity_value"] == 4.0
+    assert row["normalized_quantity_value"] is None
+    assert row["awarded_price_per_base_unit"] is None
+    assert row["price_normalization_status"] == "review"
