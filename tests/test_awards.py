@@ -2,6 +2,8 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import polars as pl
+
 from dental_procurement_intelligence.analytics.awards import (
     build_award_frame,
     load_raw_results,
@@ -40,10 +42,18 @@ def test_award_frame_calculates_economy_and_normalized_price() -> None:
     )
     row = frame.to_dicts()[0]
 
-    assert row["economy_total"] == 80.0
-    assert row["economy_percent"] == 10.0
-    assert row["estimated_price_per_base_unit"] == 10.0
-    assert row["awarded_price_per_base_unit"] == 9.0
+    assert row["economy_total"] == Decimal("80.000000000000")
+    assert row["economy_percent"] == Decimal("10.000000000000")
+    assert row["estimated_price_per_base_unit"] == Decimal("10.000000000000")
+    assert row["awarded_price_per_base_unit"] == Decimal("9.000000000000")
+    assert frame.schema["awarded_unit_value"] == pl.Decimal(
+        precision=38,
+        scale=12,
+    )
+    assert frame.schema["awarded_price_per_base_unit"] == pl.Decimal(
+        precision=38,
+        scale=12,
+    )
     assert row["price_normalization_status"] == "defensible"
     assert row["package_count"] == 2
     assert row["result_source_sha256"] == "resulthash"
