@@ -23,6 +23,39 @@ def test_parser_structures_abbreviated_composite_resin() -> None:
     assert product.total_quantity.value == Decimal("8")
 
 
+def test_microhybrid_resin_is_composite_resin() -> None:
+    product = parse_product("RESINA MICROHIBRIDA A3,5 SERINGA C/ 4G")
+
+    assert product.category == ProductCategory.COMPOSITE_RESIN
+    assert product.shade == "A3.5"
+
+
+def test_adhesive_takes_precedence_over_contextual_resin_mention() -> None:
+    product = parse_product(
+        "ADESIVO PARA RESTAURACOES DE RESINA COMPOSTA PRIMER E BOND UNIVERSAL"
+    )
+
+    assert product.category == ProductCategory.ADHESIVE
+
+
+def test_polishing_kit_is_not_classified_as_composite_resin() -> None:
+    product = parse_product(
+        "KIT PONTAS PARA ACABAMENTO E POLIMENTO DE RESINA COMPOSTA"
+    )
+
+    assert product.category == ProductCategory.UNKNOWN
+
+
+def test_local_anesthetic_is_recognized_by_active_ingredient() -> None:
+    for description in (
+        "LIDOCAINA CLORIDRATO DOSAGEM 3% INJETAVEL",
+        "ARTICAINA ASSOCIADA COM EPINEFRINA CONCENTRACAO 4%",
+        "MEPIVACAINA CLORIDRATO ASSOCIADA COM EPINEFRINA DOSAGEM 2%",
+    ):
+        product = parse_product(description)
+        assert product.category == ProductCategory.LOCAL_ANESTHETIC
+
+
 def test_parser_extracts_phosphoric_acid_concentration() -> None:
     product = parse_product(
         "ACIDO FOSFORICO 37% GEL SERINGA 2,5ML PACOTE COM 3 UNIDADES"

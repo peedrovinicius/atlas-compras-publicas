@@ -27,7 +27,16 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.COMPOSITE_RESIN,
-        ("RESINA COMPOSTA", "RES COMP", "RES FOTOP", "RESINA RESTAURADORA"),
+        (
+            "RESINA COMPOSTA",
+            "RES COMP",
+            "RES FOTOP",
+            "RESINA RESTAURADORA",
+            "RESINA MICROHIBRIDA",
+            "RESINA MICRO-HIBRIDA",
+            "RESINA NANOHIBRIDA",
+            "RESINA NANO-HIBRIDA",
+        ),
     ),
     (
         ProductCategory.ADHESIVE,
@@ -36,6 +45,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "SISTEMA ADESIVO",
             "ADESIVO ODONTOLOGICO",
             "ADESIVO FOTOPOLIMERIZAVEL",
+            "ADESIVO UNIVERSAL",
         ),
     ),
     (
@@ -85,6 +95,10 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "ANESTESICO LOCAL",
             "ANESTESICO TOPICO",
             "ANESTESICO ARTICAINE",
+            "LIDOCAINA",
+            "ARTICAINA",
+            "ARTICAINE",
+            "MEPIVACAINA",
         ),
     ),
 )
@@ -96,7 +110,7 @@ _PRESENTATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("tube", ("TUBO", "BISNAGA")),
     ("pot", ("POTE",)),
     ("sachet", ("SACHE", "ENVELOPE")),
-    ("cartridge", ("TUBETE", "CARPULE")),
+    ("cartridge", ("TUBETE", "CARPULE", "AMPOLA")),
     ("kit", ("KIT",)),
 )
 
@@ -108,11 +122,13 @@ _PACKAGE_PATTERNS = (
     re.compile(r"\bC\s*/\s*(?P<count>\d+)\b"),
     re.compile(
         r"\bCOM\s+(?P<count>\d+)\s+"
-        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|UNIDADES?|TUBETES?|SACHES?|ENVELOPES?)\b"
+        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|UNIDADES?|TUBETES?|SACHES?|"
+        r"ENVELOPES?|AMPOLAS?)\b"
     ),
     re.compile(
         r"\b(?P<count>\d+)\s+"
-        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|TUBETES?|SACHES?|ENVELOPES?)\b"
+        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|TUBETES?|SACHES?|ENVELOPES?|"
+        r"AMPOLAS?)\b"
     ),
 )
 
@@ -128,17 +144,61 @@ _CONCENTRATION_CRITICAL = {
     ProductCategory.LOCAL_ANESTHETIC,
 }
 
+_COMPOSITE_CONTEXT_EXCLUSIONS = (
+    re.compile(r"\b(?:KIT|PONTAS?)\b.*\b(?:ACABAMENTO|POLIMENTO)\b.*\bRESINA\b"),
+    re.compile(r"\b(?:ACABAMENTO|POLIMENTO)\b.*\bDE\s+RESINA\b"),
+)
+
+_ADHESIVE_HINTS = (
+    "ADESIVO",
+    "PRIMER",
+    "BOND",
+)
+
+_ANESTHETIC_ACTIVE_INGREDIENTS = (
+    "LIDOCAINA",
+    "ARTICAINA",
+    "ARTICAINE",
+    "MEPIVACAINA",
+)
+
 
 def _term_present(text: str, term: str) -> bool:
     pattern = rf"(?<![A-Z0-9]){re.escape(term)}(?![A-Z0-9])"
     return re.search(pattern, text) is not None
 
 
+def _has_any(text: str, terms: tuple[str, ...]) -> bool:
+    return any(_term_present(text, term) for term in terms)
+
+
+def _composite_context_excluded(text: str) -> bool:
+    return any(pattern.search(text) for pattern in _COMPOSITE_CONTEXT_EXCLUSIONS)
+
+
 def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
+    # Product head takes precedence over contextual mentions.
+    if _has_any(text, _ANESTHETIC_ACTIVE_INGREDIENTS):
+        matches = tuple(
+            term for term in _ANESTHETIC_ACTIVE_INGREDIENTS if _term_present(text, term)
+        )
+        return ProductCategory.LOCAL_ANESTHETIC, matches
+
+    if _term_present(text, "ADESIVO"):
+        matches = tuple(term for term in _ADHESIVE_HINTS if _term_present(text, term))
+        return ProductCategory.ADHESIVE, matches or ("ADESIVO",)
+
     for category, terms in _CATEGORY_RULES:
         matches = tuple(term for term in terms if _term_present(text, term))
-        if matches:
-            return category, matches
+        if not matches:
+            continue
+        if (
+            category == ProductCategory.COMPOSITE_RESIN
+            and _composite_context_excluded(text)
+        ):
+            continue
+        return category, matches
+
     return ProductCategory.UNKNOWN, ()
 
 
