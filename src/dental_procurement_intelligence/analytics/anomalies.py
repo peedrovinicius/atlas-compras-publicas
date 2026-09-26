@@ -56,7 +56,26 @@ def build_price_signals(
 
         if not table_exists:
             raise ValueError(
-                "A tabela silver_awards não existe. Execute build-awards primeiro."
+                "A tabela silver_awards não existe. Execute build-award-dataset primeiro."
+            )
+
+        columns = {
+            row[1]
+            for row in connection.execute(
+                "PRAGMA table_info('silver_awards')"
+            ).fetchall()
+        }
+        required_columns = {
+            "package_count",
+            "unit_quantity_value",
+            "unit_quantity_unit",
+            "price_normalization_status",
+        }
+        missing_columns = sorted(required_columns - columns)
+        if missing_columns:
+            raise ValueError(
+                "silver_awards precisa ser reconstruída com a versão atual. "
+                f"Campos ausentes: {', '.join(missing_columns)}"
             )
 
         connection.execute("DROP VIEW IF EXISTS price_anomalies")
@@ -75,6 +94,9 @@ def build_price_signals(
                         COALESCE(presentation, '∅'), '|',
                         COALESCE(shade, '∅'), '|',
                         COALESCE(CAST(concentration_percent AS VARCHAR), '∅'), '|',
+                        COALESCE(CAST(package_count AS VARCHAR), '∅'), '|',
+                        COALESCE(unit_quantity_unit, '∅'), '|',
+                        COALESCE(CAST(unit_quantity_value AS VARCHAR), '∅'), '|',
                         normalized_quantity_unit, '|',
                         CAST(normalized_quantity_value AS VARCHAR)
                     ) AS product_key
@@ -85,6 +107,7 @@ def build_price_signals(
                   AND normalized_quantity_unit IS NOT NULL
                   AND awarded_price_per_base_unit IS NOT NULL
                   AND awarded_price_per_base_unit > 0
+                  AND price_normalization_status = 'defensible'
                   AND analysis_year IS NOT NULL
             ),
             scope_rows AS (
