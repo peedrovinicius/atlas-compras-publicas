@@ -2,101 +2,93 @@
 
 ## Objetivo
 
-O sistema deve produzir inteligência de preços sem perder a cadeia de evidências que conecta cada resultado analítico ao registro original do PNCP.
+Produzir inteligência de preços sem perder a cadeia de evidências que conecta um resultado analítico ao registro original do PNCP.
 
-## Fluxo
+## Fonte oficial
 
-`API PNCP → raw → bronze → silver → gold → API analítica → dashboard`
+A contratação é consultada pelo endpoint:
+
+`/v1/orgaos/{cnpj}/compras/{ano}/{sequencial}`
+
+Esse registro fornece o contexto institucional, temporal e geográfico utilizado na v0.7.0.
+
+Itens e resultados permanecem coletados em endpoints próprios.
 
 ## Raw
 
-Conteúdo original da fonte acompanhado de:
+São armazenadas separadamente:
 
-- URL;
-- data e hora da coleta;
-- status HTTP;
-- SHA-256;
-- quantidade de bytes;
-- manifesto de proveniência.
+- resposta da contratação;
+- resposta dos itens;
+- resposta de resultados de cada item.
 
-Itens e resultados são armazenados como evidências independentes.
-
-A v0.6.0 adiciona captura completa de uma contratação. O pipeline consulta primeiro os itens e, em seguida, o endpoint de resultados de cada item retornado.
+Cada objeto possui SHA-256 e manifesto de coleta.
 
 ## Bronze
 
-Registros tipados do PNCP.
+Modelos tipados representam:
 
-Nenhuma inferência semântica deve ser misturada à validação estrutural.
+- contratação;
+- órgão;
+- unidade administrativa;
+- item;
+- resultado homologado.
 
 ## Silver
 
-Nesta camada são produzidos:
+A tabela `silver_awards` reúne:
 
-- texto normalizado;
-- categoria;
-- apresentação;
-- cor;
-- quantidade por embalagem;
-- quantidade física;
-- preço estimado normalizado;
-- preço homologado normalizado;
-- fornecedor;
-- marca;
-- economia;
-- referências às evidências de origem.
+- atributos canônicos do produto;
+- preços estimados e homologados;
+- preço por unidade física;
+- fornecedor e marca;
+- resultado e situação;
+- data de publicação;
+- data do resultado;
+- data de análise;
+- ano e trimestre;
+- município e código IBGE;
+- UF e macrorregião;
+- esfera;
+- modalidade;
+- três hashes de proveniência.
 
-As tabelas principais atuais são:
-
-- `silver_items`;
-- `silver_awards`.
+A macrorregião é uma derivação determinística da UF; ela não substitui os campos originais do PNCP.
 
 ## Gold
 
-A camada gold contém sinais analíticos derivados apenas de registros que atendem aos critérios mínimos de comparabilidade.
+A tabela `gold_price_signals` seleciona, para cada resultado elegível, o grupo geográfico-temporal mais específico com amostra suficiente.
 
-A tabela atual é:
+Hierarquia:
 
-- `gold_price_signals`.
+`UF/trimestre → região/trimestre → Brasil/trimestre → região/ano → Brasil/ano`
 
-A visão:
+A escolha do grupo permanece armazenada na própria linha analítica.
 
-- `price_anomalies`
+## Estatística
 
-contém somente registros sinalizados pelo método robusto.
+MAD com modified z-score é o método principal.
 
-## Grupo comparável
+IQR é utilizado quando o MAD é zero e ainda existe dispersão.
 
-A chave baseline combina:
-
-- categoria;
-- apresentação;
-- cor;
-- unidade física;
-- quantidade física.
-
-A chave é explícita no dataset para permitir auditoria do agrupamento.
-
-## Estatística robusta
-
-Grupos com menos de cinco observações não produzem sinais.
-
-Quando MAD é maior que zero, utiliza-se modified z-score.
-
-Quando MAD é zero e IQR é maior que zero, utiliza-se IQR.
-
-Quando não existe variação suficiente, o sistema registra a condição sem gerar sinal.
+Grupos com amostra insuficiente ou sem variação não geram sinal.
 
 ## Rastreabilidade
 
-A cadeia desejada é:
+A cadeia é:
 
-`sinal → grupo → homologação → item → SHA-256 → resposta original → PNCP`
-
-O processamento não deve remover os identificadores de proveniência.
+`sinal → grupo → homologação → item → contratação → evidências SHA-256 → PNCP`
 
 ## Salvaguarda
 
 Sinal estatístico não equivale a irregularidade.
 
-A camada gold serve para priorização analítica e deve sempre expor método, grupo, tamanho da amostra e limitações.
+O sistema deve sempre apresentar:
+
+- grupo utilizado;
+- período;
+- geografia;
+- tamanho da amostra;
+- estatística;
+- proveniência;
+- limitações.

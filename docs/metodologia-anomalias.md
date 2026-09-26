@@ -2,70 +2,99 @@
 
 ## Objetivo
 
-O objetivo desta camada é priorizar registros para investigação analítica.
+A camada de anomalias prioriza registros para investigação analítica.
 
-O sistema não tenta determinar fraude, corrupção, superfaturamento jurídico ou qualquer outra conclusão de natureza legal.
+Ela não determina fraude, corrupção, superfaturamento jurídico ou irregularidade administrativa.
 
-## Unidade analisada
+## Métrica analisada
 
-A métrica utilizada é o preço homologado por unidade física normalizada, quando essa unidade pode ser extraída de forma defensável da descrição do item.
+A métrica é o preço homologado por unidade física normalizada, quando a descrição fornece informação suficiente para essa normalização.
 
 Exemplos:
 
 - R$/g;
 - R$/mL.
 
-Massa e volume permanecem dimensões distintas.
+Massa e volume não são convertidos entre si.
 
-## Formação dos grupos comparáveis
+## Identidade do produto
 
-A implementação baseline utiliza a combinação de:
+Antes da análise estatística, o registro precisa ter:
 
-- categoria odontológica;
+- categoria conhecida;
+- apresentação identificada;
+- quantidade física identificada;
+- unidade física identificada;
+- preço homologado positivo.
+
+A chave de produto baseline combina:
+
+- categoria;
 - apresentação;
 - cor;
-- unidade física normalizada;
-- quantidade física normalizada.
+- unidade física;
+- quantidade física.
 
-Registros com categoria desconhecida, apresentação ausente, quantidade não identificada ou preço homologado não positivo não entram na análise de atipicidade.
+## Referência temporal
 
-A ausência de cor permanece explícita e não é misturada com uma cor conhecida.
+A data do resultado homologado é preferida.
+
+Quando ela não está disponível, utiliza-se a data de publicação da contratação.
+
+Dessa data são derivados:
+
+- ano;
+- trimestre.
+
+A ausência de uma referência temporal impede que o registro participe da análise v0.7.0.
+
+## Referência geográfica
+
+O PNCP fornece município, código IBGE e UF por meio da unidade administrativa da contratação.
+
+A macrorregião é derivada da UF por tabela determinística.
+
+## Hierarquia de comparação
+
+Para cada registro, são construídos candidatos de grupo em cinco níveis:
+
+1. UF + trimestre;
+2. macrorregião + trimestre;
+3. Brasil + trimestre;
+4. macrorregião + ano;
+5. Brasil + ano.
+
+O algoritmo escolhe o primeiro nível da hierarquia que possui pelo menos a amostra mínima.
+
+Se nenhum nível atingir o mínimo, o maior grupo disponível é preservado apenas para diagnóstico e recebe:
+
+`detection_method = insufficient_sample`
+
+Nenhum sinal é produzido.
 
 ## Tamanho mínimo
 
-O padrão é exigir pelo menos 5 observações no grupo.
+O padrão é exigir pelo menos cinco observações.
 
-Grupos menores recebem o método:
-
-`insufficient_sample`
-
-e nunca geram sinal.
+Esse limite é configurável, mas valores inferiores a três são rejeitados pelo código.
 
 ## Método MAD
 
-A mediana é utilizada como medida central robusta.
-
-O desvio absoluto mediano é definido como:
+Para o grupo escolhido:
 
 `MAD = mediana(|xᵢ - mediana(x)|)`
 
-Quando `MAD > 0`, o sistema calcula:
+Quando `MAD > 0`:
 
 `modified z-score = 0,6744897501960817 × (x - mediana) / MAD`
 
-O limite padrão é:
+O limiar padrão é:
 
 `|modified z-score| >= 3,5`
 
-O registro recebe:
-
-`detection_method = modified_z_score`
-
 ## Fallback por IQR
 
-Em conjuntos com muitos valores repetidos, o MAD pode ser zero.
-
-Quando isso ocorre e `IQR > 0`, o sistema utiliza:
+Quando `MAD = 0` e existe dispersão:
 
 `IQR = Q3 - Q1`
 
@@ -77,13 +106,9 @@ Limite superior:
 
 `Q3 + 1,5 × IQR`
 
-O registro recebe:
-
-`detection_method = iqr_fallback`
-
 ## Variação insuficiente
 
-Quando MAD e IQR são zero, não existe dispersão suficiente para aplicar os critérios atuais.
+Quando MAD e IQR são zero, o grupo não possui variação adequada para os critérios atuais.
 
 O método registrado é:
 
@@ -93,51 +118,45 @@ Nenhum sinal é produzido.
 
 ## Campos de explicação
 
-Cada registro em `gold_price_signals` preserva:
+A tabela `gold_price_signals` preserva:
 
-- chave do grupo comparável;
+- chave do produto;
+- chave do grupo;
+- escopo geográfico-temporal;
+- geografia utilizada;
+- período utilizado;
 - tamanho do grupo;
 - mediana;
-- primeiro quartil;
-- terceiro quartil;
+- Q1;
+- Q3;
 - IQR;
 - MAD;
-- modified z-score, quando aplicável;
-- método utilizado;
-- indicador booleano de sinal.
+- modified z-score;
+- método;
+- indicador de sinal;
+- contexto do item;
+- referências de proveniência.
 
-A visão `price_anomalies` contém somente os registros sinalizados.
+A visão `price_anomalies` contém apenas registros sinalizados.
 
-## Limitações atuais
+A visão `anomaly_scope_summary` apresenta cobertura e sinais por escopo, geografia e período.
 
-O grupo comparável ainda não captura todos os atributos técnicos possíveis de um produto odontológico.
+## Limitações
 
-Exemplos de fatores que podem alterar legitimamente o preço:
+A versão atual ainda não controla diretamente:
 
 - fabricante;
 - linha comercial;
-- composição;
-- geração tecnológica;
-- viscosidade;
+- composição detalhada;
 - concentração;
-- acessórios incluídos;
+- viscosidade;
 - validade;
-- região;
 - frete;
 - prazo de entrega;
-- quantidade comprada;
-- data da compra.
+- volume total contratado;
+- diferenças de tributação;
+- características específicas da modalidade.
 
-Por isso, qualquer sinal é um ponto de partida para análise, nunca uma conclusão.
+Esses fatores podem explicar variações legítimas de preço.
 
-## Próximas evoluções
-
-A metodologia deverá ganhar:
-
-1. dimensões geográficas;
-2. janelas temporais;
-3. atributos técnicos específicos por categoria;
-4. grupos de comparação hierárquicos;
-5. análise de sensibilidade;
-6. métricas de qualidade e cobertura do normalizador;
-7. avaliação manual de uma amostra de sinais.
+Por isso, qualquer sinal é ponto de partida para revisão, e não conclusão.
