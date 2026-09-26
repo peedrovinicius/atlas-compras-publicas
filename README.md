@@ -1,20 +1,22 @@
-# Dental Procurement Intelligence
+# Procurement Intelligence BR
 
-Plataforma auditável de inteligência de dados para compras públicas odontológicas no Brasil.
+Plataforma auditável de inteligência de dados para compras públicas no Brasil.
 
-O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar e analisar itens odontológicos publicados no Portal Nacional de Contratações Públicas (PNCP). O desafio principal não é apenas calcular preços, mas determinar quando descrições pouco padronizadas representam produtos realmente comparáveis, medir a qualidade dessa normalização e deixar explícito quando o sistema ainda não possui evidência suficiente.
+O projeto constrói um motor reprodutível para coletar, normalizar, comparar e analisar compras públicas publicadas no Portal Nacional de Contratações Públicas (PNCP). A odontologia é o primeiro domínio implementado e funciona como uma vertical de alta complexidade para validar o núcleo genérico de ingestão, proveniência, identidade de produto, normalização de unidades, comparação de preços e detecção explicável de sinais atípicos.
 
 ## Status atual
 
-**v1.1.0 — precedência semântica e correção dos erros do v2**
+**v1.2.0 — nova identidade e arquitetura orientada a domínios**
 
-O repositório já inclui:
+O núcleo genérico já inclui:
 
 - cliente tipado para a API pública do PNCP;
 - captura auditável da contratação, itens e resultados;
 - armazenamento bruto com SHA-256 e manifestos de proveniência;
 - normalização textual, de massa e de volume;
 - Product Identity Engine explicável;
+- arquitetura preparada para múltiplos domínios;
+- odontologia como primeiro domínio especializado;
 - taxonomia odontológica determinística ampliada;
 - extração de cor e concentração quando clinicamente relevantes;
 - normalização de embalagem e quantidade física;
@@ -59,7 +61,7 @@ Cada resposta capturada recebe SHA-256 e manifesto de coleta.
 flowchart LR
     A[API PNCP] --> B[Evidência bruta SHA-256]
     B --> C[Validação estrutural]
-    C --> D[Normalização odontológica]
+    C --> D[Normalização por domínio]
     D --> E[Qualidade do normalizador]
     D --> F[Preço por unidade física]
     F --> G[Contexto geográfico e temporal]
@@ -73,9 +75,9 @@ flowchart LR
     M --> N[Dashboard]
 ~~~
 
-## Taxonomia odontológica
+## Primeiro domínio: odontologia
 
-A v0.8.0 expande a classificação determinística para categorias que aparecem de forma recorrente em compras odontológicas.
+A odontologia é a primeira vertical especializada do projeto. A taxonomia atual cobre categorias que aparecem de forma recorrente em compras odontológicas e serve como prova de que o motor genérico consegue incorporar regras de domínio explícitas e auditáveis.
 
 Categorias atuais:
 
@@ -464,7 +466,7 @@ anomalies-summary
 ## Estrutura
 
 ~~~text
-src/dental_procurement_intelligence/
+src/dental_procurement_intelligence/  # namespace interno preservado por compatibilidade
   pncp/             cliente e modelos do PNCP
   ingestion/        evidência e captura
   identity/         taxonomia, identidade e qualidade
@@ -510,6 +512,8 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Revalidar v1 sem regressão
 - [x] Registrar desempenho pós-tuning do v2
 - [ ] Criar benchmark v3 com novas fontes ainda não vistas
+- [ ] Extrair contrato formal de plugins de domínio
+- [ ] Adicionar segunda vertical além de odontologia
 - [ ] Modelar atributos técnicos específicos por categoria
 - [ ] Adicionar recuperação semântica de candidatos
 - [ ] FastAPI de evidências
