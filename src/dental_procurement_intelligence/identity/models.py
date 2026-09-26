@@ -57,4 +57,4 @@ class NormalizationQuality:
     measurement_identified: bool
     critical_attribute_name: str | None
     critical_attribute_identified: bool | None
-    missing_fields: tuple[str, ...)
+    missing_fields: tuple[str, ...]
