@@ -7,6 +7,10 @@ from typing import Any
 import duckdb
 import polars as pl
 
+from dental_procurement_intelligence.analytics.numeric import (
+    ANALYTIC_DECIMAL_DTYPE,
+    analytic_decimal,
+)
 from dental_procurement_intelligence.identity import (
     ProductCategory,
     assess_normalization_quality,
@@ -25,9 +29,9 @@ ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
     "procurement_quantity": pl.Float64,
     "procurement_unit": pl.String,
     "estimated_unit_value_decimal": pl.String,
-    "estimated_unit_value": pl.Float64,
+    "estimated_unit_value": ANALYTIC_DECIMAL_DTYPE,
     "total_value_decimal": pl.String,
-    "total_value": pl.Float64,
+    "total_value": ANALYTIC_DECIMAL_DTYPE,
     "product_category": pl.String,
     "identity_status": pl.String,
     "classification_method": pl.String,
@@ -42,7 +46,7 @@ ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
     "unit_quantity_unit": pl.String,
     "normalized_total_quantity_value": pl.Float64,
     "normalized_total_quantity_unit": pl.String,
-    "normalized_price_per_base_unit": pl.Float64,
+    "normalized_price_per_base_unit": ANALYTIC_DECIMAL_DTYPE,
     "price_normalization_status": pl.String,
     "price_normalization_reason": pl.String,
     "category_identified": pl.Boolean,
@@ -73,10 +77,6 @@ def _decimal_to_text(value: Any) -> str | None:
     return format(value, "f") if value is not None else None
 
 
-def _decimal_to_float(value: Any) -> float | None:
-    return float(value) if value is not None else None
-
-
 def build_item_frame(
     items: list[PNCPItem],
     *,
@@ -98,7 +98,7 @@ def build_item_frame(
             and price_basis is not None
             and price_basis.value > 0
         ):
-            normalized_price = float(item.estimated_unit_value / price_basis.value)
+            normalized_price = analytic_decimal(item.estimated_unit_value / price_basis.value)
 
         rows.append(
             {
@@ -107,14 +107,14 @@ def build_item_frame(
                 "original_description": item.description,
                 "normalized_description": product.normalized_description,
                 "procurement_quantity_decimal": _decimal_to_text(item.quantity),
-                "procurement_quantity": _decimal_to_float(item.quantity),
+                "procurement_quantity": float(item.quantity) if item.quantity is not None else None,
                 "procurement_unit": item.unit,
                 "estimated_unit_value_decimal": _decimal_to_text(
                     item.estimated_unit_value
                 ),
-                "estimated_unit_value": _decimal_to_float(item.estimated_unit_value),
+                "estimated_unit_value": analytic_decimal(item.estimated_unit_value),
                 "total_value_decimal": _decimal_to_text(item.total_value),
-                "total_value": _decimal_to_float(item.total_value),
+                "total_value": analytic_decimal(item.total_value),
                 "product_category": product.category.value,
                 "identity_status": (
                     "identified"
