@@ -18,7 +18,9 @@ from dental_procurement_intelligence.analytics import (
 )
 from dental_procurement_intelligence.evaluation import (
     evaluate_dataset,
+    evaluate_technical_attributes,
     evaluation_errors,
+    technical_attribute_errors,
 )
 from dental_procurement_intelligence.ingestion import (
     EvidenceStore,
@@ -172,6 +174,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     evaluate.add_argument("--dataset", default="data/evaluation/v1.jsonl")
 
+    technical_evaluate = subparsers.add_parser(
+        "evaluate-technical-attributes",
+        help="Avalia atributos técnicos contra dataset manual versionado",
+    )
+    technical_evaluate.add_argument(
+        "--dataset",
+        default="data/evaluation/technical-attributes-v1.jsonl",
+    )
+
+    technical_errors = subparsers.add_parser(
+        "technical-attribute-errors",
+        help="Lista divergências dos atributos técnicos avaliados",
+    )
+    technical_errors.add_argument(
+        "--dataset",
+        default="data/evaluation/technical-attributes-v1.jsonl",
+    )
+    technical_errors.add_argument("--limit", type=int, default=50)
+
     errors = subparsers.add_parser(
         "evaluation-errors",
         help="Lista divergências entre rótulo manual e categoria prevista",
@@ -253,6 +274,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "evaluate-taxonomy":
         print(_serialize(asdict(evaluate_dataset(args.dataset))))
+        return 0
+
+    if args.command == "evaluate-technical-attributes":
+        print(_serialize(asdict(evaluate_technical_attributes(args.dataset))))
+        return 0
+
+    if args.command == "technical-attribute-errors":
+        if args.limit < 1:
+            raise ValueError("--limit deve ser pelo menos 1")
+        print(
+            _serialize(
+                technical_attribute_errors(args.dataset)[: args.limit]
+            )
+        )
         return 0
 
     if args.command == "evaluation-errors":
