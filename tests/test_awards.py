@@ -2,10 +2,12 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import duckdb
 import polars as pl
 
 from dental_procurement_intelligence.analytics.awards import (
     build_award_frame,
+    build_awards,
     load_raw_results,
 )
 from dental_procurement_intelligence.pncp import PNCPItem, PNCPItemResult
@@ -170,3 +172,83 @@ def test_award_frame_rejects_multiple_measure_price_basis() -> None:
     assert row["awarded_price_per_base_unit"] is None
     assert row["price_normalization_status"] == "review"
     assert row["price_normalization_reason"] == "mixed_product_kit"
+
+
+def test_build_awards_persists_decimal_money_types(tmp_path: Path) -> None:
+    items_path = tmp_path / "items.json"
+    results_path = tmp_path / "results.json"
+    parquet_path = tmp_path / "awards.parquet"
+    database_path = tmp_path / "analytics.duckdb"
+
+    items_path.write_text(
+        json.dumps(
+            [
+                {
+                    "numeroItem": 1,
+                    "descricao": "RESINA COMPOSTA A2 SERINGA 3G",
+                    "unidadeMedida": "UNIDADE",
+                    "valorUnitarioEstimado": "0.10",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    results_path.write_text(
+        json.dumps(
+            {
+                "listaResultados": [
+                    {
+                        "numeroItem": 1,
+                        "sequencialResultado": 1,
+                        "quantidadeHomologada": "1",
+                        "valorUnitarioHomologado": "0.09",
+                        "situacaoCompraItemResultadoId": 1,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    build_awards(
+        items_path,
+        [results_path],
+        parquet_path,
+        database_path,
+    )
+
+    parquet_frame = pl.read_parquet(parquet_path)
+    assert parquet_frame.schema["estimated_unit_value"] == pl.Decimal(
+        precision=38,
+        scale=12,
+    )
+    assert parquet_frame.schema["awarded_unit_value"] == pl.Decimal(
+        precision=38,
+        scale=12,
+    )
+
+    with duckdb.connect(str(database_path), read_only=True) as connection:
+        types = {
+            row[1]: row[2]
+            for row in connection.execute(
+                "PRAGMA table_info('silver_awards')"
+            ).fetchall()
+        }
+        row = connection.execute(
+            """
+            SELECT
+                estimated_unit_value,
+                awarded_unit_value,
+                awarded_price_per_base_unit
+            FROM silver_awards
+            """
+        ).fetchone()
+
+    assert types["estimated_unit_value"] == "DECIMAL(38,12)"
+    assert types["awarded_unit_value"] == "DECIMAL(38,12)"
+    assert types["awarded_price_per_base_unit"] == "DECIMAL(38,12)"
+    assert row == (
+        Decimal("0.100000000000"),
+        Decimal("0.090000000000"),
+        Decimal("0.030000000000"),
+    )
