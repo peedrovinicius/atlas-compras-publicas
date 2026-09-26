@@ -6,7 +6,7 @@ O projeto constrói um motor reprodutível para coletar, normalizar, comparar e 
 
 ## Status atual
 
-**v1.2.0 — nova identidade e arquitetura orientada a domínios**
+**v1.3.0: benchmark independente v3 e avaliação corrigida**
 
 O núcleo genérico já inclui:
 
@@ -160,9 +160,9 @@ classification_method
 
 Níveis:
 
-- `high` — score alto e estrutura mínima completa;
-- `medium` — informação útil, mas existe alguma lacuna relevante;
-- `low` — estrutura insuficiente para confiar na normalização.
+- `high` : score alto e estrutura mínima completa;
+- `medium` : informação útil, mas existe alguma lacuna relevante;
+- `low` : estrutura insuficiente para confiar na normalização.
 
 Um score alto, por si só, não transforma um item incompleto em `high`: se faltar atributo crítico, o nível máximo é `medium`.
 
@@ -262,8 +262,8 @@ A v1.0.0 adiciona uma amostra **separada das fontes usadas no v1** e congelada a
 
 Fontes do v2:
 
-- Itanhaém/SP — PNCP `46578498000175-1-000289/2026`;
-- Araioses/MA — PNCP `06450191000170-1-000068/2026`.
+- Itanhaém/SP : PNCP `46578498000175-1-000289/2026`;
+- Araioses/MA : PNCP `06450191000170-1-000068/2026`.
 
 A amostra contém **48 itens** e foi commitada antes de qualquer ajuste de regra motivado por seus resultados.
 
@@ -348,10 +348,55 @@ benchmark v2 pós-tuning
 
 O resultado pós-tuning **não substitui** a baseline independente original de 72,92%. Os dois snapshots permanecem no repositório:
 
-- `data/evaluation/v2-baseline.json` — medição independente antes de qualquer ajuste;
-- `data/evaluation/v2-post-v1.1.json` — desempenho depois das correções guiadas pelos erros do v2.
+- `data/evaluation/v2-baseline.json` : medição independente antes de qualquer ajuste;
+- `data/evaluation/v2-post-v1.1.json` : desempenho depois das correções guiadas pelos erros do v2.
 
 O próximo teste relevante precisa ser um **v3 com fontes novas**, congelado antes de qualquer ajuste, para verificar se a melhora generaliza.
+
+## Benchmark independente v3
+
+O v3 foi congelado no commit `aec504c` antes de qualquer alteração na taxonomia motivada por seus resultados.
+
+A amostra contém **42 itens de cinco fontes novas**:
+
+- Crisólita/MG, PNCP `01614283000124-1-000014/2026`;
+- Serra/ES, PNCP `27174093000127-1-000260/2026`;
+- São Luís/MA, Pregão Eletrônico `90057/2026`;
+- Itaipulândia/PR, PNCP `95725057000164-1-000297/2026`;
+- Pojuca/BA, PNCP `13806237000106-1-000153/2026`.
+
+Baseline independente da taxonomia atual:
+
+~~~text
+amostras:                  42
+categorias corretas:       38
+erros de categoria:        4
+acurácia de categoria:     90,48%
+macro precision:           0,6598
+macro recall:              0,6931
+macro F1:                  0,6731
+
+cor:
+  suporte:                  1
+  acurácia:                 100,00%
+
+concentração:
+  suporte:                  6
+  acurácia:                 100,00%
+~~~
+
+Os quatro erros ficaram concentrados em casos semanticamente úteis:
+
+- `OXIDO ZINCO` não reconhecido por ausência da preposição “de”;
+- `FIXADOR RADIOLOGICO` não reconhecido pela variante lexical;
+- `SEM EUGENOL` classificado incorretamente como `eugenol`;
+- kit misto de resinas e adesivo classificado como `dental_adhesive`.
+
+Durante esta etapa também foi corrigido o avaliador: categorias presentes somente nas previsões agora entram nas métricas macro. Isso impede que um falso positivo em uma classe ausente dos rótulos da amostra seja ignorado.
+
+A baseline original permanece preservada em `data/evaluation/v3-baseline.json`.
+
+O próximo passo é corrigir os quatro erros **sem alterar o v3** e depois criar um v4 com fontes ainda não vistas.
 
 ## Product Identity Engine
 
@@ -511,7 +556,10 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Melhorar regras usando os erros do v2 sem alterar seus rótulos
 - [x] Revalidar v1 sem regressão
 - [x] Registrar desempenho pós-tuning do v2
-- [ ] Criar benchmark v3 com novas fontes ainda não vistas
+- [x] Criar benchmark v3 com novas fontes ainda não vistas
+- [x] Corrigir cálculo macro para classes previstas sem suporte
+- [ ] Corrigir os quatro erros do v3 sem alterar seus rótulos
+- [ ] Criar benchmark v4 com fontes ainda não vistas
 - [ ] Extrair contrato formal de plugins de domínio
 - [ ] Adicionar segunda vertical além de odontologia
 - [ ] Modelar atributos técnicos específicos por categoria

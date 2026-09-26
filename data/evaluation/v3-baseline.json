@@ -1,0 +1,41 @@
+{
+  "dataset": "data/evaluation/v3.jsonl",
+  "dataset_version": "v3",
+  "frozen_dataset_commit": "aec504cc8df7bf2750b83321d17c0f123672ceb0",
+  "taxonomy_commit": "91a557bd135ea3e67d9f3942293cd47ed8a1f32e",
+  "evaluation_commit": "77fc0d516162926da8b296b3b7a0f01a366c0262",
+  "sample_count": 42,
+  "category_correct": 38,
+  "category_error_count": 4,
+  "category_accuracy": 0.9048,
+  "macro_precision": 0.6598,
+  "macro_recall": 0.6931,
+  "macro_f1": 0.6731,
+  "shade": {
+    "support": 1,
+    "accuracy": 1.0
+  },
+  "concentration_percent": {
+    "support": 6,
+    "accuracy": 1.0
+  },
+  "per_category": {
+    "alginate": {"support": 1, "true_positive": 1, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "calcium_hydroxide": {"support": 1, "true_positive": 1, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "dental_adhesive": {"support": 2, "true_positive": 2, "false_positive": 1, "false_negative": 0, "precision": 0.6667, "recall": 1.0, "f1": 0.8},
+    "eugenol": {"support": 0, "true_positive": 0, "false_positive": 1, "false_negative": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0},
+    "glass_ionomer": {"support": 1, "true_positive": 1, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "local_anesthetic": {"support": 5, "true_positive": 5, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "phosphoric_acid": {"support": 1, "true_positive": 1, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "radiographic_fixer": {"support": 1, "true_positive": 0, "false_positive": 0, "false_negative": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0},
+    "unknown": {"support": 29, "true_positive": 27, "false_positive": 2, "false_negative": 2, "precision": 0.931, "recall": 0.931, "f1": 0.931},
+    "zinc_oxide": {"support": 1, "true_positive": 0, "false_positive": 0, "false_negative": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0}
+  },
+  "errors": [
+    {"id": "se-002", "expected_category": "zinc_oxide", "predicted_category": "unknown"},
+    {"id": "sl-003", "expected_category": "radiographic_fixer", "predicted_category": "unknown"},
+    {"id": "sl-006", "expected_category": "unknown", "predicted_category": "eugenol"},
+    {"id": "itp-003", "expected_category": "unknown", "predicted_category": "dental_adhesive"}
+  ],
+  "interpretation": "Independent frozen validation baseline. The taxonomy was not changed after freezing v3 and before this baseline."
+}
