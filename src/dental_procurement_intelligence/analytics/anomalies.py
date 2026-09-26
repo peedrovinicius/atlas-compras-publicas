@@ -73,6 +73,13 @@ def build_price_signals(
             "unit_quantity_value",
             "unit_quantity_unit",
             "price_normalization_status",
+            "resin_technology",
+            "curing_mode",
+            "adhesive_strategy",
+            "ionomer_use",
+            "fluoride_formulation",
+            "anesthetic_active_ingredient",
+            "anesthetic_vasoconstrictor",
         }
         missing_columns = sorted(required_columns - columns)
         if missing_columns:
@@ -104,6 +111,13 @@ def build_price_signals(
                         COALESCE(presentation, '∅'), '|',
                         COALESCE(shade, '∅'), '|',
                         COALESCE(CAST(concentration_percent AS VARCHAR), '∅'), '|',
+                        COALESCE(resin_technology, '∅'), '|',
+                        COALESCE(curing_mode, '∅'), '|',
+                        COALESCE(adhesive_strategy, '∅'), '|',
+                        COALESCE(ionomer_use, '∅'), '|',
+                        COALESCE(fluoride_formulation, '∅'), '|',
+                        COALESCE(anesthetic_active_ingredient, '∅'), '|',
+                        COALESCE(anesthetic_vasoconstrictor, '∅'), '|',
                         COALESCE(CAST(package_count AS VARCHAR), '∅'), '|',
                         COALESCE(unit_quantity_unit, '∅'), '|',
                         COALESCE(CAST(unit_quantity_value AS VARCHAR), '∅'), '|',
@@ -122,6 +136,10 @@ def build_price_signals(
                       'single',
                       'package_derived',
                       'package_total_confirmed'
+                  )
+                  AND NOT (
+                      product_category = 'local_anesthetic'
+                      AND anesthetic_active_ingredient IS NULL
                   )
                   AND analysis_year IS NOT NULL
             ),
