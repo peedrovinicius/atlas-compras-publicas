@@ -10,11 +10,23 @@ import duckdb
 import polars as pl
 
 from dental_procurement_intelligence.identity import parse_product
+from dental_procurement_intelligence.ingestion.bundle import (
+    ContractBundle,
+    load_contract_bundle,
+)
 from dental_procurement_intelligence.normalization import macroregion_from_state
-from dental_procurement_intelligence.pncp import PNCPContract, PNCPItem, PNCPItemResult
+from dental_procurement_intelligence.pncp import (
+    PNCPContract,
+    PNCPItem,
+    PNCPItemResult,
+    award_key as stable_award_key,
+    procurement_key_from_contract,
+)
 
 
 AWARD_SCHEMA: dict[str, pl.DataType] = {
+    "procurement_key": pl.String,
+    "award_key": pl.String,
     "contract_source_sha256": pl.String,
     "item_source_sha256": pl.String,
     "result_source_sha256": pl.String,
@@ -62,6 +74,18 @@ class AwardBuildResult:
     item_source_sha256: str
     contract_source_sha256: str | None
     result_source_count: int
+    geolocated_row_count: int
+    dated_row_count: int
+    parquet_path: str
+    database_path: str
+
+
+@dataclass(frozen=True, slots=True)
+class AwardDatasetBuildResult:
+    row_count: int
+    procurement_count: int
+    manifest_count: int
+    superseded_manifest_count: int
     geolocated_row_count: int
     dated_row_count: int
     parquet_path: str
@@ -122,9 +146,14 @@ def build_award_frame(
     *,
     contract: PNCPContract | None = None,
     contract_source_sha256: str | None = None,
+    procurement_key: str | None = None,
 ) -> pl.DataFrame:
     item_by_number = {item.item_number: item for item in items}
     rows: list[dict[str, Any]] = []
+
+    resolved_procurement_key = procurement_key
+    if resolved_procurement_key is None and contract is not None:
+        resolved_procurement_key = procurement_key_from_contract(contract)
 
     unit = contract.organization_unit if contract is not None else None
     organization = contract.organization if contract is not None else None
@@ -181,8 +210,16 @@ def build_award_frame(
                 if result.awarded_unit_value is not None:
                     awarded_normalized = result.awarded_unit_value / basis.value
 
+            result_key = (
+                stable_award_key(resolved_procurement_key, result)
+                if resolved_procurement_key is not None
+                else None
+            )
+
             rows.append(
                 {
+                    "procurement_key": resolved_procurement_key,
+                    "award_key": result_key,
                     "contract_source_sha256": contract_source_sha256,
                     "item_source_sha256": item_source_sha256,
                     "result_source_sha256": result_sha256,
@@ -244,6 +281,57 @@ def build_award_frame(
     return pl.DataFrame(rows, schema=AWARD_SCHEMA)
 
 
+def _create_award_views(connection: duckdb.DuckDBPyConnection) -> None:
+    connection.execute("DROP VIEW IF EXISTS award_savings_summary")
+    connection.execute(
+        """
+        CREATE VIEW award_savings_summary AS
+        SELECT
+            product_category,
+            macroregion,
+            analysis_year,
+            COUNT(*) AS result_count,
+            COUNT(DISTINCT procurement_key) AS procurement_count,
+            SUM(estimated_total_equivalent) AS estimated_total_equivalent,
+            SUM(awarded_total_value) AS awarded_total_value,
+            SUM(economy_total) AS economy_total,
+            CASE
+                WHEN SUM(estimated_total_equivalent) = 0 THEN NULL
+                ELSE
+                    100.0 * SUM(economy_total)
+                    / SUM(estimated_total_equivalent)
+            END AS economy_percent
+        FROM silver_awards
+        GROUP BY product_category, macroregion, analysis_year
+        ORDER BY analysis_year DESC, product_category, macroregion
+        """
+    )
+
+
+def _publish_award_frame(
+    frame: pl.DataFrame,
+    parquet_path: str | Path,
+    database_path: str | Path,
+) -> tuple[Path, Path]:
+    parquet = Path(parquet_path)
+    parquet.parent.mkdir(parents=True, exist_ok=True)
+    frame.write_parquet(parquet, compression="zstd", statistics=True)
+
+    database = Path(database_path)
+    database.parent.mkdir(parents=True, exist_ok=True)
+    source = str(parquet.resolve()).replace("'", "''")
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute("DROP VIEW IF EXISTS award_savings_summary")
+        connection.execute("DROP TABLE IF EXISTS silver_awards")
+        connection.execute(
+            f"CREATE TABLE silver_awards AS SELECT * FROM read_parquet('{source}')"
+        )
+        _create_award_views(connection)
+
+    return parquet, database
+
+
 def build_awards(
     items_raw_path: str | Path,
     results_raw_paths: list[str | Path],
@@ -268,42 +356,11 @@ def build_awards(
         contract_source_sha256=contract_sha256,
     )
 
-    parquet = Path(parquet_path)
-    parquet.parent.mkdir(parents=True, exist_ok=True)
-    frame.write_parquet(parquet, compression="zstd", statistics=True)
-
-    database = Path(database_path)
-    database.parent.mkdir(parents=True, exist_ok=True)
-    source = str(parquet.resolve()).replace("'", "''")
-
-    with duckdb.connect(str(database)) as connection:
-        connection.execute("DROP VIEW IF EXISTS award_savings_summary")
-        connection.execute("DROP TABLE IF EXISTS silver_awards")
-        connection.execute(
-            f"CREATE TABLE silver_awards AS SELECT * FROM read_parquet('{source}')"
-        )
-        connection.execute(
-            """
-            CREATE VIEW award_savings_summary AS
-            SELECT
-                product_category,
-                macroregion,
-                analysis_year,
-                COUNT(*) AS result_count,
-                SUM(estimated_total_equivalent) AS estimated_total_equivalent,
-                SUM(awarded_total_value) AS awarded_total_value,
-                SUM(economy_total) AS economy_total,
-                CASE
-                    WHEN SUM(estimated_total_equivalent) = 0 THEN NULL
-                    ELSE
-                        100.0 * SUM(economy_total)
-                        / SUM(estimated_total_equivalent)
-                END AS economy_percent
-            FROM silver_awards
-            GROUP BY product_category, macroregion, analysis_year
-            ORDER BY analysis_year DESC, product_category, macroregion
-            """
-        )
+    parquet, database = _publish_award_frame(
+        frame,
+        parquet_path,
+        database_path,
+    )
 
     geolocated = frame.filter(pl.col("state_code").is_not_null()).height
     dated = frame.filter(pl.col("analysis_date").is_not_null()).height
@@ -314,6 +371,128 @@ def build_awards(
         item_source_sha256=item_sha256,
         contract_source_sha256=contract_sha256,
         result_source_count=len(sources),
+        geolocated_row_count=geolocated,
+        dated_row_count=dated,
+        parquet_path=parquet.as_posix(),
+        database_path=database.as_posix(),
+    )
+
+
+def _verify_evidence(path: str, expected_sha256: str) -> None:
+    content = Path(path).read_bytes()
+    actual = _hash(content)
+    if actual != expected_sha256:
+        raise ValueError(
+            f"Evidência alterada: esperado {expected_sha256}, obtido {actual}"
+        )
+
+
+def _bundle_frame(bundle: ContractBundle) -> pl.DataFrame:
+    _verify_evidence(
+        bundle.contract_evidence.object_path,
+        bundle.contract_evidence.sha256,
+    )
+    _verify_evidence(
+        bundle.item_evidence.object_path,
+        bundle.item_evidence.sha256,
+    )
+    for evidence in bundle.result_evidence:
+        _verify_evidence(evidence.object_path, evidence.sha256)
+
+    contract, contract_sha256 = load_raw_contract(
+        bundle.contract_evidence.object_path
+    )
+    items, item_sha256 = load_raw_items(bundle.item_evidence.object_path)
+    result_sources = [
+        load_raw_results(evidence.object_path)
+        for evidence in bundle.result_evidence
+    ]
+
+    contract_key = procurement_key_from_contract(contract)
+    if contract_key is not None and contract_key.startswith("pncp:"):
+        if contract_key != bundle.procurement_key:
+            raise ValueError(
+                "Manifesto e contratação bruta possuem identidades PNCP diferentes"
+            )
+
+    return build_award_frame(
+        items,
+        item_sha256,
+        result_sources,
+        contract=contract,
+        contract_source_sha256=contract_sha256,
+        procurement_key=bundle.procurement_key,
+    )
+
+
+def _select_latest_bundles(
+    manifest_paths: list[str | Path],
+) -> tuple[list[ContractBundle], int]:
+    selected: dict[str, ContractBundle] = {}
+    superseded = 0
+
+    for path in sorted(Path(path) for path in manifest_paths):
+        bundle = load_contract_bundle(path)
+        current = selected.get(bundle.procurement_key)
+
+        if current is None:
+            selected[bundle.procurement_key] = bundle
+            continue
+
+        superseded += 1
+        if bundle.captured_at_utc > current.captured_at_utc:
+            selected[bundle.procurement_key] = bundle
+        elif (
+            bundle.captured_at_utc == current.captured_at_utc
+            and bundle != current
+        ):
+            raise ValueError(
+                "Dois manifestos diferentes possuem a mesma chave e timestamp"
+            )
+
+    bundles = [selected[key] for key in sorted(selected)]
+    return bundles, superseded
+
+
+def build_award_dataset(
+    bundle_manifest_paths: list[str | Path],
+    parquet_path: str | Path,
+    database_path: str | Path,
+) -> AwardDatasetBuildResult:
+    if not bundle_manifest_paths:
+        raise ValueError("Nenhum manifesto de contratação foi informado")
+
+    bundles, superseded = _select_latest_bundles(bundle_manifest_paths)
+    frames = [_bundle_frame(bundle) for bundle in bundles]
+
+    if frames:
+        frame = pl.concat(frames, how="vertical")
+    else:
+        frame = pl.DataFrame(schema=AWARD_SCHEMA)
+
+    if frame.height:
+        if frame.filter(pl.col("award_key").is_null()).height:
+            raise ValueError("Dataset consolidado exige award_key em todas as linhas")
+        frame = frame.unique(
+            subset=["award_key"],
+            keep="last",
+            maintain_order=True,
+        ).sort(["procurement_key", "item_number", "award_key"])
+
+    parquet, database = _publish_award_frame(
+        frame,
+        parquet_path,
+        database_path,
+    )
+
+    geolocated = frame.filter(pl.col("state_code").is_not_null()).height
+    dated = frame.filter(pl.col("analysis_date").is_not_null()).height
+
+    return AwardDatasetBuildResult(
+        row_count=frame.height,
+        procurement_count=len(bundles),
+        manifest_count=len(bundle_manifest_paths),
+        superseded_manifest_count=superseded,
         geolocated_row_count=geolocated,
         dated_row_count=dated,
         parquet_path=parquet.as_posix(),
