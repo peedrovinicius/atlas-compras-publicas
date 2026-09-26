@@ -1,0 +1,44 @@
+{
+  "dataset": "data/evaluation/v4.jsonl",
+  "dataset_version": "v4",
+  "frozen_dataset_commit": "6959597d9c669161d82f80808ccf183056dd1949",
+  "taxonomy_commit": "5bd71557043f16d6cc77dfd2889e4d7cc09e925f",
+  "sample_count": 48,
+  "category_correct": 41,
+  "category_error_count": 7,
+  "category_accuracy": 0.8542,
+  "macro_precision": 0.6672,
+  "macro_recall": 0.6178,
+  "macro_f1": 0.6187,
+  "shade": {
+    "support": 0,
+    "accuracy": null
+  },
+  "concentration_percent": {
+    "support": 3,
+    "accuracy": 1.0
+  },
+  "per_category": {
+    "alginate": {"support": 0, "true_positive": 0, "false_positive": 1, "false_negative": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0},
+    "calcium_hydroxide": {"support": 2, "true_positive": 2, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "composite_resin": {"support": 1, "true_positive": 1, "false_positive": 1, "false_negative": 0, "precision": 0.5, "recall": 1.0, "f1": 0.6667},
+    "dental_adhesive": {"support": 2, "true_positive": 1, "false_positive": 0, "false_negative": 1, "precision": 1.0, "recall": 0.5, "f1": 0.6667},
+    "flowable_resin": {"support": 2, "true_positive": 0, "false_positive": 0, "false_negative": 2, "precision": 0.0, "recall": 0.0, "f1": 0.0},
+    "fluoride_gel": {"support": 1, "true_positive": 0, "false_positive": 0, "false_negative": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0},
+    "glass_ionomer": {"support": 2, "true_positive": 1, "false_positive": 0, "false_negative": 1, "precision": 1.0, "recall": 0.5, "f1": 0.6667},
+    "local_anesthetic": {"support": 6, "true_positive": 5, "false_positive": 0, "false_negative": 1, "precision": 1.0, "recall": 0.8333, "f1": 0.9091},
+    "phosphoric_acid": {"support": 3, "true_positive": 3, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "prophylaxis_paste": {"support": 2, "true_positive": 2, "false_positive": 0, "false_negative": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "unknown": {"support": 27, "true_positive": 26, "false_positive": 5, "false_negative": 1, "precision": 0.8387, "recall": 0.963, "f1": 0.8966}
+  },
+  "errors": [
+    {"id": "pp-001", "expected_category": "flowable_resin", "predicted_category": "unknown"},
+    {"id": "pp-003", "expected_category": "dental_adhesive", "predicted_category": "unknown"},
+    {"id": "pp-007", "expected_category": "glass_ionomer", "predicted_category": "unknown"},
+    {"id": "pp-008", "expected_category": "local_anesthetic", "predicted_category": "unknown"},
+    {"id": "pp-036", "expected_category": "fluoride_gel", "predicted_category": "unknown"},
+    {"id": "mn-002", "expected_category": "flowable_resin", "predicted_category": "composite_resin"},
+    {"id": "sp-003", "expected_category": "unknown", "predicted_category": "alginate"}
+  ],
+  "interpretation": "Independent frozen validation baseline. The taxonomy was not changed after freezing v4 and before this baseline."
+}

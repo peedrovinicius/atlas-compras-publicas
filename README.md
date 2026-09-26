@@ -6,7 +6,7 @@ O projeto constrói um motor reprodutível para coletar, normalizar, comparar e 
 
 ## Status atual
 
-**v1.4.0: negação, kits mistos e variantes lexicais**
+**v1.5.0: benchmark independente v4**
 
 O núcleo genérico já inclui:
 
@@ -450,6 +450,49 @@ O resultado pós-tuning do v3 não substitui sua baseline independente original 
 
 A próxima validação relevante deve usar um v4 composto por fontes ainda não vistas.
 
+## Benchmark independente v4
+
+O v4 foi congelado no commit `6959597` antes de qualquer alteração na taxonomia motivada por seus resultados.
+
+A amostra contém **48 itens de quatro fontes novas**:
+
+- Patos do Piauí/PI, PNCP `41522285000108-1-000032/2026`;
+- Ambulatório Naval da Penha/RJ, PNCP `00394502000144-1-006510/2026`;
+- São Paulo/SP, PNCP `13864377000130-1-001041/2026`;
+- Inhuma/PI, PNCP `06553739000107-1-000028/2026`.
+
+Baseline independente da taxonomia v1.4.0:
+
+~~~text
+amostras:                  48
+categorias corretas:       41
+erros de categoria:        7
+acurácia de categoria:     85,42%
+macro precision:           0,6672
+macro recall:              0,6178
+macro F1:                  0,6187
+
+concentração:
+  suporte:                  3
+  acurácia:                 100,00%
+~~~
+
+Os sete erros revelam novas limitações:
+
+- `RESINAS FLUIDAS` no plural não foi reconhecido como `flowable_resin`;
+- `ADESIVOS` no plural não foi reconhecido como `dental_adhesive`;
+- `IONOMEROS DE VIDRO` no plural não foi reconhecido como `glass_ionomer`;
+- anestésico odontológico descrito apenas como `ANESTESICO` ficou como `unknown`;
+- `FLUOR ACIDO GEL` não foi reconhecido como `fluoride_gel`;
+- resina `bulk fill` descrita como fluida foi reduzida a `composite_resin`;
+- isolante odontológico à base de alginato foi classificado incorretamente como `alginate`.
+
+O último caso é particularmente importante: o sistema precisa distinguir **componente de formulação** de **produto comprado**.
+
+A baseline original permanece preservada em `data/evaluation/v4-baseline.json`.
+
+O próximo passo é corrigir os sete erros sem alterar o v4 e, depois, criar um v5 com novas fontes.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -613,7 +656,10 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Corrigir os quatro erros do v3 sem alterar seus rótulos
 - [x] Revalidar v1, v2 e v3 sem regressão
 - [x] Registrar desempenho pós-tuning do v3
-- [ ] Criar benchmark v4 com fontes ainda não vistas
+- [x] Criar benchmark v4 com fontes ainda não vistas
+- [x] Registrar baseline independente v4
+- [ ] Corrigir os sete erros do v4 sem alterar seus rótulos
+- [ ] Criar benchmark v5 com fontes ainda não vistas
 - [ ] Extrair contrato formal de plugins de domínio
 - [ ] Adicionar segunda vertical além de odontologia
 - [ ] Modelar atributos técnicos específicos por categoria
