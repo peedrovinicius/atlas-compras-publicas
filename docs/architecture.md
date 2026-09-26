@@ -22,6 +22,8 @@ São armazenadas separadamente:
 
 Cada objeto possui SHA-256 e manifesto de coleta.
 
+A captura completa também mantém um manifesto estável por contratação em `data/raw/contracts`. Esse manifesto referencia os objetos imutáveis da captura e usa CNPJ, ano e sequencial do PNCP como identidade da contratação.
+
 ## Bronze
 
 Modelos tipados representam:
@@ -57,7 +59,12 @@ Contém:
 
 ### silver_awards
 
+A reconstrução consolidada lê os manifestos de todas as contratações, seleciona uma captura por `procurement_key` e deduplica resultados por `award_key`. Reexecutar o mesmo conjunto de manifestos produz o mesmo conjunto lógico de linhas.
+
 Contém:
+
+- `procurement_key`;
+- `award_key`;
 
 - atributos canônicos do produto;
 - cor e concentração;
