@@ -331,3 +331,106 @@ def test_same_dimension_heterogeneous_kit_is_ambiguous() -> None:
     assert product.measurement_resolution == "ambiguous"
     assert product.unit_quantity is None
     assert product.total_quantity is None
+
+
+def test_parser_extracts_resin_technology_and_curing_mode() -> None:
+    product = parse_product(
+        "RESINA COMPOSTA NANOHIBRIDA A2 FOTOPOLIMERIZAVEL SERINGA 4G"
+    )
+
+    attrs = product.technical_attributes
+    assert attrs.resin_technology == "nanohybrid"
+    assert attrs.curing_mode == "light_cure"
+    assert attrs.identified_count() == 2
+
+
+def test_parser_extracts_category_specific_attributes() -> None:
+    adhesive = parse_product(
+        "ADESIVO DENTAL UNIVERSAL FOTOPOLIMERIZAVEL FRASCO 5ML"
+    )
+    ionomer = parse_product(
+        "IONOMERO DE VIDRO RESTAURADOR AUTOPOLIMERIZAVEL FRASCO 10G"
+    )
+    fluoride = parse_product("FLUOR EM GEL NEUTRO FRASCO 200ML")
+    anesthetic = parse_product(
+        "LIDOCAINA 2% COM EPINEFRINA TUBETE 1.8ML"
+    )
+
+    assert adhesive.technical_attributes.adhesive_strategy == "universal"
+    assert adhesive.technical_attributes.curing_mode == "light_cure"
+    assert ionomer.technical_attributes.ionomer_use == "restorative"
+    assert ionomer.technical_attributes.curing_mode == "self_cure"
+    assert fluoride.technical_attributes.fluoride_formulation == "neutral"
+    assert (
+        anesthetic.technical_attributes.anesthetic_active_ingredient
+        == "lidocaine"
+    )
+    assert (
+        anesthetic.technical_attributes.anesthetic_vasoconstrictor
+        == "epinephrine"
+    )
+
+
+def test_engine_rejects_different_resin_technologies() -> None:
+    result = ProductIdentityEngine().compare(
+        "RESINA COMPOSTA MICROHIBRIDA A2 SERINGA 4G",
+        "RESINA COMPOSTA NANOHIBRIDA A2 SERINGA 4G",
+    )
+
+    assert result.decision == IdentityDecision.INCOMPATIBLE
+    assert any(
+        "resin technology differs" in conflict
+        for conflict in result.conflicts
+    )
+
+
+def test_engine_reviews_when_technical_attribute_is_missing_on_one_side() -> None:
+    result = ProductIdentityEngine().compare(
+        "RESINA COMPOSTA NANOHIBRIDA A2 SERINGA 4G",
+        "RESINA COMPOSTA A2 SERINGA 4G",
+    )
+
+    assert result.decision == IdentityDecision.REVIEW
+    assert any(
+        "resin technology missing for one item" in item
+        for item in result.missing_evidence
+    )
+
+
+def test_engine_requires_anesthetic_active_ingredient() -> None:
+    result = ProductIdentityEngine().compare(
+        "ANESTESICO LOCAL 2% TUBETE 1.8ML",
+        "ANESTESICO LOCAL 2% TUBETE 1.8ML",
+    )
+
+    assert result.decision == IdentityDecision.REVIEW
+    assert any(
+        "anesthetic active ingredient missing for both items" in item
+        for item in result.missing_evidence
+    )
+
+
+def test_engine_rejects_different_anesthetic_active_ingredients() -> None:
+    result = ProductIdentityEngine().compare(
+        "LIDOCAINA 2% TUBETE 1.8ML",
+        "MEPIVACAINA 2% TUBETE 1.8ML",
+    )
+
+    assert result.decision == IdentityDecision.INCOMPATIBLE
+    assert any(
+        "anesthetic active ingredient differs" in conflict
+        for conflict in result.conflicts
+    )
+
+
+def test_engine_rejects_vasoconstrictor_conflict() -> None:
+    result = ProductIdentityEngine().compare(
+        "LIDOCAINA 2% COM EPINEFRINA TUBETE 1.8ML",
+        "LIDOCAINA 2% SEM VASOCONSTRITOR TUBETE 1.8ML",
+    )
+
+    assert result.decision == IdentityDecision.INCOMPATIBLE
+    assert any(
+        "anesthetic vasoconstrictor differs" in conflict
+        for conflict in result.conflicts
+    )
