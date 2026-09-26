@@ -271,3 +271,63 @@ def test_engine_matches_same_explicit_package_configuration() -> None:
     assert result.decision == IdentityDecision.MATCH
     assert "same package count: 2" in result.supporting_evidence
     assert "same total package quantity: 8 g" in result.supporting_evidence
+
+
+def test_c_slash_mass_is_not_interpreted_as_package_count() -> None:
+    product = parse_product("RESINA MICROHIBRIDA A3,5 SERINGA C/ 4G")
+
+    assert product.package_count is None
+    assert product.measurement_resolution == "single"
+    assert product.unit_quantity is not None
+    assert product.unit_quantity.value == Decimal("4")
+    assert product.total_quantity is None
+
+
+def test_parser_confirms_explicit_unit_and_total_package_measurements() -> None:
+    product = parse_product(
+        "RESINA COMPOSTA A2 C/2 SERINGAS 4G CONTEUDO TOTAL 8G"
+    )
+
+    assert product.package_count == 2
+    assert product.measurement_resolution == "package_total_confirmed"
+    assert len(product.measurement_candidates) == 2
+    assert product.unit_quantity is not None
+    assert product.unit_quantity.value == Decimal("4")
+    assert product.total_quantity is not None
+    assert product.total_quantity.value == Decimal("8")
+
+
+def test_equivalent_measurements_are_deduplicated_after_unit_conversion() -> None:
+    product = parse_product(
+        "RESINA COMPOSTA A2 SERINGA 4G EQUIVALENTE A 4000MG"
+    )
+
+    assert len(product.measurement_candidates) == 1
+    assert product.measurement_resolution == "single"
+    assert product.unit_quantity is not None
+    assert product.unit_quantity.value == Decimal("4")
+
+
+def test_mixed_mass_and_volume_measurements_are_ambiguous() -> None:
+    product = parse_product(
+        "KIT RESINA COMPOSTA A2 SERINGA 4G MAIS ADESIVO FRASCO 5ML"
+    )
+    quality = assess_normalization_quality(product)
+
+    assert product.category == ProductCategory.UNKNOWN
+    assert product.measurement_resolution == "ambiguous"
+    assert len(product.measurement_candidates) == 2
+    assert product.unit_quantity is None
+    assert product.total_quantity is None
+    assert not quality.measurement_identified
+    assert "measurement_ambiguous" in quality.missing_fields
+
+
+def test_same_dimension_heterogeneous_kit_is_ambiguous() -> None:
+    product = parse_product(
+        "KIT RESINA COMPOSTA A2 COM 1 SERINGA 4G E 1 SERINGA 2G"
+    )
+
+    assert product.measurement_resolution == "ambiguous"
+    assert product.unit_quantity is None
+    assert product.total_quantity is None
