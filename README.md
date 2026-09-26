@@ -12,7 +12,7 @@ A odontologia é a primeira vertical implementada e funciona como um domínio de
 | --- | --- |
 | Coleta | Captura de contratações, itens e resultados diretamente do PNCP |
 | Rastreabilidade | Evidências imutáveis com SHA-256 e manifestos de proveniência |
-| Consolidação | Múltiplas contratações com chaves estáveis, deduplicação e rebuild idempotente |
+| Consolidação | Múltiplas contratações com chaves estáveis, deduplicação e reconstrução idempotente |
 | Normalização | Padronização de descrições, apresentações, medidas e atributos técnicos |
 | Identidade | Product Identity Engine com regras explícitas e decisões auditáveis |
 | Análise | Comparação de preços com contexto geográfico e temporal |
