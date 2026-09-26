@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dental-procurement-intelligence"
-version = "0.7.0"
+version = "0.8.0"
 description = "Plataforma auditável de inteligência de dados para compras públicas odontológicas no Brasil."
 readme = "README.md"
 requires-python = ">=3.12"

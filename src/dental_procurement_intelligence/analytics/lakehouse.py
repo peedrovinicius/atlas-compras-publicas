@@ -7,7 +7,11 @@ from typing import Any
 import duckdb
 import polars as pl
 
-from dental_procurement_intelligence.identity import ProductCategory, parse_product
+from dental_procurement_intelligence.identity import (
+    ProductCategory,
+    assess_normalization_quality,
+    parse_product,
+)
 from dental_procurement_intelligence.pncp import PNCPItem
 
 
@@ -25,14 +29,26 @@ ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
     "total_value": pl.Float64,
     "product_category": pl.String,
     "identity_status": pl.String,
+    "classification_method": pl.String,
+    "matched_terms_count": pl.Int64,
     "presentation": pl.String,
     "shade": pl.String,
+    "concentration_percent": pl.Float64,
     "package_count": pl.Int64,
     "unit_quantity_value": pl.Float64,
     "unit_quantity_unit": pl.String,
     "normalized_total_quantity_value": pl.Float64,
     "normalized_total_quantity_unit": pl.String,
     "normalized_price_per_base_unit": pl.Float64,
+    "category_identified": pl.Boolean,
+    "presentation_identified": pl.Boolean,
+    "measurement_identified": pl.Boolean,
+    "critical_attribute_name": pl.String,
+    "critical_attribute_identified": pl.Boolean,
+    "normalization_quality_score": pl.Float64,
+    "normalization_quality_level": pl.String,
+    "fully_structured": pl.Boolean,
+    "missing_fields": pl.String,
 }
 
 
@@ -42,6 +58,8 @@ class AnalyticsBuildResult:
     row_count: int
     identified_row_count: int
     priced_row_count: int
+    fully_structured_row_count: int
+    average_quality_score: float | None
     parquet_path: str
     database_path: str
 
@@ -69,6 +87,7 @@ def build_item_frame(
 
     for item in items:
         product = parse_product(item.description)
+        quality = assess_normalization_quality(product)
         price_basis = _price_basis(product)
         normalized_price = None
 
@@ -88,7 +107,9 @@ def build_item_frame(
                 "procurement_quantity_decimal": _decimal_to_text(item.quantity),
                 "procurement_quantity": _decimal_to_float(item.quantity),
                 "procurement_unit": item.unit,
-                "estimated_unit_value_decimal": _decimal_to_text(item.estimated_unit_value),
+                "estimated_unit_value_decimal": _decimal_to_text(
+                    item.estimated_unit_value
+                ),
                 "estimated_unit_value": _decimal_to_float(item.estimated_unit_value),
                 "total_value_decimal": _decimal_to_text(item.total_value),
                 "total_value": _decimal_to_float(item.total_value),
@@ -98,8 +119,15 @@ def build_item_frame(
                     if product.category != ProductCategory.UNKNOWN
                     else "unknown"
                 ),
+                "classification_method": "deterministic_rule",
+                "matched_terms_count": len(product.matched_terms),
                 "presentation": product.presentation,
                 "shade": product.shade,
+                "concentration_percent": (
+                    float(product.concentration_percent)
+                    if product.concentration_percent is not None
+                    else None
+                ),
                 "package_count": product.package_count,
                 "unit_quantity_value": (
                     float(product.unit_quantity.value)
@@ -118,6 +146,17 @@ def build_item_frame(
                     price_basis.unit if price_basis is not None else None
                 ),
                 "normalized_price_per_base_unit": normalized_price,
+                "category_identified": quality.category_identified,
+                "presentation_identified": quality.presentation_identified,
+                "measurement_identified": quality.measurement_identified,
+                "critical_attribute_name": quality.critical_attribute_name,
+                "critical_attribute_identified": (
+                    quality.critical_attribute_identified
+                ),
+                "normalization_quality_score": float(quality.score),
+                "normalization_quality_level": quality.level,
+                "fully_structured": quality.fully_structured,
+                "missing_fields": ",".join(quality.missing_fields),
             }
         )
 
@@ -208,12 +247,20 @@ def build_analytics(
     priced = frame.filter(
         pl.col("normalized_price_per_base_unit").is_not_null()
     ).height
+    fully_structured = frame.filter(pl.col("fully_structured")).height
+    average_quality = (
+        frame.select(pl.col("normalization_quality_score").mean()).item()
+        if frame.height
+        else None
+    )
 
     return AnalyticsBuildResult(
         source_sha256=source_sha256,
         row_count=frame.height,
         identified_row_count=identified,
         priced_row_count=priced,
+        fully_structured_row_count=fully_structured,
+        average_quality_score=average_quality,
         parquet_path=parquet.as_posix(),
         database_path=Path(database_path).as_posix(),
     )

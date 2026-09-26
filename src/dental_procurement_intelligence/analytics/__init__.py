@@ -19,6 +19,12 @@ from .lakehouse import (
     load_raw_items,
     write_parquet,
 )
+from .quality import (
+    build_quality_views,
+    quality_by_category,
+    quality_summary,
+    unrecognized_items,
+)
 
 __all__ = [
     "AnalyticsBuildResult",
@@ -32,8 +38,12 @@ __all__ = [
     "build_awards",
     "build_item_frame",
     "build_price_signals",
+    "build_quality_views",
     "load_raw_contract",
     "load_raw_items",
     "load_raw_results",
+    "quality_by_category",
+    "quality_summary",
+    "unrecognized_items",
     "write_parquet",
 ]

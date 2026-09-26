@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from dental_procurement_intelligence.identity.models import (
     CanonicalProduct,
+    NormalizationQuality,
     ProductCategory,
     Quantity,
     QuantityDimension,
@@ -27,23 +28,90 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.GLASS_IONOMER,
-        ("IONOMERO DE VIDRO", "CIMENTO IONOMERO", "CIV"),
+        ("IONOMERO DE VIDRO", "CIMENTO IONOMERO", "CIV RESTAURADOR"),
+    ),
+    (
+        ProductCategory.PHOSPHORIC_ACID,
+        ("ACIDO FOSFORICO", "CONDICIONADOR ACIDO", "ACIDO CONDICIONADOR"),
+    ),
+    (
+        ProductCategory.ALGINATE,
+        ("ALGINATO", "MATERIAL DE MOLDAGEM ALGINATO"),
+    ),
+    (
+        ProductCategory.FLUORIDE_GEL,
+        ("FLUOR GEL", "FLUOR EM GEL", "GEL FLUORETADO"),
+    ),
+    (
+        ProductCategory.PROPHYLAXIS_PASTE,
+        ("PASTA PROFILATICA", "PASTA DE PROFILAXIA"),
+    ),
+    (
+        ProductCategory.CALCIUM_HYDROXIDE,
+        ("HIDROXIDO DE CALCIO", "CIMENTO HIDROXIDO DE CALCIO"),
+    ),
+    (
+        ProductCategory.ZINC_OXIDE,
+        ("OXIDO DE ZINCO",),
+    ),
+    (
+        ProductCategory.EUGENOL,
+        ("EUGENOL",),
+    ),
+    (
+        ProductCategory.RADIOGRAPHIC_FIXER,
+        ("FIXADOR RADIOGRAFICO", "FIXADOR ODONTOLOGICO"),
+    ),
+    (
+        ProductCategory.RADIOGRAPHIC_DEVELOPER,
+        ("REVELADOR RADIOGRAFICO", "REVELADOR ODONTOLOGICO"),
+    ),
+    (
+        ProductCategory.LOCAL_ANESTHETIC,
+        ("ANESTESICO ODONTOLOGICO", "ANESTESICO LOCAL", "ANESTESICO TOPICO"),
     ),
 )
 
 _PRESENTATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("syringe", ("SERINGA", "SER ")),
-    ("bottle", ("FRASCO", "FR ")),
-    ("capsule", ("CAPSULA", "CAP ")),
+    ("syringe", ("SERINGA",)),
+    ("bottle", ("FRASCO",)),
+    ("capsule", ("CAPSULA",)),
+    ("tube", ("TUBO", "BISNAGA")),
+    ("pot", ("POTE",)),
+    ("sachet", ("SACHE", "ENVELOPE")),
+    ("cartridge", ("TUBETE", "CARPULE")),
     ("kit", ("KIT",)),
 )
 
-_SHADE_PATTERN = re.compile(r"\b(?:COR\s*)?(?P<shade>[ABCD][1-4](?:\.5)?|BL|TRANSLUCIDA)\b")
+_SHADE_PATTERN = re.compile(
+    r"\b(?:COR\s*)?(?P<shade>[ABCD][1-4](?:[.,]5)?|BL|TRANSLUCIDA)\b"
+)
+_CONCENTRATION_PATTERN = re.compile(
+    r"\b(?P<value>\d+(?:[.,]\d+)?)\s*%"
+)
 _PACKAGE_PATTERNS = (
     re.compile(r"\bC\s*/\s*(?P<count>\d+)\b"),
-    re.compile(r"\bCOM\s+(?P<count>\d+)\s+(?:SERINGAS?|FRASCOS?|CAPSULAS?|UNIDADES?)\b"),
-    re.compile(r"\b(?P<count>\d+)\s+(?:SERINGAS?|FRASCOS?|CAPSULAS?)\b"),
+    re.compile(
+        r"\bCOM\s+(?P<count>\d+)\s+"
+        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|UNIDADES?|TUBETES?|SACHES?|ENVELOPES?)\b"
+    ),
+    re.compile(
+        r"\b(?P<count>\d+)\s+"
+        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|TUBETES?|SACHES?|ENVELOPES?)\b"
+    ),
 )
+
+_SHADE_CRITICAL = {
+    ProductCategory.COMPOSITE_RESIN,
+    ProductCategory.FLOWABLE_RESIN,
+    ProductCategory.GLASS_IONOMER,
+}
+
+_CONCENTRATION_CRITICAL = {
+    ProductCategory.PHOSPHORIC_ACID,
+    ProductCategory.FLUORIDE_GEL,
+    ProductCategory.LOCAL_ANESTHETIC,
+}
 
 
 def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
@@ -56,7 +124,7 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
 
 def _presentation(text: str) -> str | None:
     for canonical, terms in _PRESENTATION_RULES:
-        if any(term in text for term in terms):
+        if any(re.search(rf"\b{re.escape(term)}\b", text) for term in terms):
             return canonical
     return None
 
@@ -71,9 +139,17 @@ def _package_count(text: str) -> int | None:
 
 def _to_base_quantity(value: Decimal, unit: str) -> Quantity:
     if unit == "mg":
-        return Quantity(value=value / Decimal("1000"), unit="g", dimension=QuantityDimension.MASS)
+        return Quantity(
+            value=value / Decimal("1000"),
+            unit="g",
+            dimension=QuantityDimension.MASS,
+        )
     if unit == "kg":
-        return Quantity(value=value * Decimal("1000"), unit="g", dimension=QuantityDimension.MASS)
+        return Quantity(
+            value=value * Decimal("1000"),
+            unit="g",
+            dimension=QuantityDimension.MASS,
+        )
     if unit == "g":
         return Quantity(value=value, unit="g", dimension=QuantityDimension.MASS)
     if unit == "l":
@@ -88,16 +164,29 @@ def _to_base_quantity(value: Decimal, unit: str) -> Quantity:
 def parse_product(description: str) -> CanonicalProduct:
     normalized = normalize_description(description)
     category, matched_terms = _classify_category(normalized)
-    shade_match = _SHADE_PATTERN.search(normalized)
-    shade = shade_match.group("shade") if shade_match else None
-    package_count = _package_count(normalized)
 
+    shade_match = _SHADE_PATTERN.search(normalized)
+    shade = (
+        shade_match.group("shade").replace(",", ".")
+        if shade_match
+        else None
+    )
+
+    concentration_match = _CONCENTRATION_PATTERN.search(normalized)
+    concentration = (
+        Decimal(concentration_match.group("value").replace(",", "."))
+        if concentration_match
+        else None
+    )
+
+    package_count = _package_count(normalized)
     measurements = extract_measurements(normalized)
     unit_quantity = (
         _to_base_quantity(measurements[0].value, measurements[0].unit)
         if measurements
         else None
     )
+
     total_quantity = None
     if unit_quantity is not None and package_count is not None:
         total_quantity = Quantity(
@@ -112,8 +201,78 @@ def parse_product(description: str) -> CanonicalProduct:
         category=category,
         presentation=_presentation(normalized),
         shade=shade,
+        concentration_percent=concentration,
         package_count=package_count,
         unit_quantity=unit_quantity,
         total_quantity=total_quantity,
         matched_terms=matched_terms,
+    )
+
+
+def assess_normalization_quality(product: CanonicalProduct) -> NormalizationQuality:
+    category_ok = product.category != ProductCategory.UNKNOWN
+    presentation_ok = product.presentation is not None
+    measurement_ok = product.unit_quantity is not None
+
+    critical_name = None
+    critical_ok: bool | None = None
+
+    if product.category in _SHADE_CRITICAL:
+        critical_name = "shade"
+        critical_ok = product.shade is not None
+    elif product.category in _CONCENTRATION_CRITICAL:
+        critical_name = "concentration_percent"
+        critical_ok = product.concentration_percent is not None
+
+    score = Decimal("0")
+    denominator = Decimal("0.90")
+
+    if category_ok:
+        score += Decimal("0.45")
+    if presentation_ok:
+        score += Decimal("0.20")
+    if measurement_ok:
+        score += Decimal("0.25")
+
+    missing: list[str] = []
+    if not category_ok:
+        missing.append("category")
+    if not presentation_ok:
+        missing.append("presentation")
+    if not measurement_ok:
+        missing.append("measurement")
+
+    if critical_name is not None:
+        denominator = Decimal("1.00")
+        if critical_ok:
+            score += Decimal("0.10")
+        else:
+            missing.append(critical_name)
+
+    normalized_score = (score / denominator).quantize(Decimal("0.001"))
+
+    if normalized_score >= Decimal("0.80"):
+        level = "high"
+    elif normalized_score >= Decimal("0.55"):
+        level = "medium"
+    else:
+        level = "low"
+
+    fully_structured = (
+        category_ok
+        and presentation_ok
+        and measurement_ok
+        and (critical_ok is not False)
+    )
+
+    return NormalizationQuality(
+        score=normalized_score,
+        level=level,
+        fully_structured=fully_structured,
+        category_identified=category_ok,
+        presentation_identified=presentation_ok,
+        measurement_identified=measurement_ok,
+        critical_attribute_name=critical_name,
+        critical_attribute_identified=critical_ok,
+        missing_fields=tuple(missing),
     )

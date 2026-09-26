@@ -11,6 +11,9 @@ from dental_procurement_intelligence.analytics import (
     build_analytics,
     build_awards,
     build_price_signals,
+    quality_by_category,
+    quality_summary,
+    unrecognized_items,
 )
 from dental_procurement_intelligence.ingestion import EvidenceStore, capture_contract
 from dental_procurement_intelligence.pncp import PNCPClient
@@ -122,6 +125,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     anomalies_summary.add_argument("--database", default="data/analytics.duckdb")
 
+    quality = subparsers.add_parser(
+        "normalization-quality",
+        help="Exibe métricas de cobertura e qualidade do normalizador",
+    )
+    quality.add_argument("--database", default="data/analytics.duckdb")
+    quality.add_argument("--by-category", action="store_true")
+
+    unknown = subparsers.add_parser(
+        "unrecognized-items",
+        help="Lista itens cuja categoria ainda não foi reconhecida",
+    )
+    unknown.add_argument("--database", default="data/analytics.duckdb")
+    unknown.add_argument("--limit", type=int, default=50)
+
     return parser
 
 
@@ -164,6 +181,24 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.command == "anomalies-summary":
         print(_serialize(anomaly_summary(args.database)))
+        return 0
+
+    if args.command == "normalization-quality":
+        if args.by_category:
+            print(_serialize(quality_by_category(args.database)))
+        else:
+            print(_serialize(quality_summary(args.database)))
+        return 0
+
+    if args.command == "unrecognized-items":
+        print(
+            _serialize(
+                unrecognized_items(
+                    args.database,
+                    limit=args.limit,
+                )
+            )
+        )
         return 0
 
     with PNCPClient() as client:
