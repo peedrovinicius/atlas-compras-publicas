@@ -3,6 +3,7 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import duckdb
 import polars as pl
 
 from dental_procurement_intelligence.analytics import (
@@ -99,6 +100,21 @@ def test_build_analytics_creates_parquet_and_duckdb(tmp_path: Path) -> None:
     assert database_path.exists()
 
     summary = DuckDBWarehouse(database_path).summary()
+
+    with duckdb.connect(str(database_path), read_only=True) as connection:
+        duckdb_types = {
+            row[1]: row[2]
+            for row in connection.execute(
+                "PRAGMA table_info('silver_items')"
+            ).fetchall()
+        }
+
+    assert duckdb_types["estimated_unit_value"] == "DECIMAL(38,12)"
+    assert duckdb_types["total_value"] == "DECIMAL(38,12)"
+    assert (
+        duckdb_types["normalized_price_per_base_unit"]
+        == "DECIMAL(38,12)"
+    )
 
     assert summary[0]["product_category"] == "composite_resin"
     assert summary[0]["item_count"] == 2
