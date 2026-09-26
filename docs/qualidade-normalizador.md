@@ -80,6 +80,8 @@ A visão `normalization_quality_summary` apresenta:
 - quantidade com base física `defensible`;
 - quantidade em `review`;
 - quantidade `unavailable`;
+- itens com ao menos um atributo técnico identificado;
+- cobertura de atributos técnicos;
 - score médio.
 
 A visão `normalization_quality_by_category` apresenta a mesma lógica segmentada por categoria.
@@ -134,3 +136,12 @@ Estados atuais:
 Medidas equivalentes, como `4 g` e `4000 mg`, são deduplicadas após a conversão.
 
 Quando o estado é `ambiguous`, o item não recebe preço normalizado por g/ml e a lacuna aparece como `measurement_ambiguous`.
+
+
+## Cobertura de atributos técnicos
+
+A cobertura técnica é medida separadamente do score de normalização.
+
+Um item conta como tecnicamente enriquecido quando pelo menos um atributo específico da categoria foi identificado. Essa métrica não aumenta automaticamente o score e não é interpretada como probabilidade de acerto.
+
+O objetivo é medir quanto do catálogo possui informação adicional útil para comparabilidade, sem confundir enriquecimento semântico com acurácia de categoria.
