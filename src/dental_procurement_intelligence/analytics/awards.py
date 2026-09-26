@@ -44,6 +44,14 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "presentation": pl.String,
     "shade": pl.String,
     "concentration_percent": pl.Float64,
+    "technical_attribute_count": pl.Int64,
+    "resin_technology": pl.String,
+    "curing_mode": pl.String,
+    "adhesive_strategy": pl.String,
+    "ionomer_use": pl.String,
+    "fluoride_formulation": pl.String,
+    "anesthetic_active_ingredient": pl.String,
+    "anesthetic_vasoconstrictor": pl.String,
     "procurement_unit": pl.String,
     "package_count": pl.Int64,
     "measurement_candidate_count": pl.Int64,
@@ -245,6 +253,26 @@ def build_award_frame(
                         float(product.concentration_percent)
                         if product.concentration_percent is not None
                         else None
+                    ),
+                    "technical_attribute_count": (
+                        product.technical_attributes.identified_count()
+                    ),
+                    "resin_technology": (
+                        product.technical_attributes.resin_technology
+                    ),
+                    "curing_mode": product.technical_attributes.curing_mode,
+                    "adhesive_strategy": (
+                        product.technical_attributes.adhesive_strategy
+                    ),
+                    "ionomer_use": product.technical_attributes.ionomer_use,
+                    "fluoride_formulation": (
+                        product.technical_attributes.fluoride_formulation
+                    ),
+                    "anesthetic_active_ingredient": (
+                        product.technical_attributes.anesthetic_active_ingredient
+                    ),
+                    "anesthetic_vasoconstrictor": (
+                        product.technical_attributes.anesthetic_vasoconstrictor
                     ),
                     "procurement_unit": item.unit,
                     "package_count": product.package_count,
