@@ -28,11 +28,9 @@ _TECHNICAL_ATTRIBUTE_RULES: dict[
 ] = {
     ProductCategory.COMPOSITE_RESIN: (
         ("resin_technology", "resin technology", False),
-        ("curing_mode", "curing mode", False),
     ),
     ProductCategory.FLOWABLE_RESIN: (
         ("resin_technology", "resin technology", False),
-        ("curing_mode", "curing mode", False),
     ),
     ProductCategory.ADHESIVE: (
         ("adhesive_strategy", "adhesive strategy", False),
