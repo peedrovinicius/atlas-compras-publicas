@@ -132,7 +132,11 @@ _SHADE_PATTERN = re.compile(
 )
 _CONCENTRATION_PATTERN = re.compile(r"\b(?P<value>\d+(?:[.,]\d+)?)\s*%")
 _PACKAGE_PATTERNS = (
-    re.compile(r"\bC\s*/\s*(?P<count>\d+)\b"),
+    re.compile(
+        r"\bC\s*/\s*(?P<count>\d+)\s+"
+        r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|UNIDADES?|TUBETES?|SACHES?|"
+        r"ENVELOPES?|AMPOLAS?)\b"
+    ),
     re.compile(
         r"\bCOM\s+(?P<count>\d+)\s+"
         r"(?:SERINGAS?|FRASCOS?|CAPSULAS?|UNIDADES?|TUBETES?|SACHES?|"
@@ -337,6 +341,58 @@ def _to_base_quantity(value: Decimal, unit: str) -> Quantity:
     return Quantity(value=value, unit="ml", dimension=QuantityDimension.VOLUME)
 
 
+def _measurement_candidates(description: str) -> tuple[Quantity, ...]:
+    candidates: list[Quantity] = []
+    seen: set[tuple[QuantityDimension, Decimal]] = set()
+
+    for measurement in extract_measurements(description):
+        quantity = _to_base_quantity(measurement.value, measurement.unit)
+        key = (quantity.dimension, quantity.value)
+        if key in seen:
+            continue
+        seen.add(key)
+        candidates.append(quantity)
+
+    return tuple(candidates)
+
+
+def _resolve_measurements(
+    candidates: tuple[Quantity, ...],
+    package_count: int | None,
+) -> tuple[Quantity | None, Quantity | None, str]:
+    if not candidates:
+        return None, None, "missing"
+
+    if len(candidates) == 1:
+        unit_quantity = candidates[0]
+        if package_count is None:
+            return unit_quantity, None, "single"
+
+        total_quantity = Quantity(
+            value=unit_quantity.value * package_count,
+            unit=unit_quantity.unit,
+            dimension=unit_quantity.dimension,
+        )
+        return unit_quantity, total_quantity, "package_derived"
+
+    if package_count is not None and len(candidates) == 2:
+        matches: list[tuple[Quantity, Quantity]] = []
+        for unit_quantity in candidates:
+            for total_quantity in candidates:
+                if unit_quantity is total_quantity:
+                    continue
+                if unit_quantity.dimension != total_quantity.dimension:
+                    continue
+                if total_quantity.value == unit_quantity.value * package_count:
+                    matches.append((unit_quantity, total_quantity))
+
+        if len(matches) == 1:
+            unit_quantity, total_quantity = matches[0]
+            return unit_quantity, total_quantity, "package_total_confirmed"
+
+    return None, None, "ambiguous"
+
+
 def parse_product(description: str) -> CanonicalProduct:
     normalized = normalize_description(description)
     category, matched_terms = _classify_category(normalized)
@@ -354,20 +410,11 @@ def parse_product(description: str) -> CanonicalProduct:
     )
 
     package_count = _package_count(normalized)
-    measurements = extract_measurements(normalized)
-    unit_quantity = (
-        _to_base_quantity(measurements[0].value, measurements[0].unit)
-        if measurements
-        else None
+    measurement_candidates = _measurement_candidates(normalized)
+    unit_quantity, total_quantity, measurement_resolution = _resolve_measurements(
+        measurement_candidates,
+        package_count,
     )
-
-    total_quantity = None
-    if unit_quantity is not None and package_count is not None:
-        total_quantity = Quantity(
-            value=unit_quantity.value * package_count,
-            unit=unit_quantity.unit,
-            dimension=unit_quantity.dimension,
-        )
 
     return CanonicalProduct(
         original_description=description,
@@ -377,6 +424,8 @@ def parse_product(description: str) -> CanonicalProduct:
         shade=shade,
         concentration_percent=concentration,
         package_count=package_count,
+        measurement_candidates=measurement_candidates,
+        measurement_resolution=measurement_resolution,
         unit_quantity=unit_quantity,
         total_quantity=total_quantity,
         matched_terms=matched_terms,
@@ -387,6 +436,7 @@ def assess_normalization_quality(product: CanonicalProduct) -> NormalizationQual
     category_ok = product.category != ProductCategory.UNKNOWN
     presentation_ok = product.presentation is not None
     measurement_ok = product.unit_quantity is not None
+    measurement_ambiguous = product.measurement_resolution == "ambiguous"
 
     critical_name = None
     critical_ok: bool | None = None
@@ -414,7 +464,9 @@ def assess_normalization_quality(product: CanonicalProduct) -> NormalizationQual
     if not presentation_ok:
         missing.append("presentation")
     if not measurement_ok:
-        missing.append("measurement")
+        missing.append(
+            "measurement_ambiguous" if measurement_ambiguous else "measurement"
+        )
 
     if critical_name is not None:
         denominator = Decimal("1.00")
