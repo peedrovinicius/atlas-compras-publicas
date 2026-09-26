@@ -64,6 +64,12 @@ A taxonomia é avaliada com datasets manuais versionados e fontes públicas sepa
 
 O **v5 permanece como holdout não ajustado**, preservando uma referência independente antes de novas alterações na taxonomia. Resultados pós-tuning dos ciclos anteriores são mantidos separadamente e não substituem suas baselines originais.
 
+A extração de atributos técnicos possui benchmark independente próprio:
+
+| Benchmark técnico | Exemplos | Campos revisados | Micro accuracy |
+| --- | ---: | ---: | ---: |
+| atributos técnicos v1 | 33 | 61 | 85,25% |
+
 Documentação completa:
 
 - [Benchmark v1](docs/benchmark-v1.md)
@@ -71,6 +77,7 @@ Documentação completa:
 - [Benchmark v3](docs/benchmark-v3.md)
 - [Benchmark v4](docs/benchmark-v4.md)
 - [Benchmark v5](docs/benchmark-v5.md)
+- [Benchmark de atributos técnicos v1](docs/benchmark-technical-attributes-v1.md)
 
 ## Exemplo de normalização
 
@@ -163,8 +170,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- ampliar atributos técnicos com validação independente
-- refinar variações de descrição sem usar o holdout v5 para tuning
+- corrigir lacunas do benchmark técnico mantendo a baseline original
+- criar nova validação independente após o próximo ciclo de regras
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
