@@ -124,3 +124,39 @@ def test_award_frame_does_not_normalize_ambiguous_box_price() -> None:
     assert row["normalized_quantity_value"] is None
     assert row["awarded_price_per_base_unit"] is None
     assert row["price_normalization_status"] == "review"
+
+
+def test_award_frame_rejects_multiple_measure_price_basis() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": (
+                "KIT RESINA COMPOSTA A2 SERINGA 4G "
+                "MAIS ADESIVO FRASCO 5ML"
+            ),
+            "unidadeMedida": "KIT",
+            "valorUnitarioEstimado": "120.00",
+        }
+    )
+    result = PNCPItemResult.model_validate(
+        {
+            "numeroItem": 1,
+            "sequencialResultado": 1,
+            "quantidadeHomologada": "1",
+            "valorUnitarioHomologado": "110.00",
+            "situacaoCompraItemResultadoId": 1,
+        }
+    )
+
+    row = build_award_frame(
+        [item],
+        "itemhash",
+        [([result], "resulthash")],
+    ).to_dicts()[0]
+
+    assert row["measurement_candidate_count"] == 2
+    assert row["measurement_resolution"] == "ambiguous"
+    assert row["normalized_quantity_value"] is None
+    assert row["awarded_price_per_base_unit"] is None
+    assert row["price_normalization_status"] == "review"
+    assert row["price_normalization_reason"] == "mixed_product_kit"
