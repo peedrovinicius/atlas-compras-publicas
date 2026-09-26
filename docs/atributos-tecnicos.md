@@ -1,0 +1,87 @@
+# Atributos técnicos por categoria
+
+## Objetivo
+
+Refinar a comparabilidade entre produtos que pertencem à mesma categoria, mas possuem características técnicas diferentes.
+
+A extração de atributos é paralela à classificação de categoria. A v1.12.0 não altera as regras de categoria nem corrige os erros conhecidos do holdout v5.
+
+## Atributos atuais
+
+### Resina composta e resina flow
+
+- tecnologia: `bulk_fill`, `nanohybrid`, `microhybrid`;
+- modo de cura, quando explícito.
+
+A tecnologia da resina participa diretamente da decisão do Product Identity Engine.
+
+### Adesivo dental
+
+- estratégia: `universal`, `self_etch`, `etch_and_rinse`;
+- modo de cura.
+
+### Ionômero de vidro
+
+- uso: `restorative`, `luting`, `liner_base`;
+- modo de cura.
+
+### Flúor em gel
+
+- formulação: `neutral` ou `acidulated`.
+
+### Anestésico local
+
+- princípio ativo: `lidocaine`, `articaine`, `mepivacaine`;
+- vasoconstritor: `epinephrine`, `felypressin`, `norepinephrine` ou `none` quando a ausência é explícita.
+
+O princípio ativo é obrigatório para que dois anestésicos possam chegar a `match`.
+
+## Regras de comparabilidade
+
+Os atributos não acrescentam pontos ao score de identidade.
+
+Quando um atributo configurado aparece nos dois itens:
+
+- valores iguais adicionam evidência de suporte;
+- valores diferentes tornam os itens `incompatible`.
+
+Quando o atributo aparece em apenas um lado, a decisão passa para `review`.
+
+Para atributos obrigatórios, a ausência nos dois lados também força `review`.
+
+## Camadas analíticas
+
+`silver_items` e `silver_awards` preservam:
+
+- contagem de atributos identificados;
+- tecnologia de resina;
+- modo de cura;
+- estratégia adesiva;
+- uso do ionômero;
+- formulação do flúor;
+- princípio ativo anestésico;
+- vasoconstritor anestésico.
+
+A chave dos grupos de preço inclui esses atributos. Assim, diferenças técnicas explícitas não são misturadas no mesmo grupo estatístico.
+
+Anestésicos sem princípio ativo explícito são excluídos da camada de sinais.
+
+## Holdout v5
+
+O v5 permanece congelado e sem tuning.
+
+Descrições que eram erros de categoria no holdout continuam erros nesta versão. A nova camada apenas extrai atributos quando a categoria já foi reconhecida pelas regras existentes.
+
+## Limitações
+
+A camada ainda não modela de forma completa:
+
+- fabricante e linha comercial;
+- composição detalhada;
+- viscosidade além das classes já representadas;
+- indicação clínica completa;
+- tempo de presa;
+- resistência mecânica;
+- validade e condições logísticas.
+
+Esses fatores continuam sendo motivos possíveis para variação legítima de preço.
