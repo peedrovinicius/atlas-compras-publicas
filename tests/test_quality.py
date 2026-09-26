@@ -26,6 +26,7 @@ def _create_silver_items(database: Path) -> None:
                 normalization_quality_level VARCHAR,
                 fully_structured BOOLEAN,
                 normalized_price_per_base_unit DOUBLE,
+                price_normalization_status VARCHAR,
                 missing_fields VARCHAR,
                 source_sha256 VARCHAR
             )
@@ -37,12 +38,12 @@ def _create_silver_items(database: Path) -> None:
             (
                 1, 'RESINA COMPOSTA A2 SERINGA 4G', 'UNIDADE', 40,
                 'composite_resin', TRUE, TRUE, TRUE, 1.0, 'high',
-                TRUE, 10.0, '', 'hash1'
+                TRUE, 10.0, 'defensible', '', 'hash1'
             ),
             (
                 2, 'ITEM SEM CATEGORIA 10G', 'UNIDADE', 20,
                 'unknown', FALSE, FALSE, TRUE, 0.278, 'low',
-                FALSE, 2.0, 'category,presentation', 'hash2'
+                FALSE, NULL, 'review', 'category,presentation', 'hash2'
             )
             """
         )
@@ -57,7 +58,10 @@ def test_quality_summary_exposes_coverage_rates(tmp_path: Path) -> None:
     assert summary["total_items"] == 2
     assert summary["category_coverage_percent"] == 50.0
     assert summary["fully_structured_percent"] == 50.0
-    assert summary["price_normalizable_percent"] == 100.0
+    assert summary["price_normalizable_percent"] == 50.0
+    assert summary["price_basis_defensible_items"] == 1
+    assert summary["price_basis_review_items"] == 1
+    assert summary["price_basis_unavailable_items"] == 0
 
 
 def test_quality_by_category_and_unknown_queue(tmp_path: Path) -> None:
