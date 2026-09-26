@@ -1,8 +1,8 @@
-# Procurement Intelligence BR
+# Atlas Compras Públicas
 
-**Repositório:** `procurement-intelligence-br`
+**Repositório:** `atlas-compras-publicas`
 
-Plataforma auditável de inteligência de dados para compras públicas no Brasil.
+**Inteligência auditável sobre compras públicas no Brasil.**
 
 O projeto constrói um motor reprodutível para coletar, normalizar, comparar e analisar compras públicas publicadas no Portal Nacional de Contratações Públicas (PNCP). A odontologia é o primeiro domínio implementado e funciona como uma vertical de alta complexidade para validar o núcleo genérico de ingestão, proveniência, identidade de produto, normalização de unidades, comparação de preços e detecção explicável de sinais atípicos.
 
