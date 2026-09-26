@@ -25,6 +25,13 @@ def _create_awards_table(
                 presentation VARCHAR,
                 shade VARCHAR,
                 concentration_percent DOUBLE,
+                resin_technology VARCHAR,
+                curing_mode VARCHAR,
+                adhesive_strategy VARCHAR,
+                ionomer_use VARCHAR,
+                fluoride_formulation VARCHAR,
+                anesthetic_active_ingredient VARCHAR,
+                anesthetic_vasoconstrictor VARCHAR,
                 package_count BIGINT,
                 measurement_candidate_count BIGINT,
                 measurement_resolution VARCHAR,
@@ -46,6 +53,7 @@ def _create_awards_table(
                 """
                 INSERT INTO silver_awards VALUES (
                     ?, 'composite_resin', 'syringe', 'A2', ?,
+                    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                     NULL, 1, 'single', 'g', 4.0, 'g', 4.0,
                     ?, 'defensible', ?, ?, ?, ?
                 )
@@ -206,6 +214,13 @@ def test_float_price_schema_requires_rebuild(tmp_path: Path) -> None:
                 presentation VARCHAR,
                 shade VARCHAR,
                 concentration_percent DOUBLE,
+                resin_technology VARCHAR,
+                curing_mode VARCHAR,
+                adhesive_strategy VARCHAR,
+                ionomer_use VARCHAR,
+                fluoride_formulation VARCHAR,
+                anesthetic_active_ingredient VARCHAR,
+                anesthetic_vasoconstrictor VARCHAR,
                 package_count BIGINT,
                 measurement_candidate_count BIGINT,
                 measurement_resolution VARCHAR,
@@ -231,3 +246,59 @@ def test_float_price_schema_requires_rebuild(tmp_path: Path) -> None:
         raise AssertionError("Preço em DOUBLE deveria exigir reconstrução")
 
     assert "DECIMAL" in message
+
+
+def test_different_resin_technologies_use_different_comparison_groups(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    _create_awards_table(database, [10.0, 10.0, 10.0, 10.0, 10.0, 5.0])
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            UPDATE silver_awards
+            SET resin_technology = 'bulk_fill'
+            WHERE item_number = 6
+            """
+        )
+
+    result = build_price_signals(database)
+
+    assert result.eligible_row_count == 6
+    assert result.comparison_group_count == 2
+    assert result.signal_count == 0
+
+    with duckdb.connect(str(database), read_only=True) as connection:
+        groups = connection.execute(
+            """
+            SELECT item_number, group_size
+            FROM gold_price_signals
+            ORDER BY item_number
+            """
+        ).fetchall()
+
+    assert groups[-1] == (6, 1)
+
+
+def test_anesthetic_without_active_ingredient_is_not_eligible(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    _create_awards_table(database, [10.0, 10.0, 10.0, 10.0, 10.0])
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            UPDATE silver_awards
+            SET
+                product_category = 'local_anesthetic',
+                concentration_percent = 2.0,
+                anesthetic_active_ingredient = NULL
+            """
+        )
+
+    result = build_price_signals(database)
+
+    assert result.eligible_row_count == 0
+    assert result.signal_count == 0
