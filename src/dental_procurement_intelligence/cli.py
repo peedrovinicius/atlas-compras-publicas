@@ -35,7 +35,7 @@ def _serialize(value: Any) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="dpi",
-        description="Inteligência auditável para compras públicas odontológicas",
+        description="Atlas de Compras Públicas, inteligência de dados auditável",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
