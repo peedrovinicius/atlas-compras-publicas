@@ -16,7 +16,14 @@ from dental_procurement_intelligence.normalization import (
 _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     (
         ProductCategory.FLOWABLE_RESIN,
-        ("RESINA FLOW", "RES FLOW", "FLOWABLE", "RESINA FLUIDA"),
+        (
+            "RESINA FLOW",
+            "RES FLOW",
+            "FLOWABLE",
+            "RESINA FLUIDA",
+            "RESINA COMPOSTA FLUIDA",
+            "RESINA NATURAL FLOW",
+        ),
     ),
     (
         ProductCategory.COMPOSITE_RESIN,
@@ -24,7 +31,12 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.ADHESIVE,
-        ("ADESIVO DENTAL", "SISTEMA ADESIVO", "ADESIVO ODONTOLOGICO"),
+        (
+            "ADESIVO DENTAL",
+            "SISTEMA ADESIVO",
+            "ADESIVO ODONTOLOGICO",
+            "ADESIVO FOTOPOLIMERIZAVEL",
+        ),
     ),
     (
         ProductCategory.GLASS_IONOMER,
@@ -60,7 +72,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.RADIOGRAPHIC_FIXER,
-        ("FIXADOR RADIOGRAFICO", "FIXADOR ODONTOLOGICO"),
+        ("FIXADOR RADIOGRAFICO", "FIXADOR ODONTOLOGICO", "FIXADOR KODAK"),
     ),
     (
         ProductCategory.RADIOGRAPHIC_DEVELOPER,
@@ -68,7 +80,12 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.LOCAL_ANESTHETIC,
-        ("ANESTESICO ODONTOLOGICO", "ANESTESICO LOCAL", "ANESTESICO TOPICO"),
+        (
+            "ANESTESICO ODONTOLOGICO",
+            "ANESTESICO LOCAL",
+            "ANESTESICO TOPICO",
+            "ANESTESICO ARTICAINE",
+        ),
     ),
 )
 
@@ -84,11 +101,9 @@ _PRESENTATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 _SHADE_PATTERN = re.compile(
-    r"\b(?:COR\s*)?(?P<shade>[ABCD][1-4](?:[.,]5)?|BL|TRANSLUCIDA)\b"
+    r"\b(?:COR\s*)?(?P<shade>[ABCD]-?[1-4](?:[.,]5)?|BL|TRANSLUCIDA)\b"
 )
-_CONCENTRATION_PATTERN = re.compile(
-    r"\b(?P<value>\d+(?:[.,]\d+)?)\s*%"
-)
+_CONCENTRATION_PATTERN = re.compile(r"\b(?P<value>\d+(?:[.,]\d+)?)\s*%")
 _PACKAGE_PATTERNS = (
     re.compile(r"\bC\s*/\s*(?P<count>\d+)\b"),
     re.compile(
@@ -171,11 +186,9 @@ def parse_product(description: str) -> CanonicalProduct:
     category, matched_terms = _classify_category(normalized)
 
     shade_match = _SHADE_PATTERN.search(normalized)
-    shade = (
-        shade_match.group("shade").replace(",", ".")
-        if shade_match
-        else None
-    )
+    shade = None
+    if shade_match:
+        shade = shade_match.group("shade").replace("-", "").replace(",", ".")
 
     concentration_match = _CONCENTRATION_PATTERN.search(normalized)
     concentration = (

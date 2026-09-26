@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 _SPACE_PATTERN = re.compile(r"\s+")
-_PUNCTUATION_PATTERN = re.compile(r"[^A-Z0-9.,/% ]+")
+_PUNCTUATION_PATTERN = re.compile(r"[^A-Z0-9.,/%\- ]+")
 _MEASUREMENT_PATTERN = re.compile(
     r"(?P<value>\d+(?:[.,]\d+)?)\s*(?P<unit>MG|G|KG|ML|L)\b",
     flags=re.IGNORECASE,

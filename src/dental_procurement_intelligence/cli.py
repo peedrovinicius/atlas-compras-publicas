@@ -15,6 +15,10 @@ from dental_procurement_intelligence.analytics import (
     quality_summary,
     unrecognized_items,
 )
+from dental_procurement_intelligence.evaluation import (
+    evaluate_dataset,
+    evaluation_errors,
+)
 from dental_procurement_intelligence.ingestion import EvidenceStore, capture_contract
 from dental_procurement_intelligence.pncp import PNCPClient
 
@@ -139,6 +143,19 @@ def build_parser() -> argparse.ArgumentParser:
     unknown.add_argument("--database", default="data/analytics.duckdb")
     unknown.add_argument("--limit", type=int, default=50)
 
+    evaluate = subparsers.add_parser(
+        "evaluate-taxonomy",
+        help="Avalia a taxonomia contra um dataset manual versionado",
+    )
+    evaluate.add_argument("--dataset", default="data/evaluation/v1.jsonl")
+
+    errors = subparsers.add_parser(
+        "evaluation-errors",
+        help="Lista divergências entre rótulo manual e categoria prevista",
+    )
+    errors.add_argument("--dataset", default="data/evaluation/v1.jsonl")
+    errors.add_argument("--limit", type=int, default=50)
+
     return parser
 
 
@@ -199,6 +216,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             )
         )
+        return 0
+
+    if args.command == "evaluate-taxonomy":
+        print(_serialize(asdict(evaluate_dataset(args.dataset))))
+        return 0
+
+    if args.command == "evaluation-errors":
+        if args.limit < 1:
+            raise ValueError("--limit deve ser pelo menos 1")
+        print(_serialize(evaluation_errors(args.dataset)[: args.limit]))
         return 0
 
     with PNCPClient() as client:
