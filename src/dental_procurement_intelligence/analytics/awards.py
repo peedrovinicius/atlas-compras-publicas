@@ -24,6 +24,7 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "product_category": pl.String,
     "presentation": pl.String,
     "shade": pl.String,
+    "concentration_percent": pl.Float64,
     "supplier_name": pl.String,
     "supplier_document": pl.String,
     "brand": pl.String,
@@ -191,6 +192,11 @@ def build_award_frame(
                     "product_category": product.category.value,
                     "presentation": product.presentation,
                     "shade": product.shade,
+                    "concentration_percent": (
+                        float(product.concentration_percent)
+                        if product.concentration_percent is not None
+                        else None
+                    ),
                     "supplier_name": result.supplier_name,
                     "supplier_document": result.supplier_document,
                     "brand": result.brand,

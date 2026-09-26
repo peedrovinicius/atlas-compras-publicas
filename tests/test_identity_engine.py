@@ -72,6 +72,19 @@ def test_quality_score_exposes_missing_critical_attribute() -> None:
     assert "concentration_percent" in quality.missing_fields
 
 
+def test_engine_rejects_different_concentrations() -> None:
+    result = ProductIdentityEngine().compare(
+        "ACIDO FOSFORICO 37% SERINGA 2,5ML",
+        "ACIDO FOSFORICO 35% SERINGA 2,5ML",
+    )
+
+    assert result.decision == IdentityDecision.INCOMPATIBLE
+    assert any(
+        "concentration_percent differs" in conflict
+        for conflict in result.conflicts
+    )
+
+
 def test_engine_matches_equivalent_descriptions_with_explanation() -> None:
     result = ProductIdentityEngine().compare(
         "RESINA COMPOSTA FOTOPOLIMERIZAVEL COR A2 SERINGA 4 G",

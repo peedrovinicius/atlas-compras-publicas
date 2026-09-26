@@ -13,6 +13,7 @@ def _create_awards_table(
     macroregion: str = "Nordeste",
     year: int = 2026,
     quarter: str = "2026-T3",
+    concentration_percent: float | None = None,
 ) -> None:
     with duckdb.connect(str(database)) as connection:
         connection.execute(
@@ -22,6 +23,7 @@ def _create_awards_table(
                 product_category VARCHAR,
                 presentation VARCHAR,
                 shade VARCHAR,
+                concentration_percent DOUBLE,
                 normalized_quantity_unit VARCHAR,
                 normalized_quantity_value DOUBLE,
                 awarded_price_per_base_unit DOUBLE,
@@ -36,11 +38,19 @@ def _create_awards_table(
             connection.execute(
                 """
                 INSERT INTO silver_awards VALUES (
-                    ?, 'composite_resin', 'syringe', 'A2',
+                    ?, 'composite_resin', 'syringe', 'A2', ?,
                     'g', 4.0, ?, ?, ?, ?, ?
                 )
                 """,
-                [index, price, state_code, macroregion, year, quarter],
+                [
+                    index,
+                    concentration_percent,
+                    price,
+                    state_code,
+                    macroregion,
+                    year,
+                    quarter,
+                ],
             )
 
 

@@ -1,9 +1,23 @@
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
+from typing import Any
 
 from dental_procurement_intelligence.identity.models import CanonicalProduct, ProductCategory
 from dental_procurement_intelligence.identity.parser import parse_product
+
+
+_SHADE_CRITICAL = {
+    ProductCategory.COMPOSITE_RESIN,
+    ProductCategory.FLOWABLE_RESIN,
+    ProductCategory.GLASS_IONOMER,
+}
+
+_CONCENTRATION_CRITICAL = {
+    ProductCategory.PHOSPHORIC_ACID,
+    ProductCategory.FLUORIDE_GEL,
+    ProductCategory.LOCAL_ANESTHETIC,
+}
 
 
 class IdentityDecision(StrEnum):
@@ -24,7 +38,7 @@ class IdentityResult:
 
 
 class ProductIdentityEngine:
-    """Explainable deterministic baseline for procurement-item comparability."""
+    """Baseline determinístico e explicável para comparabilidade de itens."""
 
     def compare(self, left_description: str, right_description: str) -> IdentityResult:
         left = parse_product(left_description)
@@ -34,23 +48,37 @@ class ProductIdentityEngine:
         missing: list[str] = []
         score = Decimal("0")
 
+        same_known_category = False
         if ProductCategory.UNKNOWN in (left.category, right.category):
             missing.append("category could not be identified for at least one item")
         elif left.category != right.category:
             conflicts.append(f"category differs: {left.category} vs {right.category}")
         else:
+            same_known_category = True
             support.append(f"same category: {left.category}")
             score += Decimal("0.45")
 
-        score += self._compare_optional(
-            "shade",
-            left.shade,
-            right.shade,
-            Decimal("0.15"),
-            support,
-            conflicts,
-            missing,
-        )
+        if same_known_category and left.category in _SHADE_CRITICAL:
+            score += self._compare_optional(
+                "shade",
+                left.shade,
+                right.shade,
+                Decimal("0.15"),
+                support,
+                conflicts,
+                missing,
+            )
+        elif same_known_category and left.category in _CONCENTRATION_CRITICAL:
+            score += self._compare_optional(
+                "concentration_percent",
+                left.concentration_percent,
+                right.concentration_percent,
+                Decimal("0.15"),
+                support,
+                conflicts,
+                missing,
+            )
+
         score += self._compare_optional(
             "presentation",
             left.presentation,
@@ -101,8 +129,8 @@ class ProductIdentityEngine:
     @staticmethod
     def _compare_optional(
         label: str,
-        left: str | None,
-        right: str | None,
+        left: Any | None,
+        right: Any | None,
         weight: Decimal,
         support: list[str],
         conflicts: list[str],

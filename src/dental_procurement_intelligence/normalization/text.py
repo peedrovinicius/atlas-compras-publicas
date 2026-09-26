@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 _SPACE_PATTERN = re.compile(r"\s+")
-_PUNCTUATION_PATTERN = re.compile(r"[^A-Z0-9.,/ ]+")
+_PUNCTUATION_PATTERN = re.compile(r"[^A-Z0-9.,/% ]+")
 _MEASUREMENT_PATTERN = re.compile(
     r"(?P<value>\d+(?:[.,]\d+)?)\s*(?P<unit>MG|G|KG|ML|L)\b",
     flags=re.IGNORECASE,
@@ -27,17 +27,19 @@ class Measurement:
 
 
 def normalize_description(value: str) -> str:
-    """Normalize typography while preserving meaningful letters and numbers."""
+    """Normaliza tipografia preservando símbolos semanticamente relevantes."""
 
     decomposed = unicodedata.normalize("NFKD", value)
-    without_accents = "".join(char for char in decomposed if not unicodedata.combining(char))
+    without_accents = "".join(
+        char for char in decomposed if not unicodedata.combining(char)
+    )
     upper = without_accents.upper()
     cleaned = _PUNCTUATION_PATTERN.sub(" ", upper)
     return _SPACE_PATTERN.sub(" ", cleaned).strip()
 
 
 def extract_measurements(value: str) -> list[Measurement]:
-    """Extract explicit mass and volume measurements from a procurement description."""
+    """Extrai medidas explícitas de massa e volume da descrição."""
 
     normalized = normalize_description(value)
     measurements: list[Measurement] = []

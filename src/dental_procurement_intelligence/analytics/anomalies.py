@@ -36,7 +36,7 @@ def build_price_signals(
     modified_z_threshold: float = 3.5,
     iqr_multiplier: float = 1.5,
 ) -> PriceSignalBuildResult:
-    """Gera sinais com contexto temporal e geográfico hierárquico."""
+    """Gera sinais com contexto temporal, geográfico e técnico."""
 
     _validate_parameters(
         minimum_group_size,
@@ -74,6 +74,7 @@ def build_price_signals(
                         product_category, '|',
                         COALESCE(presentation, '∅'), '|',
                         COALESCE(shade, '∅'), '|',
+                        COALESCE(CAST(concentration_percent AS VARCHAR), '∅'), '|',
                         normalized_quantity_unit, '|',
                         CAST(normalized_quantity_value AS VARCHAR)
                     ) AS product_key
