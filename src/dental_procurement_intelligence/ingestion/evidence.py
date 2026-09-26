@@ -48,6 +48,17 @@ class EvidenceStore:
     def _object_path(self, digest: str) -> Path:
         return self.root / "objects" / "sha256" / digest[:2] / f"{digest}.json"
 
+    def write_metadata(self, path: str | Path, content: bytes) -> Path:
+        output = Path(path)
+        try:
+            output.relative_to(self.root)
+        except ValueError as error:
+            raise ValueError(
+                "Metadados devem permanecer dentro do EvidenceStore"
+            ) from error
+        self._atomic_write(output, content)
+        return output
+
     def verify_object(self, path: str | Path, expected_sha256: str) -> None:
         object_path = Path(path)
         actual = self._sha256(object_path.read_bytes())
