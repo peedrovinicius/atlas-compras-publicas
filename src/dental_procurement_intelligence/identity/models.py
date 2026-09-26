@@ -34,6 +34,31 @@ class Quantity:
 
 
 @dataclass(frozen=True, slots=True)
+class TechnicalAttributes:
+    resin_technology: str | None = None
+    curing_mode: str | None = None
+    adhesive_strategy: str | None = None
+    ionomer_use: str | None = None
+    fluoride_formulation: str | None = None
+    anesthetic_active_ingredient: str | None = None
+    anesthetic_vasoconstrictor: str | None = None
+
+    def identified_count(self) -> int:
+        return sum(
+            value is not None
+            for value in (
+                self.resin_technology,
+                self.curing_mode,
+                self.adhesive_strategy,
+                self.ionomer_use,
+                self.fluoride_formulation,
+                self.anesthetic_active_ingredient,
+                self.anesthetic_vasoconstrictor,
+            )
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class CanonicalProduct:
     original_description: str
     normalized_description: str
@@ -41,6 +66,7 @@ class CanonicalProduct:
     presentation: str | None
     shade: str | None
     concentration_percent: Decimal | None
+    technical_attributes: TechnicalAttributes
     package_count: int | None
     measurement_candidates: tuple[Quantity, ...]
     measurement_resolution: str
