@@ -74,7 +74,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.ZINC_OXIDE,
-        ("OXIDO DE ZINCO",),
+        ("OXIDO DE ZINCO", "OXIDO ZINCO"),
     ),
     (
         ProductCategory.EUGENOL,
@@ -82,7 +82,12 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.RADIOGRAPHIC_FIXER,
-        ("FIXADOR RADIOGRAFICO", "FIXADOR ODONTOLOGICO", "FIXADOR KODAK"),
+        (
+            "FIXADOR RADIOGRAFICO",
+            "FIXADOR RADIOLOGICO",
+            "FIXADOR ODONTOLOGICO",
+            "FIXADOR KODAK",
+        ),
     ),
     (
         ProductCategory.RADIOGRAPHIC_DEVELOPER,
@@ -162,6 +167,15 @@ _ANESTHETIC_ACTIVE_INGREDIENTS = (
     "MEPIVACAINA",
 )
 
+_MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
+    ("RESINA", "RESINAS"),
+    ("ADESIVO", "ADESIVOS"),
+    ("IONOMERO", "IONOMEROS"),
+    ("ALGINATO", "ALGINATOS"),
+    ("EUGENOL",),
+    ("HIDROXIDO DE CALCIO",),
+)
+
 
 def _term_present(text: str, term: str) -> bool:
     pattern = rf"(?<![A-Z0-9]){re.escape(term)}(?![A-Z0-9])"
@@ -172,24 +186,57 @@ def _has_any(text: str, terms: tuple[str, ...]) -> bool:
     return any(_term_present(text, term) for term in terms)
 
 
+def _term_negated(text: str, term: str) -> bool:
+    escaped = re.escape(term)
+    patterns = (
+        rf"\bSEM\s+{escaped}\b",
+        rf"\bISENTO(?:\s+DE)?\s+{escaped}\b",
+        rf"\bLIVRE\s+DE\s+{escaped}\b",
+        rf"\bNAO\s+CONTEM\s+{escaped}\b",
+    )
+    return any(re.search(pattern, text) for pattern in patterns)
+
+
+def _is_mixed_kit(text: str) -> bool:
+    if not _term_present(text, "KIT"):
+        return False
+
+    family_count = sum(
+        1
+        for terms in _MIXED_KIT_FAMILY_TERMS
+        if _has_any(text, terms)
+    )
+    return family_count >= 2
+
+
 def _composite_context_excluded(text: str) -> bool:
     return any(pattern.search(text) for pattern in _COMPOSITE_CONTEXT_EXCLUSIONS)
 
 
 def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
-    # Product head takes precedence over contextual mentions.
+    if _is_mixed_kit(text):
+        return ProductCategory.UNKNOWN, ("MIXED_KIT",)
+
     if _has_any(text, _ANESTHETIC_ACTIVE_INGREDIENTS):
         matches = tuple(
             term for term in _ANESTHETIC_ACTIVE_INGREDIENTS if _term_present(text, term)
         )
         return ProductCategory.LOCAL_ANESTHETIC, matches
 
-    if _term_present(text, "ADESIVO"):
-        matches = tuple(term for term in _ADHESIVE_HINTS if _term_present(text, term))
+    if _term_present(text, "ADESIVO") and not _term_negated(text, "ADESIVO"):
+        matches = tuple(
+            term
+            for term in _ADHESIVE_HINTS
+            if _term_present(text, term) and not _term_negated(text, term)
+        )
         return ProductCategory.ADHESIVE, matches or ("ADESIVO",)
 
     for category, terms in _CATEGORY_RULES:
-        matches = tuple(term for term in terms if _term_present(text, term))
+        matches = tuple(
+            term
+            for term in terms
+            if _term_present(text, term) and not _term_negated(text, term)
+        )
         if not matches:
             continue
         if (

@@ -46,6 +46,41 @@ def test_polishing_kit_is_not_classified_as_composite_resin() -> None:
     assert product.category == ProductCategory.UNKNOWN
 
 
+def test_mixed_kit_is_not_reduced_to_one_product_category() -> None:
+    product = parse_product(
+        "KIT 3 RESINAS MAIS ADESIVO UNIVERSAL RESINA COM NANOPARTICULAS"
+    )
+
+    assert product.category == ProductCategory.UNKNOWN
+    assert "MIXED_KIT" in product.matched_terms
+
+
+def test_negated_eugenol_is_not_classified_as_eugenol() -> None:
+    product = parse_product(
+        "CIMENTO ODONTOLOGICO ENDODONTICO SEM EUGENOL ASPECTO FISICO PASTA"
+    )
+
+    assert product.category == ProductCategory.UNKNOWN
+
+
+def test_positive_eugenol_remains_supported() -> None:
+    product = parse_product("EUGENOL FRASCO 20ML")
+
+    assert product.category == ProductCategory.EUGENOL
+
+
+def test_zinc_oxide_without_preposition_is_recognized() -> None:
+    product = parse_product("OXIDO ZINCO PO FRASCO 50G")
+
+    assert product.category == ProductCategory.ZINC_OXIDE
+
+
+def test_radiological_fixer_variant_is_recognized() -> None:
+    product = parse_product("FIXADOR RADIOLOGICO PARA PROCESSAMENTO MANUAL 500ML")
+
+    assert product.category == ProductCategory.RADIOGRAPHIC_FIXER
+
+
 def test_local_anesthetic_is_recognized_by_active_ingredient() -> None:
     for description in (
         "LIDOCAINA CLORIDRATO DOSAGEM 3% INJETAVEL",
