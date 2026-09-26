@@ -1,0 +1,116 @@
+# Qualidade do normalizador
+
+## Objetivo
+
+A camada de qualidade mede o quanto o pipeline consegue estruturar as descrições de compras públicas odontológicas.
+
+Ela não estima uma probabilidade subjetiva de acerto.
+
+Todas as métricas são derivadas de evidências observáveis no próprio registro.
+
+## Score por item
+
+O score utiliza três componentes gerais:
+
+- categoria: peso 0,45;
+- apresentação: peso 0,20;
+- medida física: peso 0,25.
+
+Para categorias sem atributo técnico crítico adicional, o score é normalizado sobre 0,90.
+
+Quando a categoria exige um atributo crítico, acrescenta-se peso 0,10 e o denominador passa a 1,00.
+
+## Atributos críticos atuais
+
+### Cor
+
+Aplicável a:
+
+- resina composta;
+- resina flow;
+- ionômero de vidro.
+
+### Concentração
+
+Aplicável a:
+
+- ácido fosfórico;
+- flúor em gel;
+- anestésico local.
+
+## Estrutura completa
+
+Um item é `fully_structured` quando possui:
+
+- categoria;
+- apresentação;
+- medida física;
+- atributo crítico, quando aplicável.
+
+Quantidade por embalagem não é obrigatória, pois a ausência desse dado pode representar legitimamente uma unidade simples.
+
+## Níveis
+
+### High
+
+Score igual ou superior a 0,80 e estrutura mínima completa.
+
+### Medium
+
+Score igual ou superior a 0,55, mas com alguma lacuna relevante.
+
+Um item com score numérico alto e atributo crítico ausente permanece em `medium`.
+
+### Low
+
+Score inferior a 0,55.
+
+## Métricas agregadas
+
+A visão `normalization_quality_summary` apresenta:
+
+- total de itens;
+- cobertura de categoria;
+- cobertura de apresentação;
+- cobertura de medida;
+- proporção totalmente estruturada;
+- proporção com preço fisicamente normalizável;
+- score médio.
+
+A visão `normalization_quality_by_category` apresenta a mesma lógica segmentada por categoria.
+
+## Fila de lacunas
+
+A visão `unrecognized_items` contém itens ainda classificados como `unknown`.
+
+A fila preserva:
+
+- número do item;
+- descrição original;
+- unidade informada;
+- valor unitário estimado;
+- score;
+- campos ausentes;
+- SHA-256 da fonte.
+
+O objetivo é usar essa fila para orientar novas regras e medir se uma mudança de taxonomia realmente melhora a cobertura.
+
+## Interpretação
+
+Cobertura alta não significa necessariamente precisão alta.
+
+Uma regra excessivamente ampla poderia elevar cobertura e simultaneamente piorar a qualidade das classificações.
+
+Por isso, a evolução futura deverá medir separadamente:
+
+1. cobertura;
+2. precisão em amostra revisada manualmente;
+3. conflitos entre regras;
+4. estabilidade entre versões;
+5. distribuição de itens em `review`.
+
+## Próxima etapa de validação
+
+A próxima versão deverá criar um conjunto de avaliação manual versionado com descrições reais anonimizadas ou publicamente disponíveis e rótulos revisados.
+
+Esse conjunto servirá como referência para medir precisão, recall por categoria e regressões da taxonomia.

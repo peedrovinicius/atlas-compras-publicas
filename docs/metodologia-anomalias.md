@@ -17,7 +17,7 @@ Exemplos:
 
 Massa e volume não são convertidos entre si.
 
-## Identidade do produto
+## Identidade técnica do produto
 
 Antes da análise estatística, o registro precisa ter:
 
@@ -25,15 +25,21 @@ Antes da análise estatística, o registro precisa ter:
 - apresentação identificada;
 - quantidade física identificada;
 - unidade física identificada;
-- preço homologado positivo.
+- preço homologado positivo;
+- referência temporal.
 
-A chave de produto baseline combina:
+A chave de produto da v0.8.0 combina:
 
 - categoria;
 - apresentação;
 - cor;
+- concentração;
 - unidade física;
 - quantidade física.
+
+Isso impede, por exemplo, que produtos da mesma categoria e embalagem sejam agrupados quando a concentração informada é diferente.
+
+A ausência de atributo técnico permanece explícita.
 
 ## Referência temporal
 
@@ -41,22 +47,17 @@ A data do resultado homologado é preferida.
 
 Quando ela não está disponível, utiliza-se a data de publicação da contratação.
 
-Dessa data são derivados:
-
-- ano;
-- trimestre.
-
-A ausência de uma referência temporal impede que o registro participe da análise v0.7.0.
+Dessa data são derivados ano e trimestre.
 
 ## Referência geográfica
 
-O PNCP fornece município, código IBGE e UF por meio da unidade administrativa da contratação.
+O PNCP fornece município, código IBGE e UF pela unidade administrativa da contratação.
 
-A macrorregião é derivada da UF por tabela determinística.
+A macrorregião é derivada deterministicamente da UF.
 
 ## Hierarquia de comparação
 
-Para cada registro, são construídos candidatos de grupo em cinco níveis:
+Para cada registro, são construídos candidatos em cinco níveis:
 
 1. UF + trimestre;
 2. macrorregião + trimestre;
@@ -64,9 +65,9 @@ Para cada registro, são construídos candidatos de grupo em cinco níveis:
 4. macrorregião + ano;
 5. Brasil + ano.
 
-O algoritmo escolhe o primeiro nível da hierarquia que possui pelo menos a amostra mínima.
+O algoritmo escolhe o primeiro nível com pelo menos a amostra mínima.
 
-Se nenhum nível atingir o mínimo, o maior grupo disponível é preservado apenas para diagnóstico e recebe:
+Se nenhum nível atingir o mínimo, o maior grupo disponível é preservado para diagnóstico e recebe:
 
 `detection_method = insufficient_sample`
 
@@ -74,13 +75,11 @@ Nenhum sinal é produzido.
 
 ## Tamanho mínimo
 
-O padrão é exigir pelo menos cinco observações.
+O padrão é cinco observações.
 
-Esse limite é configurável, mas valores inferiores a três são rejeitados pelo código.
+Valores inferiores a três são rejeitados pelo código.
 
 ## Método MAD
-
-Para o grupo escolhido:
 
 `MAD = mediana(|xᵢ - mediana(x)|)`
 
@@ -88,7 +87,7 @@ Quando `MAD > 0`:
 
 `modified z-score = 0,6744897501960817 × (x - mediana) / MAD`
 
-O limiar padrão é:
+Limiar padrão:
 
 `|modified z-score| >= 3,5`
 
@@ -108,11 +107,9 @@ Limite superior:
 
 ## Variação insuficiente
 
-Quando MAD e IQR são zero, o grupo não possui variação adequada para os critérios atuais.
+Quando MAD e IQR são zero:
 
-O método registrado é:
-
-`insufficient_variation`
+`detection_method = insufficient_variation`
 
 Nenhum sinal é produzido.
 
@@ -122,9 +119,9 @@ A tabela `gold_price_signals` preserva:
 
 - chave do produto;
 - chave do grupo;
-- escopo geográfico-temporal;
-- geografia utilizada;
-- período utilizado;
+- escopo;
+- geografia;
+- período;
 - tamanho do grupo;
 - mediana;
 - Q1;
@@ -135,28 +132,22 @@ A tabela `gold_price_signals` preserva:
 - método;
 - indicador de sinal;
 - contexto do item;
-- referências de proveniência.
-
-A visão `price_anomalies` contém apenas registros sinalizados.
-
-A visão `anomaly_scope_summary` apresenta cobertura e sinais por escopo, geografia e período.
+- proveniência.
 
 ## Limitações
 
-A versão atual ainda não controla diretamente:
+A versão atual ainda não controla diretamente todos os atributos comerciais e clínicos possíveis, como:
 
 - fabricante;
 - linha comercial;
 - composição detalhada;
-- concentração;
 - viscosidade;
 - validade;
 - frete;
 - prazo de entrega;
-- volume total contratado;
-- diferenças de tributação;
+- tributação;
 - características específicas da modalidade.
 
 Esses fatores podem explicar variações legítimas de preço.
 
-Por isso, qualquer sinal é ponto de partida para revisão, e não conclusão.
+Qualquer sinal é ponto de partida para revisão, não conclusão.

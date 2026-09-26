@@ -4,15 +4,13 @@
 
 Produzir inteligência de preços sem perder a cadeia de evidências que conecta um resultado analítico ao registro original do PNCP.
 
-## Fonte oficial
+## Fluxo principal
 
-A contratação é consultada pelo endpoint:
+`API PNCP → raw → bronze → silver → gold → API analítica → dashboard`
 
-`/v1/orgaos/{cnpj}/compras/{ano}/{sequencial}`
+Uma trilha paralela mede a qualidade da transformação:
 
-Esse registro fornece o contexto institucional, temporal e geográfico utilizado na v0.7.0.
-
-Itens e resultados permanecem coletados em endpoints próprios.
+`silver → métricas de cobertura → fila de lacunas → evolução da taxonomia`
 
 ## Raw
 
@@ -34,42 +32,77 @@ Modelos tipados representam:
 - item;
 - resultado homologado.
 
+Nenhuma inferência semântica é misturada à validação estrutural.
+
 ## Silver
 
-A tabela `silver_awards` reúne:
+### silver_items
+
+Contém:
+
+- descrição original e normalizada;
+- categoria;
+- método de classificação;
+- termos que deram suporte à classificação;
+- apresentação;
+- cor;
+- concentração;
+- quantidade por embalagem;
+- medida física;
+- preço normalizado;
+- indicadores de cobertura;
+- score e nível de qualidade;
+- campos ausentes;
+- SHA-256 da evidência.
+
+### silver_awards
+
+Contém:
 
 - atributos canônicos do produto;
-- preços estimados e homologados;
+- cor e concentração;
+- preços estimado e homologado;
 - preço por unidade física;
 - fornecedor e marca;
 - resultado e situação;
-- data de publicação;
-- data do resultado;
-- data de análise;
-- ano e trimestre;
-- município e código IBGE;
-- UF e macrorregião;
-- esfera;
-- modalidade;
-- três hashes de proveniência.
+- contexto temporal;
+- contexto geográfico;
+- hashes de proveniência.
 
-A macrorregião é uma derivação determinística da UF; ela não substitui os campos originais do PNCP.
+## Qualidade
+
+As visões atuais são:
+
+- `normalization_quality_summary`;
+- `normalization_quality_by_category`;
+- `unrecognized_items`.
+
+O score é determinístico e não probabilístico.
+
+Itens com atributo crítico ausente não são considerados totalmente estruturados.
 
 ## Gold
 
 A tabela `gold_price_signals` seleciona, para cada resultado elegível, o grupo geográfico-temporal mais específico com amostra suficiente.
 
-Hierarquia:
+A identidade técnica do grupo inclui:
+
+- categoria;
+- apresentação;
+- cor;
+- concentração;
+- unidade física;
+- quantidade física.
+
+Hierarquia geográfico-temporal:
 
 `UF/trimestre → região/trimestre → Brasil/trimestre → região/ano → Brasil/ano`
-
-A escolha do grupo permanece armazenada na própria linha analítica.
 
 ## Estatística
 
 MAD com modified z-score é o método principal.
 
-IQR é utilizado quando o MAD é zero e ainda existe dispersão.
+IQR é utilizado quando MAD é zero e existe dispersão.
 
 Grupos com amostra insuficiente ou sem variação não geram sinal.
 
@@ -79,16 +112,14 @@ A cadeia é:
 
 `sinal → grupo → homologação → item → contratação → evidências SHA-256 → PNCP`
 
+A camada de qualidade adiciona:
+
+`item → score → componentes do score → campos ausentes`
+
 ## Salvaguarda
 
 Sinal estatístico não equivale a irregularidade.
 
-O sistema deve sempre apresentar:
+Score de normalização não equivale a probabilidade de acerto.
 
-- grupo utilizado;
-- período;
-- geografia;
-- tamanho da amostra;
-- estatística;
-- proveniência;
-- limitações.
+O sistema deve apresentar explicitamente método, evidência, lacunas e limitações.

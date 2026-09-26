@@ -2,33 +2,31 @@
 
 Plataforma auditável de inteligência de dados para compras públicas odontológicas no Brasil.
 
-O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar e analisar itens odontológicos publicados no Portal Nacional de Contratações Públicas (PNCP). O desafio principal não é apenas calcular preços, mas determinar quando descrições pouco padronizadas representam produtos realmente comparáveis e qual contexto temporal e geográfico é adequado para cada comparação.
+O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar e analisar itens odontológicos publicados no Portal Nacional de Contratações Públicas (PNCP). O desafio principal não é apenas calcular preços, mas determinar quando descrições pouco padronizadas representam produtos realmente comparáveis, medir a qualidade dessa normalização e deixar explícito quando o sistema ainda não possui evidência suficiente.
 
 ## Status atual
 
-**v0.7.0 — contexto geográfico e temporal**
+**v0.8.0 — taxonomia ampliada e qualidade do normalizador**
 
 O repositório já inclui:
 
-- pacote Python tipado;
-- cliente para a API pública do PNCP;
-- captura dos metadados da contratação;
-- captura de todos os itens e resultados de uma contratação;
-- armazenamento bruto endereçado por conteúdo com SHA-256;
-- manifesto de proveniência e verificação de integridade;
-- Product Identity Engine com decisão explicável;
+- cliente tipado para a API pública do PNCP;
+- captura auditável da contratação, itens e resultados;
+- armazenamento bruto com SHA-256 e manifestos de proveniência;
+- normalização textual, de massa e de volume;
+- Product Identity Engine explicável;
+- taxonomia odontológica determinística ampliada;
+- extração de cor e concentração quando clinicamente relevantes;
 - normalização de embalagem e quantidade física;
-- transformação analítica em Parquet;
-- catálogo SQL local com DuckDB;
-- integração entre itens e resultados homologados;
-- cálculo de valor estimado equivalente, valor homologado e economia;
-- preço homologado por unidade física;
-- município, código IBGE, UF e macrorregião;
-- data de análise, ano e trimestre;
-- esfera administrativa e modalidade da contratação;
-- grupos comparáveis hierárquicos por local e período;
-- detecção robusta com MAD e IQR;
-- rastreabilidade do sinal estatístico até as evidências brutas.
+- Parquet + DuckDB;
+- valores estimados e homologados;
+- cálculo de economia;
+- dimensões geográfica e temporal;
+- grupos comparáveis hierárquicos;
+- sinais robustos com MAD e IQR;
+- score determinístico de qualidade da normalização;
+- métricas de cobertura global e por categoria;
+- fila auditável de itens ainda não reconhecidos.
 
 O GitHub Actions permanece desativado nesta fase para evitar consumo desnecessário de minutos de CI.
 
@@ -38,9 +36,13 @@ A fonte principal é a API pública do PNCP:
 
 `https://pncp.gov.br/api/pncp`
 
-A consulta de uma contratação fornece, entre outros campos, data de publicação, órgão, esfera, unidade administrativa, município, código IBGE e UF.
+O pipeline preserva como evidências independentes:
 
-O pipeline preserva a resposta original da contratação, a resposta dos itens e cada resposta de resultados como evidências independentes.
+- metadados da contratação;
+- itens;
+- resultados de cada item.
+
+Cada resposta capturada recebe SHA-256 e manifesto de coleta.
 
 ## Arquitetura
 
@@ -48,44 +50,157 @@ O pipeline preserva a resposta original da contratação, a resposta dos itens e
 flowchart LR
     A[API PNCP] --> B[Evidência bruta SHA-256]
     B --> C[Validação estrutural]
-    C --> D[Normalização de produto]
-    D --> E[Preço por unidade física]
-    E --> F[Contexto geográfico]
-    F --> G[Contexto temporal]
+    C --> D[Normalização odontológica]
+    D --> E[Qualidade do normalizador]
+    D --> F[Preço por unidade física]
+    F --> G[Contexto geográfico e temporal]
     G --> H[Parquet + DuckDB]
-    H --> I[Grupo comparável hierárquico]
+    H --> I[Grupo comparável]
     I --> J[MAD / IQR]
     J --> K[Sinal explicável]
-    K --> L[API]
-    L --> M[Dashboard]
+    E --> L[Fila de lacunas]
+    K --> M[API]
+    L --> M
+    M --> N[Dashboard]
 ~~~
 
-## Contexto oficial da contratação
+## Taxonomia odontológica
 
-A v0.7.0 incorpora o endpoint de detalhe da contratação.
+A v0.8.0 expande a classificação determinística para categorias que aparecem de forma recorrente em compras odontológicas.
 
-São preservados na camada analítica:
+Categorias atuais:
 
 ~~~text
-data de publicação
-data do resultado
-data usada na análise
-ano
-trimestre
-município
-código IBGE
-UF
-macrorregião
-esfera administrativa
-modalidade
-SHA-256 da contratação
-SHA-256 dos itens
-SHA-256 dos resultados
+composite_resin
+flowable_resin
+dental_adhesive
+glass_ionomer
+phosphoric_acid
+alginate
+fluoride_gel
+prophylaxis_paste
+calcium_hydroxide
+zinc_oxide
+eugenol
+radiographic_fixer
+radiographic_developer
+local_anesthetic
+unknown
 ~~~
 
-A data do resultado homologado é utilizada como referência temporal quando disponível. Na ausência dela, utiliza-se a data de publicação da contratação.
+A classificação é baseada em regras explícitas e vocabulário controlado. Não existe classificação probabilística oculta nesta etapa.
 
-A macrorregião é derivada deterministicamente da UF.
+## Atributos críticos
+
+Nem todas as categorias exigem os mesmos atributos.
+
+Exemplos:
+
+- resinas e ionômeros: cor pode ser crítica para comparação;
+- ácido fosfórico, flúor em gel e anestésicos: concentração pode ser crítica;
+- todas as categorias: apresentação e medida física aumentam a capacidade de comparação.
+
+Exemplo:
+
+~~~text
+ACIDO FOSFORICO 37% GEL SERINGA 2,5ML
+~~~
+
+pode produzir:
+
+~~~text
+categoria: phosphoric_acid
+concentracao: 37%
+apresentacao: syringe
+quantidade: 2.5 ml
+~~~
+
+Dois ácidos com concentrações diferentes são incompatíveis para o Product Identity Engine.
+
+Se um atributo crítico estiver ausente, o motor retorna `review` em vez de `match`.
+
+## Qualidade do normalizador
+
+O projeto não trata o score como probabilidade de acerto de uma IA.
+
+O score é determinístico e explicável.
+
+Ele considera:
+
+- categoria identificada;
+- apresentação identificada;
+- medida física identificada;
+- atributo crítico da categoria, quando aplicável.
+
+Cada item recebe:
+
+~~~text
+normalization_quality_score
+normalization_quality_level
+fully_structured
+category_identified
+presentation_identified
+measurement_identified
+critical_attribute_name
+critical_attribute_identified
+missing_fields
+classification_method
+~~~
+
+Níveis:
+
+- `high` — score alto e estrutura mínima completa;
+- `medium` — informação útil, mas existe alguma lacuna relevante;
+- `low` — estrutura insuficiente para confiar na normalização.
+
+Um score alto, por si só, não transforma um item incompleto em `high`: se faltar atributo crítico, o nível máximo é `medium`.
+
+## Métricas de cobertura
+
+Depois de executar `build-analytics`, o sistema pode gerar um resumo de qualidade:
+
+~~~bash
+dpi normalization-quality --database data/analytics.duckdb
+~~~
+
+O resultado inclui:
+
+~~~text
+total_items
+category_identified_items
+category_coverage_percent
+presentation_identified_items
+presentation_coverage_percent
+measurement_identified_items
+measurement_coverage_percent
+fully_structured_items
+fully_structured_percent
+price_normalizable_items
+price_normalizable_percent
+average_quality_score
+~~~
+
+Para detalhar por categoria:
+
+~~~bash
+dpi normalization-quality \
+  --database data/analytics.duckdb \
+  --by-category
+~~~
+
+## Fila de itens não reconhecidos
+
+Itens classificados como `unknown` não são escondidos.
+
+Eles ficam disponíveis para revisão:
+
+~~~bash
+dpi unrecognized-items \
+  --database data/analytics.duckdb \
+  --limit 50
+~~~
+
+Essa fila permite expandir a taxonomia com base em lacunas observadas nos dados reais, em vez de adicionar regras arbitrárias.
 
 ## Product Identity Engine
 
@@ -104,9 +219,19 @@ quantidade_unitaria: 4 g
 quantidade_total: 8 g
 ~~~
 
-Diferenças relevantes de categoria, apresentação, cor ou quantidade podem impedir que dois registros sejam comparados.
+O motor considera conflitos de categoria, apresentação, quantidade e atributos críticos.
+
+Decisões possíveis:
+
+~~~text
+match
+review
+incompatible
+~~~
 
 ## Preço normalizado
+
+Quando há informação suficiente, o pipeline calcula preço por unidade física.
 
 ~~~text
 Preço homologado: R$ 72,00
@@ -119,11 +244,24 @@ Preço homologado normalizado: R$ 9,00/g
 
 Massa e volume permanecem dimensões distintas.
 
-## Grupos comparáveis hierárquicos
+## Contexto geográfico e temporal
 
-A v0.7.0 deixa de utilizar um único recorte geográfico.
+A camada de homologações preserva:
 
-Para cada registro, o sistema tenta encontrar o grupo mais específico com pelo menos cinco observações:
+- data de publicação;
+- data do resultado;
+- ano;
+- trimestre;
+- município;
+- código IBGE;
+- UF;
+- macrorregião;
+- esfera administrativa;
+- modalidade.
+
+## Grupos comparáveis
+
+A análise de preços procura o grupo mais específico com amostra suficiente:
 
 ~~~text
 1. mesma UF + mesmo trimestre
@@ -133,20 +271,18 @@ Para cada registro, o sistema tenta encontrar o grupo mais específico com pelo 
 5. Brasil + mesmo ano
 ~~~
 
-Se nenhum nível atingir a amostra mínima, nenhum sinal é gerado.
+A chave técnica do produto também considera:
 
-A escolha do escopo fica registrada em:
-
-- `comparison_scope`;
-- `comparison_geography`;
-- `comparison_period`;
-- `group_size`.
-
-Isso permite auditar exatamente contra qual população um preço foi comparado.
+- categoria;
+- apresentação;
+- cor;
+- concentração;
+- unidade física;
+- quantidade física.
 
 ## Sinais robustos de preço
 
-Quando o MAD é maior que zero:
+Método principal:
 
 `modified z-score = 0,67448975 × (preço - mediana) / MAD`
 
@@ -154,7 +290,7 @@ Limite padrão:
 
 `|modified z-score| >= 3,5`
 
-Quando o MAD é zero e existe dispersão interquartil, utiliza-se IQR como fallback.
+Quando MAD é zero e existe dispersão, utiliza-se IQR como fallback.
 
 Um sinal estatístico não constitui evidência de fraude, corrupção, superfaturamento jurídico ou irregularidade administrativa.
 
@@ -163,103 +299,74 @@ Um sinal estatístico não constitui evidência de fraude, corrupção, superfat
 ~~~text
 capture-contract
         ↓
-contratação + itens + resultados brutos
+evidências raw
         ↓
 build-analytics
+        ├── normalization-quality
+        └── unrecognized-items
         ↓
-build-awards --contract-raw ...
+build-awards
         ↓
 detect-anomalies
         ↓
 anomalies-summary
 ~~~
 
-## Exemplos
-
-Consultar metadados da contratação:
-
-~~~bash
-dpi contract --cnpj 10000000000003 --year 2021 --sequence 1
-~~~
-
-Capturar toda a contratação:
-
-~~~bash
-dpi capture-contract \
-  --cnpj 10000000000003 \
-  --year 2021 \
-  --sequence 1
-~~~
-
-Construir homologações com contexto:
-
-~~~bash
-dpi build-awards \
-  --contract-raw data/raw/objects/sha256/xx/contratacao.json \
-  --items-raw data/raw/objects/sha256/yy/itens.json \
-  --results-raw data/raw/objects/sha256/zz/resultado-1.json \
-  --parquet data/silver/awards.parquet \
-  --database data/analytics.duckdb
-~~~
-
-Detectar preços atípicos:
-
-~~~bash
-dpi detect-anomalies --database data/analytics.duckdb
-~~~
-
-## Estrutura do repositório
+## Estrutura
 
 ~~~text
 src/dental_procurement_intelligence/
-  pncp/             cliente PNCP e modelos tipados
-  ingestion/        evidência bruta e captura completa
-  identity/         identidade canônica e comparabilidade
+  pncp/             cliente e modelos do PNCP
+  ingestion/        evidência e captura
+  identity/         taxonomia, identidade e qualidade
   normalization/    texto, medidas e geografia
-  analytics/        Parquet, DuckDB, homologações e sinais
+  analytics/        lakehouse, homologações, qualidade e sinais
   cli.py            interface de linha de comando
 
-tests/              testes automatizados
-docs/               arquitetura e metodologia
-data/               contrato das camadas locais
+tests/
+docs/
+data/
 ~~~
 
 ## Rastreabilidade
 
 A cadeia pretendida é:
 
-`sinal → escopo comparável → homologação → item → contratação → SHA-256 → resposta original → PNCP`
+`sinal → grupo comparável → homologação → item → contratação → SHA-256 → resposta original → PNCP`
+
+A qualidade da normalização também permanece auditável por item.
 
 ## Roadmap
 
 - [x] Estrutura inicial
 - [x] Cliente PNCP
-- [x] Normalização textual e de medidas
-- [x] Ingestão bruta com SHA-256
-- [x] Product Identity Engine — baseline
+- [x] Evidência imutável com SHA-256
+- [x] Product Identity Engine
 - [x] Parquet e DuckDB
-- [x] Preço normalizado por unidade física
+- [x] Preço normalizado
 - [x] Resultados homologados
-- [x] Estimado x homologado
-- [x] Captura automática da contratação
-- [x] Sinais robustos de preço — baseline
-- [x] Dimensão geográfica
-- [x] Dimensão temporal
-- [x] Grupos comparáveis hierárquicos
-- [ ] Expandir taxonomia odontológica
-- [ ] Modelar atributos técnicos por categoria
+- [x] Dimensões geográfica e temporal
+- [x] Sinais robustos de preço
+- [x] Taxonomia odontológica ampliada
+- [x] Concentração como atributo técnico crítico
+- [x] Score determinístico de qualidade
+- [x] Métricas de cobertura
+- [x] Fila de itens não reconhecidos
+- [ ] Validar taxonomia contra uma amostra real maior
+- [ ] Modelar atributos técnicos específicos por categoria
 - [ ] Adicionar recuperação semântica de candidatos
-- [ ] Medir cobertura e qualidade do normalizador
+- [ ] Criar dataset de avaliação manual versionado
 - [ ] FastAPI de evidências
-- [ ] Dashboard React com mapa e séries temporais
+- [ ] Dashboard React com mapa, séries e qualidade
 - [ ] Relatório público de qualidade dos dados
 
 ## Princípios
 
 1. A evidência de origem é imutável.
-2. Toda transformação deve ser reproduzível.
-3. A equivalência de produtos deve ser explicável.
-4. O grupo de comparação deve ser explícito.
-5. Preços só podem ser comparados dentro de grupos defensáveis.
-6. Ausência e incerteza permanecem explícitas.
-7. Todo resultado analítico deve ser rastreável à fonte pública.
+2. Toda transformação é reproduzível.
+3. Regras de classificação são explícitas.
+4. Ausência de informação não é tratada como confirmação.
+5. A equivalência de produtos deve ser explicável.
+6. O grupo de comparação deve ser explícito.
+7. Qualidade e cobertura devem ser mensuradas.
+8. Todo resultado analítico deve ser rastreável à fonte pública.
