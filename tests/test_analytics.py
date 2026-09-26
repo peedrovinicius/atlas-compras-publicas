@@ -3,6 +3,8 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import polars as pl
+
 from dental_procurement_intelligence.analytics import (
     DuckDBWarehouse,
     build_analytics,
@@ -29,7 +31,16 @@ def test_build_item_frame_normalizes_price_by_total_package_mass() -> None:
     assert row["product_category"] == "composite_resin"
     assert row["normalized_total_quantity_value"] == 8.0
     assert row["normalized_total_quantity_unit"] == "g"
-    assert row["normalized_price_per_base_unit"] == 10.0
+    assert row["estimated_unit_value"] == Decimal("80.000000000000")
+    assert row["normalized_price_per_base_unit"] == Decimal("10.000000000000")
+    assert frame.schema["estimated_unit_value"] == pl.Decimal(
+        precision=38,
+        scale=12,
+    )
+    assert frame.schema["normalized_price_per_base_unit"] == pl.Decimal(
+        precision=38,
+        scale=12,
+    )
     assert row["price_normalization_status"] == "defensible"
     assert row["price_normalization_reason"] == "explicit_package_count"
     assert row["source_sha256"] == "abc123"
@@ -92,7 +103,7 @@ def test_build_analytics_creates_parquet_and_duckdb(tmp_path: Path) -> None:
     assert summary[0]["product_category"] == "composite_resin"
     assert summary[0]["item_count"] == 2
     assert summary[0]["priced_item_count"] == 2
-    assert summary[0]["median_normalized_price"] == 11.0
+    assert summary[0]["median_normalized_price"] == Decimal("11.000000000000")
 
 
 def test_box_without_explicit_package_count_is_not_price_normalized() -> None:
@@ -166,3 +177,20 @@ def test_explicit_total_measurement_is_used_as_price_basis() -> None:
         row["price_normalization_reason"]
         == "explicit_package_total_confirmed"
     )
+
+
+def test_normalized_price_uses_decimal_rounding_not_binary_float() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": "RESINA COMPOSTA A2 SERINGA 3G",
+            "quantidade": 1,
+            "unidadeMedida": "UNIDADE",
+            "valorUnitarioEstimado": "0.10",
+        }
+    )
+
+    row = build_item_frame([item], source_sha256="hash").to_dicts()[0]
+
+    assert row["estimated_unit_value"] == Decimal("0.100000000000")
+    assert row["normalized_price_per_base_unit"] == Decimal("0.033333333333")
