@@ -120,3 +120,38 @@ def test_review_price_normalization_is_excluded_from_signals(tmp_path: Path) -> 
 
     assert result.eligible_row_count == 4
     assert result.signal_count == 0
+
+
+def test_different_package_configurations_use_different_comparison_groups(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    _create_awards_table(database, [10.0, 10.0, 10.0, 10.0, 10.0, 5.0])
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            UPDATE silver_awards
+            SET
+                package_count = 2,
+                normalized_quantity_value = 8.0
+            WHERE item_number = 6
+            """
+        )
+
+    result = build_price_signals(database)
+
+    assert result.eligible_row_count == 6
+    assert result.comparison_group_count == 2
+    assert result.signal_count == 0
+
+    with duckdb.connect(str(database), read_only=True) as connection:
+        groups = connection.execute(
+            """
+            SELECT item_number, group_size
+            FROM gold_price_signals
+            ORDER BY item_number
+            """
+        ).fetchall()
+
+    assert groups[-1] == (6, 1)
