@@ -59,12 +59,13 @@ def build_price_signals(
                 "A tabela silver_awards não existe. Execute build-award-dataset primeiro."
             )
 
-        columns = {
-            row[1]
+        column_types = {
+            row[1]: str(row[2]).upper()
             for row in connection.execute(
                 "PRAGMA table_info('silver_awards')"
             ).fetchall()
         }
+        columns = set(column_types)
         required_columns = {
             "package_count",
             "measurement_candidate_count",
@@ -78,6 +79,13 @@ def build_price_signals(
             raise ValueError(
                 "silver_awards precisa ser reconstruída com a versão atual. "
                 f"Campos ausentes: {', '.join(missing_columns)}"
+            )
+
+        price_type = column_types.get("awarded_price_per_base_unit", "")
+        if not price_type.startswith("DECIMAL("):
+            raise ValueError(
+                "silver_awards precisa ser reconstruída com precisão decimal. "
+                "awarded_price_per_base_unit deve ser DECIMAL."
             )
 
         connection.execute("DROP VIEW IF EXISTS price_anomalies")
