@@ -30,6 +30,8 @@ def test_build_item_frame_normalizes_price_by_total_package_mass() -> None:
     assert row["normalized_total_quantity_value"] == 8.0
     assert row["normalized_total_quantity_unit"] == "g"
     assert row["normalized_price_per_base_unit"] == 10.0
+    assert row["price_normalization_status"] == "defensible"
+    assert row["price_normalization_reason"] == "explicit_package_count"
     assert row["source_sha256"] == "abc123"
 
 
@@ -91,3 +93,26 @@ def test_build_analytics_creates_parquet_and_duckdb(tmp_path: Path) -> None:
     assert summary[0]["item_count"] == 2
     assert summary[0]["priced_item_count"] == 2
     assert summary[0]["median_normalized_price"] == 11.0
+
+
+def test_box_without_explicit_package_count_is_not_price_normalized() -> None:
+    item = PNCPItem.model_validate(
+        {
+            "numeroItem": 1,
+            "descricao": "RESINA COMPOSTA A2 SERINGA 4G",
+            "quantidade": 10,
+            "unidadeMedida": "CAIXA",
+            "valorUnitarioEstimado": "80.00",
+        }
+    )
+
+    row = build_item_frame([item], source_sha256="hash").to_dicts()[0]
+
+    assert row["unit_quantity_value"] == 4.0
+    assert row["normalized_total_quantity_value"] is None
+    assert row["normalized_price_per_base_unit"] is None
+    assert row["price_normalization_status"] == "review"
+    assert (
+        row["price_normalization_reason"]
+        == "package_count_missing_for_procurement_package"
+    )
