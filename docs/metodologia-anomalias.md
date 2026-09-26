@@ -160,3 +160,18 @@ A versão atual ainda não controla diretamente todos os atributos comerciais e 
 Esses fatores podem explicar variações legítimas de preço.
 
 Qualquer sinal é ponto de partida para revisão, não conclusão.
+
+
+## Múltiplas medidas e kits
+
+A análise não escolhe automaticamente a primeira medida encontrada na descrição.
+
+Exemplos tratados:
+
+- `C/ 4G` não é interpretado como quatro unidades de embalagem;
+- `4G + 4000MG` é reconhecido como a mesma medida física;
+- `C/2 SERINGAS 4G TOTAL 8G` confirma 4 g por unidade e 8 g por embalagem;
+- massa e volume simultâneos, como `4G + 5ML`, são marcados como ambíguos;
+- kits com famílias de produtos diferentes ficam em revisão.
+
+Somente resoluções `single`, `package_derived` e `package_total_confirmed` podem chegar à camada de sinais, e ainda precisam de `price_normalization_status = defensible`.
