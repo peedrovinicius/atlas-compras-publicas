@@ -1,0 +1,151 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v1.jsonl",
+  "dataset_version": "technical-attributes-v1",
+  "frozen_dataset_commit": "072a341a05dbfee2d03b85c4f3bda06679e0b79d",
+  "dataset_git_blob_sha": "5594087c74825b6bd657103391712455da82fba2",
+  "parser_commit": "b243087e793c4e8463856b4021e5ef7ff379900c",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.12.0",
+  "measurement_method": "deterministic_mirror_of_v1.12_parser",
+  "sample_count": 33,
+  "category_accuracy": 1,
+  "evaluated_attribute_count": 61,
+  "correct_attribute_count": 52,
+  "micro_accuracy": 0.8525,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 5,
+      "correct_count": 5,
+      "accuracy": 1,
+      "positive_support": 5,
+      "positive_correct": 5,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 15,
+      "correct_count": 14,
+      "accuracy": 0.9333,
+      "positive_support": 14,
+      "positive_correct": 13,
+      "positive_accuracy": 0.9286,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 4,
+      "correct_count": 3,
+      "accuracy": 0.75,
+      "positive_support": 2,
+      "positive_correct": 1,
+      "positive_accuracy": 0.5,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 4,
+      "correct_count": 2,
+      "accuracy": 0.5,
+      "positive_support": 4,
+      "positive_correct": 2,
+      "positive_accuracy": 0.5,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 3,
+      "correct_count": 1,
+      "accuracy": 0.3333,
+      "positive_support": 3,
+      "positive_correct": 1,
+      "positive_accuracy": 0.3333,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 15,
+      "correct_count": 14,
+      "accuracy": 0.9333,
+      "positive_support": 15,
+      "positive_correct": 14,
+      "positive_accuracy": 0.9333,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 15,
+      "correct_count": 13,
+      "accuracy": 0.8667,
+      "positive_support": 14,
+      "positive_correct": 12,
+      "positive_accuracy": 0.8571,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    }
+  },
+  "errors": [
+    {
+      "id": "ta-pe-004",
+      "attribute": "ionomer_use",
+      "expected": "restorative",
+      "predicted": null
+    },
+    {
+      "id": "ta-ag-002",
+      "attribute": "anesthetic_vasoconstrictor",
+      "expected": "none",
+      "predicted": null
+    },
+    {
+      "id": "ta-ag-003",
+      "attribute": "fluoride_formulation",
+      "expected": "acidulated",
+      "predicted": null
+    },
+    {
+      "id": "ta-ag-004",
+      "attribute": "fluoride_formulation",
+      "expected": "neutral",
+      "predicted": null
+    },
+    {
+      "id": "ta-usp-001",
+      "attribute": "ionomer_use",
+      "expected": "restorative",
+      "predicted": null
+    },
+    {
+      "id": "ta-pg-001",
+      "attribute": "adhesive_strategy",
+      "expected": "universal",
+      "predicted": null
+    },
+    {
+      "id": "ta-pg-001",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta-pg-002",
+      "attribute": "anesthetic_vasoconstrictor",
+      "expected": "phenylephrine",
+      "predicted": null
+    },
+    {
+      "id": "ta-ba-001",
+      "attribute": "anesthetic_active_ingredient",
+      "expected": "prilocaine",
+      "predicted": null
+    }
+  ],
+  "interpretation": "Independent technical-attribute baseline frozen before any tuning from these errors. Taxonomy holdout v5 remains separate and unchanged."
+}
