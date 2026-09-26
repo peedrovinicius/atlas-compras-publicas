@@ -6,7 +6,7 @@ O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar
 
 ## Status atual
 
-**v0.8.0 — taxonomia ampliada e qualidade do normalizador**
+**v0.9.0 — benchmark versionado da taxonomia**
 
 O repositório já inclui:
 
@@ -26,7 +26,11 @@ O repositório já inclui:
 - sinais robustos com MAD e IQR;
 - score determinístico de qualidade da normalização;
 - métricas de cobertura global e por categoria;
-- fila auditável de itens ainda não reconhecidos.
+- fila auditável de itens ainda não reconhecidos;
+- dataset público de avaliação manual versionado;
+- métricas de acurácia, precisão, recall e F1 por categoria;
+- avaliação separada de cor e concentração;
+- relatório de erros de classificação rastreável à fonte.
 
 O GitHub Actions permanece desativado nesta fase para evitar consumo desnecessário de minutos de CI.
 
@@ -202,6 +206,49 @@ dpi unrecognized-items \
 
 Essa fila permite expandir a taxonomia com base em lacunas observadas nos dados reais, em vez de adicionar regras arbitrárias.
 
+## Benchmark v1
+
+A v0.9.0 introduz um benchmark de regressão versionado em `data/evaluation/v1.jsonl`.
+
+A primeira amostra contém **37 descrições públicas rotuladas manualmente**, distribuídas entre 14 rótulos, incluindo `unknown`. Ela contém casos positivos e negativos e preserva URL de origem, número do item e número de controle PNCP quando disponível.
+
+Resultado da baseline executada sobre o código do commit `6800b8a`:
+
+~~~text
+amostras:                  37
+acurácia de categoria:     100,00%
+macro precision:           1,0000
+macro recall:              1,0000
+macro F1:                  1,0000
+erros de categoria:        0
+
+cor:
+  suporte:                  8
+  acurácia:                 100,00%
+
+concentração:
+  suporte:                  5
+  acurácia:                 100,00%
+~~~
+
+Esses números **não representam acurácia estimada em produção**. A amostra v1 é pequena e participou da evolução das regras, portanto funciona como benchmark de regressão: uma mudança futura não deve quebrar comportamentos já revisados sem justificativa explícita.
+
+A próxima etapa de validação deverá usar uma amostra maior e separada, congelada antes do desenvolvimento das novas regras.
+
+Executar:
+
+~~~bash
+dpi evaluate-taxonomy --dataset data/evaluation/v1.jsonl
+~~~
+
+Listar divergências:
+
+~~~bash
+dpi evaluation-errors --dataset data/evaluation/v1.jsonl
+~~~
+
+O snapshot completo está em `data/evaluation/v1-baseline.json` e a metodologia em `docs/benchmark-v1.md`.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -319,6 +366,7 @@ src/dental_procurement_intelligence/
   pncp/             cliente e modelos do PNCP
   ingestion/        evidência e captura
   identity/         taxonomia, identidade e qualidade
+  evaluation/       benchmark e métricas de avaliação
   normalization/    texto, medidas e geografia
   analytics/        lakehouse, homologações, qualidade e sinais
   cli.py            interface de linha de comando
@@ -352,6 +400,9 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Score determinístico de qualidade
 - [x] Métricas de cobertura
 - [x] Fila de itens não reconhecidos
+- [x] Dataset de avaliação manual versionado
+- [x] Benchmark de regressão com métricas por categoria
+- [ ] Criar amostra de validação independente e congelada
 - [ ] Validar taxonomia contra uma amostra real maior
 - [ ] Modelar atributos técnicos específicos por categoria
 - [ ] Adicionar recuperação semântica de candidatos

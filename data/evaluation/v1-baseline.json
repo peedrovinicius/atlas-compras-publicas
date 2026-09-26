@@ -1,0 +1,36 @@
+{
+  "dataset": "data/evaluation/v1.jsonl",
+  "dataset_version": "v1",
+  "evaluated_code_commit": "6800b8a973f29e30389db500bed6575a6fa66c4c",
+  "sample_count": 37,
+  "category_accuracy": 1.0,
+  "macro_precision": 1.0,
+  "macro_recall": 1.0,
+  "macro_f1": 1.0,
+  "category_error_count": 0,
+  "shade": {
+    "support": 8,
+    "accuracy": 1.0
+  },
+  "concentration_percent": {
+    "support": 5,
+    "accuracy": 1.0
+  },
+  "per_category": {
+    "alginate": {"support": 1, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "calcium_hydroxide": {"support": 3, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "composite_resin": {"support": 5, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "dental_adhesive": {"support": 2, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "eugenol": {"support": 1, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "flowable_resin": {"support": 3, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "fluoride_gel": {"support": 1, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "glass_ionomer": {"support": 3, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "local_anesthetic": {"support": 4, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "phosphoric_acid": {"support": 1, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "prophylaxis_paste": {"support": 1, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "radiographic_developer": {"support": 1, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "radiographic_fixer": {"support": 2, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "unknown": {"support": 9, "precision": 1.0, "recall": 1.0, "f1": 1.0}
+  },
+  "interpretation": "Regression benchmark only; not an independent production-accuracy estimate."
+}
