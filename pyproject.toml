@@ -3,9 +3,9 @@ requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
 [project]
-name = "procurement-intelligence-br"
-version = "1.7.0"
-description = "Plataforma auditável de inteligência de dados para compras públicas no Brasil."
+name = "atlas-compras-publicas"
+version = "1.8.0"
+description = "Inteligência de dados auditável para compras públicas no Brasil."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
