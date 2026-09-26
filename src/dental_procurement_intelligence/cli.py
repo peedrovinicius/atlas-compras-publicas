@@ -6,11 +6,13 @@ from typing import Any
 
 from dental_procurement_intelligence.analytics import (
     DuckDBWarehouse,
+    anomaly_summary,
     award_summary,
     build_analytics,
     build_awards,
+    build_price_signals,
 )
-from dental_procurement_intelligence.ingestion import EvidenceStore
+from dental_procurement_intelligence.ingestion import EvidenceStore, capture_contract
 from dental_procurement_intelligence.pncp import PNCPClient
 
 
@@ -38,6 +40,15 @@ def build_parser() -> argparse.ArgumentParser:
     capture.add_argument("--year", required=True, type=int)
     capture.add_argument("--sequence", required=True, type=int)
     capture.add_argument("--output", default="data/raw")
+
+    capture_all = subparsers.add_parser(
+        "capture-contract",
+        help="Captura itens e resultados de todos os itens da contratação",
+    )
+    capture_all.add_argument("--cnpj", required=True)
+    capture_all.add_argument("--year", required=True, type=int)
+    capture_all.add_argument("--sequence", required=True, type=int)
+    capture_all.add_argument("--output", default="data/raw")
 
     results = subparsers.add_parser(
         "results",
@@ -75,6 +86,15 @@ def build_parser() -> argparse.ArgumentParser:
     awards.add_argument("--parquet", default="data/silver/awards.parquet")
     awards.add_argument("--database", default="data/analytics.duckdb")
 
+    signals = subparsers.add_parser(
+        "detect-anomalies",
+        help="Gera sinais estatísticos explicáveis de preços atípicos",
+    )
+    signals.add_argument("--database", default="data/analytics.duckdb")
+    signals.add_argument("--minimum-group-size", type=int, default=5)
+    signals.add_argument("--modified-z-threshold", type=float, default=3.5)
+    signals.add_argument("--iqr-multiplier", type=float, default=1.5)
+
     summary = subparsers.add_parser(
         "analytics-summary",
         help="Exibe o resumo de preços estimados por categoria",
@@ -86,6 +106,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exibe economia entre valores estimados e homologados",
     )
     awards_summary.add_argument("--database", default="data/analytics.duckdb")
+
+    anomalies_summary = subparsers.add_parser(
+        "anomalies-summary",
+        help="Exibe um resumo dos sinais de preços atípicos",
+    )
+    anomalies_summary.add_argument("--database", default="data/analytics.duckdb")
 
     return parser
 
@@ -108,6 +134,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(_serialize(asdict(result)))
         return 0
 
+    if args.command == "detect-anomalies":
+        result = build_price_signals(
+            args.database,
+            minimum_group_size=args.minimum_group_size,
+            modified_z_threshold=args.modified_z_threshold,
+            iqr_multiplier=args.iqr_multiplier,
+        )
+        print(_serialize(asdict(result)))
+        return 0
+
     if args.command == "analytics-summary":
         print(_serialize(DuckDBWarehouse(args.database).summary()))
         return 0
@@ -116,10 +152,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(_serialize(award_summary(args.database)))
         return 0
 
+    if args.command == "anomalies-summary":
+        print(_serialize(anomaly_summary(args.database)))
+        return 0
+
     with PNCPClient() as client:
+        store = EvidenceStore(args.output) if hasattr(args, "output") else None
+
+        if args.command == "capture-contract":
+            result = capture_contract(
+                client,
+                store,
+                cnpj=args.cnpj,
+                year=args.year,
+                sequence=args.sequence,
+            )
+            print(_serialize(asdict(result)))
+            return 0
+
         if args.command == "capture-items":
             raw = client.get_items_raw(args.cnpj, args.year, args.sequence)
-            record = EvidenceStore(args.output).capture(raw)
+            record = store.capture(raw)
             print(_serialize(asdict(record)))
             return 0
 
@@ -130,7 +183,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.sequence,
                 args.item,
             )
-            record = EvidenceStore(args.output).capture(raw)
+            record = store.capture(raw)
             print(_serialize(asdict(record)))
             return 0
 
