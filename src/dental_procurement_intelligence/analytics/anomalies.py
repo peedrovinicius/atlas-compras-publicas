@@ -259,8 +259,11 @@ def build_price_signals(
                     WHEN mad_price > 0
                     THEN
                         0.6744897501960817
-                        * (awarded_price_per_base_unit - median_price)
-                        / mad_price
+                        * (
+                            CAST(awarded_price_per_base_unit AS DOUBLE)
+                            - CAST(median_price AS DOUBLE)
+                        )
+                        / CAST(mad_price AS DOUBLE)
                     ELSE NULL
                 END AS modified_z_score,
                 CASE
@@ -274,8 +277,11 @@ def build_price_signals(
                     WHEN mad_price > 0 THEN
                         ABS(
                             0.6744897501960817
-                            * (awarded_price_per_base_unit - median_price)
-                            / mad_price
+                            * (
+                                CAST(awarded_price_per_base_unit AS DOUBLE)
+                                - CAST(median_price AS DOUBLE)
+                            )
+                            / CAST(mad_price AS DOUBLE)
                         ) >= {modified_z_threshold}
                     WHEN iqr_price > 0 THEN
                         awarded_price_per_base_unit
