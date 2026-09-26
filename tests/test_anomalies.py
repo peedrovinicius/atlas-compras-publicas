@@ -78,7 +78,8 @@ def test_modified_z_score_uses_most_specific_sufficient_scope(tmp_path: Path) ->
                 awarded_price_per_base_unit,
                 comparison_scope,
                 detection_method,
-                is_price_signal
+                is_price_signal,
+                typeof(modified_z_score)
             FROM price_anomalies
             """
         ).fetchone()
@@ -88,6 +89,7 @@ def test_modified_z_score_uses_most_specific_sufficient_scope(tmp_path: Path) ->
         "uf_trimestre",
         "modified_z_score",
         True,
+        "DOUBLE",
     )
 
 
