@@ -6,7 +6,7 @@ O projeto constrói um motor reprodutível para coletar, normalizar, comparar e 
 
 ## Status atual
 
-**v1.5.0: benchmark independente v4**
+**v1.6.0: pluralização, contexto de formulação e resina fluida**
 
 O núcleo genérico já inclui:
 
@@ -493,6 +493,60 @@ A baseline original permanece preservada em `data/evaluation/v4-baseline.json`.
 
 O próximo passo é corrigir os sete erros sem alterar o v4 e, depois, criar um v5 com novas fontes.
 
+## Resultado pós-tuning da v1.6.0
+
+A v1.6.0 corrige os sete erros revelados pelo benchmark v4 sem alterar nenhum rótulo congelado.
+
+Mudanças aplicadas:
+
+- formas plurais como `RESINAS FLUIDAS`, `ADESIVOS` e `IONOMEROS DE VIDRO` passam a ser reconhecidas;
+- descrições com o termo genérico `ANESTESICO` passam a identificar `local_anesthetic`;
+- `FLUOR ACIDO GEL` passa a identificar `fluoride_gel`;
+- resina descrita como fluida recebe precedência de `flowable_resin`, mesmo quando `FLUIDA` aparece distante de `RESINA COMPOSTA`;
+- alginato citado como componente de um isolante deixa de ser tratado automaticamente como a identidade do produto;
+- a regra de negação foi ampliada para aceitar também `NAO <termo>`.
+
+Revalidação após as correções:
+
+~~~text
+benchmark v1
+  amostras:               37
+  corretas:               37
+  erros:                   0
+  acurácia:                100,00%
+
+benchmark v2
+  amostras:               48
+  corretas:               48
+  erros:                   0
+  acurácia:                100,00%
+
+benchmark v3
+  amostras:               42
+  corretas:               42
+  erros:                   0
+  acurácia:                100,00%
+
+benchmark v4 pós-tuning
+  amostras:               48
+  corretas:               48
+  erros:                   0
+  acurácia:                100,00%
+  macro precision:         1,0000
+  macro recall:            1,0000
+  macro F1:                1,0000
+~~~
+
+No total, os quatro conjuntos somam **175 exemplos** sem erro de categoria após o tuning acumulado.
+
+Esse número não deve ser interpretado como uma nova estimativa independente de produção. Os benchmarks v2, v3 e v4 foram usados sucessivamente para orientar melhorias depois de suas respectivas baselines independentes.
+
+A baseline independente original do v4 permanece em `data/evaluation/v4-baseline.json`, com 85,42% de acurácia.
+
+O resultado pós-tuning está em `data/evaluation/v4-post-v1.6.json`.
+
+O próximo teste de generalização deve usar um v5 formado por fontes ainda não vistas.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -658,7 +712,9 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Registrar desempenho pós-tuning do v3
 - [x] Criar benchmark v4 com fontes ainda não vistas
 - [x] Registrar baseline independente v4
-- [ ] Corrigir os sete erros do v4 sem alterar seus rótulos
+- [x] Corrigir os sete erros do v4 sem alterar seus rótulos
+- [x] Revalidar v1, v2, v3 e v4 sem regressão
+- [x] Registrar desempenho pós-tuning do v4
 - [ ] Criar benchmark v5 com fontes ainda não vistas
 - [ ] Extrair contrato formal de plugins de domínio
 - [ ] Adicionar segunda vertical além de odontologia

@@ -47,7 +47,7 @@ class PNCPClient:
             transport=transport,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "procurement-intelligence-br/1.5",
+                "User-Agent": "procurement-intelligence-br/1.6",
             },
         )
 

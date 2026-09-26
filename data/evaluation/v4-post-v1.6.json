@@ -1,0 +1,44 @@
+{
+  "dataset": "data/evaluation/v4.jsonl",
+  "dataset_version": "v4",
+  "frozen_dataset_commit": "6959597d9c669161d82f80808ccf183056dd1949",
+  "baseline_release_commit": "6d90f8eade7fecbd99e1cb7245f4936aca2c7eb6",
+  "post_tuning_taxonomy_commit": "f88eede2dcc2cfe1c56d5b3421343444b700dd29",
+  "sample_count": 48,
+  "category_correct": 48,
+  "category_error_count": 0,
+  "category_accuracy": 1.0,
+  "macro_precision": 1.0,
+  "macro_recall": 1.0,
+  "macro_f1": 1.0,
+  "shade": {
+    "support": 0,
+    "accuracy": null
+  },
+  "concentration_percent": {
+    "support": 3,
+    "accuracy": 1.0
+  },
+  "regression": {
+    "v1": {
+      "sample_count": 37,
+      "category_correct": 37,
+      "category_error_count": 0,
+      "category_accuracy": 1.0
+    },
+    "v2": {
+      "sample_count": 48,
+      "category_correct": 48,
+      "category_error_count": 0,
+      "category_accuracy": 1.0
+    },
+    "v3": {
+      "sample_count": 42,
+      "category_correct": 42,
+      "category_error_count": 0,
+      "category_accuracy": 1.0
+    }
+  },
+  "aggregate_regression_sample_count": 175,
+  "interpretation": "Post-tuning result on v4. It is not an independent production-accuracy estimate because v4 errors guided the v1.6.0 changes."
+}
