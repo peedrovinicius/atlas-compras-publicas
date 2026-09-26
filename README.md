@@ -2,31 +2,33 @@
 
 Plataforma auditável de inteligência de dados para compras públicas odontológicas no Brasil.
 
-O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar e analisar itens odontológicos publicados no Portal Nacional de Contratações Públicas (PNCP). O desafio principal não é apenas calcular preços, mas determinar quando descrições pouco padronizadas representam produtos realmente comparáveis.
+O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar e analisar itens odontológicos publicados no Portal Nacional de Contratações Públicas (PNCP). O desafio principal não é apenas calcular preços, mas determinar quando descrições pouco padronizadas representam produtos realmente comparáveis e quando um preço merece revisão estatística.
 
 ## Status atual
 
-**v0.5.0 — resultados homologados e economia auditável**
+**v0.6.0 — captura completa e sinais robustos de preço**
 
 O repositório já inclui:
 
 - pacote Python tipado;
 - cliente para a API pública do PNCP;
-- modelos estruturados para itens e resultados homologados;
-- normalização determinística de textos e medidas;
+- captura de todos os itens de uma contratação;
+- captura automática dos resultados de cada item;
 - armazenamento bruto endereçado por conteúdo com SHA-256;
 - manifesto de proveniência e verificação de integridade;
 - Product Identity Engine com decisão explicável;
 - normalização de embalagem e quantidade física;
 - transformação analítica em Parquet;
 - catálogo SQL local com DuckDB;
-- cálculo de preço normalizado por unidade física;
-- integração de resultados homologados;
+- integração entre itens e resultados homologados;
 - cálculo de valor estimado equivalente, valor homologado e economia;
 - exclusão de resultados cancelados dos indicadores por padrão;
-- rastreabilidade separada para evidência do item e do resultado.
+- cálculo de preço homologado por unidade física;
+- formação explícita de grupos comparáveis;
+- detecção robusta de preços atípicos com MAD e IQR;
+- rastreabilidade do sinal estatístico até as evidências brutas.
 
-O GitHub Actions continua desativado nesta fase. As validações foram desenhadas para execução local, evitando consumo desnecessário de minutos de CI.
+O GitHub Actions permanece desativado nesta fase para evitar consumo desnecessário de minutos de CI.
 
 ## Problema
 
@@ -42,21 +44,23 @@ Uma comparação direta pelo texto ou pelo preço unitário informado pode ser e
 
 A pergunta central do projeto é:
 
-> Estes registros representam produtos comparáveis o suficiente para uma análise de preço, e conseguimos explicar essa decisão?
+> Estes registros representam produtos comparáveis o suficiente para uma análise de preço, e conseguimos explicar essa decisão até a fonte pública original?
 
 ## Fonte dos dados
 
-A fonte principal é a API pública de produção do PNCP:
+A fonte principal é a API pública do PNCP:
 
 `https://pncp.gov.br/api/pncp`
 
-O pipeline preserva o conteúdo bruto recebido da fonte antes de qualquer transformação.
+O pipeline utiliza, entre outros, os endpoints oficiais para itens e resultados de itens de uma contratação.
+
+O conteúdo bruto recebido é preservado antes de qualquer transformação.
 
 ## Arquitetura
 
 ~~~mermaid
 flowchart LR
-    A[API PNCP] --> B[Evidência bruta]
+    A[API PNCP] --> B[Evidência bruta SHA-256]
     B --> C[Validação estrutural]
     C --> D[Normalização textual]
     D --> E[Product Identity Engine]
@@ -64,10 +68,11 @@ flowchart LR
     F --> G[Parquet]
     G --> H[DuckDB]
     H --> I[Itens + homologações]
-    I --> J[Economia e preços comparáveis]
-    J --> K[Análise robusta de preços]
-    K --> L[API de evidências]
-    L --> M[Dashboard]
+    I --> J[Grupos comparáveis]
+    J --> K[MAD / IQR]
+    K --> L[Sinais explicáveis]
+    L --> M[API de evidências]
+    M --> N[Dashboard]
 ~~~
 
 ### Camadas de dados
@@ -75,7 +80,29 @@ flowchart LR
 - **raw** — resposta original e imutável da fonte;
 - **bronze** — registros tipados e estruturalmente validados;
 - **silver** — atributos, unidades, itens e homologações normalizados;
-- **gold** — grupos comparáveis, estatísticas e alertas explicáveis.
+- **gold** — grupos comparáveis e sinais estatísticos explicáveis.
+
+## Captura completa da contratação
+
+A v0.6.0 adiciona um fluxo único que:
+
+1. consulta os itens da contratação;
+2. preserva a resposta bruta dos itens;
+3. percorre cada número de item retornado pelo PNCP;
+4. consulta os resultados cadastrados daquele item;
+5. preserva cada resposta de resultado separadamente;
+6. retorna contagens e referências das evidências armazenadas.
+
+Exemplo:
+
+~~~bash
+dpi capture-contract \
+  --cnpj 10000000000003 \
+  --year 2021 \
+  --sequence 1
+~~~
+
+A captura é deliberadamente sequencial nesta fase para reduzir complexidade e evitar carga agressiva sobre a fonte pública.
 
 ## Product Identity Engine
 
@@ -98,24 +125,18 @@ O motor não usa apenas similaridade textual. Diferenças relevantes de categori
 
 ## Preço normalizado
 
-Além do preço unitário informado pelo PNCP, a camada analítica calcula preço por unidade física quando a descrição oferece informação suficiente.
-
-Exemplo:
+Quando a descrição oferece informação suficiente, o pipeline calcula preço por unidade física.
 
 ~~~text
-Preço do item: R$ 80,00
+Preço homologado: R$ 72,00
 Embalagem: 2 seringas
 Conteúdo por seringa: 4 g
 Conteúdo total: 8 g
 
-Preço normalizado: R$ 10,00/g
+Preço homologado normalizado: R$ 9,00/g
 ~~~
 
 ## Estimado x homologado
-
-A v0.5.0 cruza a estimativa do item com o resultado homologado.
-
-Exemplo:
 
 ~~~text
 Valor unitário estimado:   R$ 80,00
@@ -128,12 +149,55 @@ Economia:                   R$ 80,00
 Economia percentual:        10,00%
 ~~~
 
-Cada linha dessa camada mantém dois identificadores de proveniência:
+Resultados cancelados pelo PNCP não entram nos indicadores por padrão.
 
-- SHA-256 da resposta bruta do item;
-- SHA-256 da resposta bruta do resultado homologado.
+## Sinais robustos de preço
 
-Resultados marcados como cancelados pelo PNCP não entram nos indicadores de economia por padrão.
+A v0.6.0 introduz uma camada `gold_price_signals`.
+
+Um grupo comparável considera, na versão atual:
+
+- categoria odontológica;
+- apresentação;
+- cor, quando identificada;
+- unidade física normalizada;
+- quantidade física normalizada.
+
+Um registro só pode gerar sinal quando o grupo possui pelo menos **5 resultados válidos**.
+
+### Método principal
+
+Quando o desvio absoluto mediano é maior que zero:
+
+`modified z-score = 0,67448975 × (preço - mediana) / MAD`
+
+O limite padrão é:
+
+`|modified z-score| >= 3,5`
+
+### Fallback
+
+Quando o MAD é zero, mas o intervalo interquartil é maior que zero, o sistema usa limites de Tukey:
+
+`Q1 - 1,5 × IQR`
+
+`Q3 + 1,5 × IQR`
+
+Quando não há amostra ou variação suficientes, nenhum sinal é produzido.
+
+Executar:
+
+~~~bash
+dpi detect-anomalies --database data/analytics.duckdb
+~~~
+
+Consultar resumo:
+
+~~~bash
+dpi anomalies-summary --database data/analytics.duckdb
+~~~
+
+A metodologia completa está em `docs/metodologia-anomalias.md`.
 
 ## Início rápido
 
@@ -155,59 +219,20 @@ pip install -e ".[dev]"
 pytest
 ~~~
 
-Consultar itens:
+## Fluxo analítico
 
-~~~bash
-dpi items --cnpj 10000000000003 --year 2021 --sequence 1
-~~~
-
-Capturar itens como evidência:
-
-~~~bash
-dpi capture-items --cnpj 10000000000003 --year 2021 --sequence 1
-~~~
-
-Consultar resultados homologados:
-
-~~~bash
-dpi results --cnpj 10000000000003 --year 2021 --sequence 1 --item 1
-~~~
-
-Capturar resultados como evidência:
-
-~~~bash
-dpi capture-results \
-  --cnpj 10000000000003 \
-  --year 2021 \
-  --sequence 1 \
-  --item 1
-~~~
-
-Construir a camada analítica de itens:
-
-~~~bash
-dpi build-analytics \
-  --raw data/raw/objects/sha256/xx/itens.json \
-  --parquet data/silver/items.parquet \
-  --database data/analytics.duckdb
-~~~
-
-Construir a camada de homologações:
-
-~~~bash
-dpi build-awards \
-  --items-raw data/raw/objects/sha256/xx/itens.json \
-  --results-raw data/raw/objects/sha256/yy/resultado-item-1.json \
-  --parquet data/silver/awards.parquet \
-  --database data/analytics.duckdb
-~~~
-
-Mais de um arquivo de resultado pode ser informado após `--results-raw`.
-
-Consultar o resumo de economia:
-
-~~~bash
-dpi awards-summary --database data/analytics.duckdb
+~~~text
+capture-contract
+        ↓
+evidências raw
+        ↓
+build-analytics
+        ↓
+build-awards
+        ↓
+detect-anomalies
+        ↓
+anomalies-summary
 ~~~
 
 ## Estrutura do repositório
@@ -215,30 +240,38 @@ dpi awards-summary --database data/analytics.duckdb
 ~~~text
 src/dental_procurement_intelligence/
   pncp/             cliente PNCP e modelos tipados
-  ingestion/        evidência bruta e proveniência
+  ingestion/        evidência bruta e captura completa
   identity/         identidade canônica e comparabilidade
   normalization/    normalização textual e de medidas
-  analytics/        Parquet, DuckDB, homologações e métricas
+  analytics/        Parquet, DuckDB, homologações e sinais
   cli.py            interface de linha de comando
 
 tests/              testes automatizados
-docs/               arquitetura e decisões técnicas
+docs/               arquitetura e metodologia
 data/               contrato das camadas locais
 ~~~
 
 ## Princípio de auditabilidade
 
-O projeto preserva a cadeia:
+O objetivo é preservar a cadeia:
 
-`indicador → resultado homologado → item normalizado → evidência bruta → PNCP`
+`sinal → grupo comparável → homologação → item → evidência bruta → PNCP`
 
-A camada de homologações mantém hashes distintos para as duas fontes envolvidas no cruzamento.
+As camadas analíticas mantêm hashes das respostas de origem.
 
 ## Salvaguarda metodológica
 
-Economia calculada representa diferença entre a estimativa pública e o resultado homologado para a quantidade homologada. Ela não deve ser interpretada isoladamente como medida de eficiência administrativa.
+Um sinal estatístico significa apenas que o preço se afastou do padrão observado dentro do grupo comparado.
 
-Da mesma forma, um preço estatisticamente atípico não constitui evidência de fraude, corrupção ou ilegalidade.
+Ele não constitui evidência de:
+
+- fraude;
+- corrupção;
+- superfaturamento juridicamente caracterizado;
+- irregularidade administrativa;
+- conduta ilícita do fornecedor ou órgão.
+
+Diferenças podem decorrer de marca, especificação não capturada, região, prazo, logística, volume, momento da compra ou outras variáveis ainda não modeladas.
 
 ## Roadmap
 
@@ -247,21 +280,21 @@ Da mesma forma, um preço estatisticamente atípico não constitui evidência de
 - [x] Normalização textual
 - [x] Extração de medidas
 - [x] Ingestão bruta com hash de conteúdo
-- [x] Vocabulário odontológico canônico — baseline
-- [x] Normalização de embalagem e unidade — baseline
 - [x] Product Identity Engine explicável — baseline
 - [x] Camada analítica Parquet
-- [x] Catálogo e consultas locais com DuckDB
+- [x] DuckDB
 - [x] Preço normalizado por unidade física
-- [x] Resultados homologados integrados à camada analítica
-- [x] Estimado x homologado e economia auditável
-- [ ] Captura automatizada de todos os resultados de uma contratação
+- [x] Resultados homologados
+- [x] Estimado x homologado
+- [x] Captura automática de todos os resultados de uma contratação
+- [x] Detecção robusta de preços atípicos — baseline
 - [ ] Expandir taxonomia odontológica validada
+- [ ] Incorporar atributos técnicos adicionais por categoria
 - [ ] Adicionar recuperação semântica de candidatos
-- [ ] Detecção robusta de preços atípicos
-- [ ] API FastAPI de evidências
+- [ ] Incorporar dimensão geográfica e temporal
+- [ ] FastAPI de evidências
 - [ ] Interface analítica em React
-- [ ] Relatório público de metodologia e qualidade dos dados
+- [ ] Relatório público de qualidade dos dados
 
 ## Princípios
 

@@ -4,133 +4,99 @@
 
 O sistema deve produzir inteligência de preços sem perder a cadeia de evidências que conecta cada resultado analítico ao registro original do PNCP.
 
-## Contrato de dados
+## Fluxo
 
-Cada registro percorre quatro camadas lógicas.
+`API PNCP → raw → bronze → silver → gold → API analítica → dashboard`
 
-### Raw
+## Raw
 
-Conteúdo original da fonte acompanhado dos metadados de coleta. Depois de persistido, o objeto bruto é tratado como imutável.
+Conteúdo original da fonte acompanhado de:
 
-Metadados de proveniência:
-
-- URL de origem;
-- data e hora da coleta em UTC;
+- URL;
+- data e hora da coleta;
 - status HTTP;
-- SHA-256 do conteúdo;
-- versão do pipeline.
+- SHA-256;
+- quantidade de bytes;
+- manifesto de proveniência.
 
-Itens e resultados homologados são capturados como evidências independentes.
+Itens e resultados são armazenados como evidências independentes.
 
-### Bronze
+A v0.6.0 adiciona captura completa de uma contratação. O pipeline consulta primeiro os itens e, em seguida, o endpoint de resultados de cada item retornado.
 
-Registros do PNCP tipados e estruturalmente validados. Nesta camada os campos são organizados, mas valores semânticos não são corrigidos ou inferidos.
+## Bronze
 
-### Silver
+Registros tipados do PNCP.
 
-Camada de normalização de domínio. Contém:
+Nenhuma inferência semântica deve ser misturada à validação estrutural.
 
-- descrição normalizada;
-- medidas extraídas;
-- quantidade por embalagem;
+## Silver
+
+Nesta camada são produzidos:
+
+- texto normalizado;
+- categoria;
 - apresentação;
 - cor;
-- categoria odontológica;
-- preço normalizado por unidade física;
-- resultado homologado;
-- fornecedor e marca quando informados;
-- valor estimado equivalente;
-- valor homologado;
-- economia absoluta e percentual;
-- referências SHA-256 das evidências de item e resultado.
+- quantidade por embalagem;
+- quantidade física;
+- preço estimado normalizado;
+- preço homologado normalizado;
+- fornecedor;
+- marca;
+- economia;
+- referências às evidências de origem.
 
-Resultados com situação cancelada são excluídos das métricas de homologação por padrão.
+As tabelas principais atuais são:
 
-Os datasets são persistidos em Parquet para permitir leitura eficiente, portabilidade e análise colunar.
+- `silver_items`;
+- `silver_awards`.
 
-### Gold
+## Gold
 
-Somente grupos de comparação defensáveis chegam a esta camada.
+A camada gold contém sinais analíticos derivados apenas de registros que atendem aos critérios mínimos de comparabilidade.
 
-A camada deverá conter:
+A tabela atual é:
 
-- produtos comparáveis;
-- estatísticas robustas;
-- sinais de preço atípico;
-- tamanho da população comparada;
-- referências de evidência;
-- justificativa metodológica.
+- `gold_price_signals`.
 
-## DuckDB
+A visão:
 
-DuckDB funciona como catálogo analítico local sobre os datasets em Parquet.
+- `price_anomalies`
 
-As estruturas atuais incluem:
+contém somente registros sinalizados pelo método robusto.
 
-- `silver_items` — itens normalizados;
-- `category_price_summary` — resumo de preços estimados;
-- `silver_awards` — resultados homologados cruzados com os itens;
-- `award_savings_summary` — resumo de estimado, homologado e economia por categoria.
+## Grupo comparável
 
-A arquitetura mantém Parquet como formato de intercâmbio e DuckDB como mecanismo SQL, evitando dependência prematura de infraestrutura externa.
+A chave baseline combina:
 
-## Estratégia de identidade de produto
+- categoria;
+- apresentação;
+- cor;
+- unidade física;
+- quantidade física.
 
-Identidade de produto é deliberadamente separada de similaridade textual.
+A chave é explícita no dataset para permitir auditoria do agrupamento.
 
-O mecanismo deverá combinar:
+## Estatística robusta
 
-1. extração determinística de unidades, quantidade por embalagem e atributos clínicos;
-2. vocabulário odontológico controlado;
-3. regras de compatibilidade capazes de rejeitar correspondências inválidas;
-4. similaridade semântica para variações residuais de linguagem;
-5. objeto de explicação com evidências favoráveis, conflitos e informações ausentes.
+Grupos com menos de cinco observações não produzem sinais.
 
-Uma pontuação alta de similaridade nunca poderá ignorar incompatibilidade de unidade, apresentação ou atributo clinicamente relevante.
+Quando MAD é maior que zero, utiliza-se modified z-score.
 
-## Preço comparável
+Quando MAD é zero e IQR é maior que zero, utiliza-se IQR.
 
-Sempre que houver informação suficiente, o sistema calcula:
-
-`preço do item / quantidade física total normalizada`
-
-Exemplo:
-
-`R$ 80,00 / 8 g = R$ 10,00/g`
-
-Massa e volume permanecem dimensões distintas.
-
-## Estimado x homologado
-
-Para uma quantidade homologada `q`:
-
-`valor estimado equivalente = valor unitário estimado × q`
-
-`economia = valor estimado equivalente - valor total homologado`
-
-`economia percentual = economia / valor estimado equivalente × 100`
-
-Quando o PNCP não fornece valor total homologado, o pipeline pode reconstruí-lo a partir de valor unitário homologado e quantidade homologada.
+Quando não existe variação suficiente, o sistema registra a condição sem gerar sinal.
 
 ## Rastreabilidade
 
-Cada registro de homologação mantém:
+A cadeia desejada é:
 
-- SHA-256 da resposta bruta que originou o item;
-- SHA-256 da resposta bruta que originou o resultado.
+`sinal → grupo → homologação → item → SHA-256 → resposta original → PNCP`
 
-Isso impede que o cruzamento analítico apague a proveniência de qualquer lado da relação.
+O processamento não deve remover os identificadores de proveniência.
 
-## Salvaguarda analítica
+## Salvaguarda
 
-Economia não é sinônimo automático de eficiência.
+Sinal estatístico não equivale a irregularidade.
 
-Detecção de anomalias é mecanismo de priorização, não acusação.
-
-Todo futuro sinal deverá expor:
-
-- população utilizada na comparação;
-- método estatístico;
-- tamanho da amostra;
-- registros subjacentes;
-- proveniência dos dados.
+A camada gold serve para priorização analítica e deve sempre expor método, grupo, tamanho da amostra e limitações.
