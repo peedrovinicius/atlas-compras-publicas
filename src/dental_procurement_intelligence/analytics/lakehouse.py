@@ -36,6 +36,8 @@ ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
     "shade": pl.String,
     "concentration_percent": pl.Float64,
     "package_count": pl.Int64,
+    "measurement_candidate_count": pl.Int64,
+    "measurement_resolution": pl.String,
     "unit_quantity_value": pl.Float64,
     "unit_quantity_unit": pl.String,
     "normalized_total_quantity_value": pl.Float64,
@@ -129,6 +131,8 @@ def build_item_frame(
                     else None
                 ),
                 "package_count": product.package_count,
+                "measurement_candidate_count": len(product.measurement_candidates),
+                "measurement_resolution": product.measurement_resolution,
                 "unit_quantity_value": (
                     float(product.unit_quantity.value)
                     if product.unit_quantity is not None
