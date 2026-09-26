@@ -25,6 +25,8 @@ def _create_awards_table(
                 shade VARCHAR,
                 concentration_percent DOUBLE,
                 package_count BIGINT,
+                measurement_candidate_count BIGINT,
+                measurement_resolution VARCHAR,
                 unit_quantity_unit VARCHAR,
                 unit_quantity_value DOUBLE,
                 normalized_quantity_unit VARCHAR,
@@ -43,8 +45,8 @@ def _create_awards_table(
                 """
                 INSERT INTO silver_awards VALUES (
                     ?, 'composite_resin', 'syringe', 'A2', ?,
-                    NULL, 'g', 4.0, 'g', 4.0, ?, 'defensible',
-                    ?, ?, ?, ?
+                    NULL, 1, 'single', 'g', 4.0, 'g', 4.0,
+                    ?, 'defensible', ?, ?, ?, ?
                 )
                 """,
                 [
@@ -155,3 +157,30 @@ def test_different_package_configurations_use_different_comparison_groups(
         ).fetchall()
 
     assert groups[-1] == (6, 1)
+
+
+def test_old_awards_schema_requires_rebuild(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards (
+                item_number BIGINT,
+                package_count BIGINT,
+                unit_quantity_value DOUBLE,
+                unit_quantity_unit VARCHAR,
+                price_normalization_status VARCHAR
+            )
+            """
+        )
+
+    try:
+        build_price_signals(database)
+    except ValueError as error:
+        message = str(error)
+    else:
+        raise AssertionError("Schema antigo deveria exigir reconstrução")
+
+    assert "measurement_candidate_count" in message
+    assert "measurement_resolution" in message
