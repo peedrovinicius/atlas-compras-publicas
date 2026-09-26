@@ -92,7 +92,7 @@ def _category_metrics(
     expected: list[str],
     predicted: list[str],
 ) -> dict[str, dict[str, float | int]]:
-    labels = sorted(set(expected))
+    labels = sorted(set(expected) | set(predicted))
     metrics: dict[str, dict[str, float | int]] = {}
 
     for label in labels:
