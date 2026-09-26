@@ -24,9 +24,13 @@ def _create_awards_table(
                 presentation VARCHAR,
                 shade VARCHAR,
                 concentration_percent DOUBLE,
+                package_count BIGINT,
+                unit_quantity_unit VARCHAR,
+                unit_quantity_value DOUBLE,
                 normalized_quantity_unit VARCHAR,
                 normalized_quantity_value DOUBLE,
                 awarded_price_per_base_unit DOUBLE,
+                price_normalization_status VARCHAR,
                 state_code VARCHAR,
                 macroregion VARCHAR,
                 analysis_year BIGINT,
@@ -39,7 +43,8 @@ def _create_awards_table(
                 """
                 INSERT INTO silver_awards VALUES (
                     ?, 'composite_resin', 'syringe', 'A2', ?,
-                    'g', 4.0, ?, ?, ?, ?, ?
+                    NULL, 'g', 4.0, 'g', 4.0, ?, 'defensible',
+                    ?, ?, ?, ?
                 )
                 """,
                 [
@@ -96,3 +101,22 @@ def test_small_groups_do_not_generate_signals(tmp_path: Path) -> None:
         }
 
     assert methods == {"insufficient_sample"}
+
+
+def test_review_price_normalization_is_excluded_from_signals(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    _create_awards_table(database, [9.0, 10.0, 10.0, 11.0, 40.0])
+
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            UPDATE silver_awards
+            SET price_normalization_status = 'review'
+            WHERE awarded_price_per_base_unit = 40.0
+            """
+        )
+
+    result = build_price_signals(database)
+
+    assert result.eligible_row_count == 4
+    assert result.signal_count == 0
