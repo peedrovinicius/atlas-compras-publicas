@@ -49,6 +49,7 @@ Contém:
 - apresentação;
 - cor;
 - concentração;
+- atributos técnicos específicos da categoria;
 - quantidade por embalagem;
 - medida física;
 - preço normalizado;
@@ -67,7 +68,7 @@ Contém:
 - `award_key`;
 
 - atributos canônicos do produto;
-- cor e concentração;
+- cor, concentração e atributos técnicos;
 - preços estimado e homologado;
 - preço por unidade física;
 - fornecedor e marca;
@@ -115,8 +116,11 @@ A identidade técnica do grupo inclui:
 - apresentação;
 - cor;
 - concentração;
+- atributos técnicos extraídos;
 - unidade física;
 - quantidade física.
+
+Anestésicos locais sem princípio ativo identificado não entram na camada de sinais.
 
 Hierarquia geográfico-temporal:
 
