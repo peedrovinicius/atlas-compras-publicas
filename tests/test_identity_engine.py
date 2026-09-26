@@ -65,7 +65,7 @@ def test_quality_score_exposes_missing_critical_attribute() -> None:
     quality = assess_normalization_quality(product)
 
     assert quality.score == Decimal("0.900")
-    assert quality.level == "high"
+    assert quality.level == "medium"
     assert not quality.fully_structured
     assert quality.critical_attribute_name == "concentration_percent"
     assert quality.critical_attribute_identified is False
@@ -83,6 +83,16 @@ def test_engine_rejects_different_concentrations() -> None:
         "concentration_percent differs" in conflict
         for conflict in result.conflicts
     )
+
+
+def test_engine_requires_review_when_critical_attribute_is_missing() -> None:
+    result = ProductIdentityEngine().compare(
+        "RESINA COMPOSTA SERINGA 4G",
+        "RESINA COMPOSTA SERINGA 4G",
+    )
+
+    assert result.decision == IdentityDecision.REVIEW
+    assert any("shade missing" in item for item in result.missing_evidence)
 
 
 def test_engine_matches_equivalent_descriptions_with_explanation() -> None:
