@@ -1,6 +1,9 @@
 from decimal import Decimal
 
-from dental_procurement_intelligence.normalization import extract_measurements, normalize_description
+from dental_procurement_intelligence.normalization import (
+    extract_measurements,
+    normalize_description,
+)
 
 
 def test_normalize_description_removes_accents_and_collapses_noise() -> None:

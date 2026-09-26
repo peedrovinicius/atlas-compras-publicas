@@ -6,7 +6,7 @@ This project builds a reproducible pipeline to collect, normalize and compare de
 
 ## Current status
 
-**v0.2.0 — auditable ingestion**
+**v0.3.0 — explainable product identity baseline**
 
 The repository currently includes:
 
@@ -17,7 +17,8 @@ The repository currently includes:
 - unit-tested parsing rules;
 - an explicit raw-to-evidence architecture;
 - a CLI for inspecting PNCP items and results;
-- content-addressed raw evidence storage with SHA-256 provenance manifests.
+- content-addressed raw evidence storage with SHA-256 provenance manifests;
+- an explainable deterministic Product Identity Engine baseline.
 
 No automated GitHub Actions workflow is enabled at this stage. Validation is designed to run locally so development does not consume unnecessary CI minutes.
 
@@ -124,6 +125,7 @@ dpi results --cnpj 10000000000003 --year 2021 --sequence 1 --item 1
 src/dental_procurement_intelligence/
   pncp/             public PNCP client and typed payload models
   ingestion/        immutable raw evidence and provenance manifests
+  identity/         canonical product parsing and explainable comparability
   normalization/    deterministic description and measurement parsing
   cli.py            command-line interface
 
@@ -143,9 +145,11 @@ A statistically unusual price is not evidence of fraud, corruption or illegality
 - [x] Deterministic text normalization
 - [x] Measurement extraction baseline
 - [x] Reproducible raw ingestion with content hashes
-- [ ] Dental vocabulary and canonical product model
-- [ ] Packaging and unit-equivalence engine
-- [ ] Product identity scoring with explanations
+- [x] Dental vocabulary and canonical product model — baseline
+- [x] Packaging and unit-equivalence engine — baseline
+- [x] Product identity scoring with explanations — deterministic baseline
+- [ ] Expand domain vocabulary with validated dental taxonomy
+- [ ] Add semantic candidate retrieval without bypassing hard compatibility rules
 - [ ] Parquet/DuckDB analytical layer
 - [ ] Robust price-outlier detection
 - [ ] FastAPI evidence service

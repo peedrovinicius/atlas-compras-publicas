@@ -41,7 +41,10 @@ class PNCPClient:
             base_url=self.settings.pncp_base_url.rstrip("/"),
             timeout=self.settings.pncp_timeout_seconds,
             transport=transport,
-            headers={"Accept": "application/json", "User-Agent": "dental-procurement-intelligence/0.2"},
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "dental-procurement-intelligence/0.3",
+            },
         )
 
     def __enter__(self) -> "PNCPClient":

@@ -20,7 +20,10 @@ def build_parser() -> argparse.ArgumentParser:
     items.add_argument("--year", required=True, type=int)
     items.add_argument("--sequence", required=True, type=int)
 
-    capture = subparsers.add_parser("capture-items", help="Persist immutable raw evidence for PNCP items")
+    capture = subparsers.add_parser(
+        "capture-items",
+        help="Persist immutable raw evidence for PNCP items",
+    )
     capture.add_argument("--cnpj", required=True)
     capture.add_argument("--year", required=True, type=int)
     capture.add_argument("--sequence", required=True, type=int)
