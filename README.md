@@ -1,89 +1,117 @@
 # Dental Procurement Intelligence
 
-Auditable data intelligence for Brazilian public dental procurement.
+Plataforma auditável de inteligência de dados para compras públicas odontológicas no Brasil.
 
-This project builds a reproducible pipeline to collect, normalize and compare dental procurement items published by Brazil's Portal Nacional de Contratações Públicas (PNCP). The central challenge is not plotting prices: it is determining when poorly standardized procurement descriptions refer to genuinely comparable products.
+O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar e analisar itens odontológicos publicados no Portal Nacional de Contratações Públicas (PNCP). O desafio principal não é apenas calcular preços, mas determinar quando descrições pouco padronizadas representam produtos realmente comparáveis.
 
-## Current status
+## Status atual
 
-**v0.3.0 — explainable product identity baseline**
+**v0.4.0 — camada analítica com Parquet e DuckDB**
 
-The repository currently includes:
+O repositório já inclui:
 
-- a typed Python package;
-- a public PNCP API client;
-- structured models for procurement items and awarded results;
-- deterministic text and measurement normalization;
-- unit-tested parsing rules;
-- an explicit raw-to-evidence architecture;
-- a CLI for inspecting PNCP items and results;
-- content-addressed raw evidence storage with SHA-256 provenance manifests;
-- an explainable deterministic Product Identity Engine baseline.
+- pacote Python tipado;
+- cliente para a API pública do PNCP;
+- modelos estruturados para itens e resultados homologados;
+- normalização determinística de textos e medidas;
+- armazenamento bruto endereçado por conteúdo com SHA-256;
+- manifesto de proveniência e verificação de integridade;
+- Product Identity Engine com decisão explicável;
+- normalização de embalagem e quantidade física;
+- transformação analítica em Parquet;
+- catálogo SQL local com DuckDB;
+- cálculo de preço normalizado por unidade física;
+- testes automatizados para as principais regras.
 
-No automated GitHub Actions workflow is enabled at this stage. Validation is designed to run locally so development does not consume unnecessary CI minutes.
+O GitHub Actions continua desativado nesta fase. As validações foram desenhadas para execução local, evitando consumo desnecessário de minutos de CI.
 
-## Why this project exists
+## Problema
 
-Public procurement descriptions are often inconsistent. The same material can appear with abbreviations, different packaging conventions, spelling variants and mixed units. Direct price comparisons can therefore be misleading.
+Descrições de compras públicas frequentemente apresentam abreviações, erros, variações de embalagem e unidades incompatíveis.
 
-Dental Procurement Intelligence is designed around a stricter question:
-
-> Are these two procurement records comparable enough for a price analysis, and can that decision be explained?
-
-The long-term system will combine deterministic parsing, domain rules, semantic similarity and robust statistics while preserving traceability to the original public record.
-
-## Data source
-
-The primary source is the public PNCP production API:
-
-`https://pncp.gov.br/api/pncp`
-
-The initial integration uses official endpoints for procurement items and item results. Raw responses are treated as source evidence and should never be overwritten by transformed data.
-
-## Architecture
-
-~~~mermaid
-flowchart LR
-    A[PNCP API] --> B[Raw evidence]
-    B --> C[Schema validation]
-    C --> D[Text normalization]
-    D --> E[Product identity engine]
-    E --> F[Unit normalization]
-    F --> G[Comparable groups]
-    G --> H[Robust price analytics]
-    H --> I[Evidence API]
-    I --> J[Dashboard]
-~~~
-
-The intended data layers are:
-
-- **raw** — immutable source payloads;
-- **bronze** — structurally validated records;
-- **silver** — normalized descriptions, units and product attributes;
-- **gold** — comparable products, statistics and explainable alerts.
-
-## Product identity engine
-
-A future record such as:
+Exemplos:
 
 `RES FOTOP A2 C/2 SER 4G`
 
-should become structured evidence similar to:
+`RESINA COMPOSTA FOTOPOLIMERIZAVEL COR A2 SERINGA 4 G`
 
-~~~text
-category: composite_resin
-shade: A2
-presentation: syringe
-package_count: 2
-unit_mass_g: 4
-package_mass_g: 8
+Uma comparação direta pelo texto ou pelo preço unitário informado pode ser enganosa.
+
+A pergunta central do projeto é:
+
+> Estes registros representam produtos comparáveis o suficiente para uma análise de preço, e conseguimos explicar essa decisão?
+
+## Fonte dos dados
+
+A fonte principal é a API pública de produção do PNCP:
+
+`https://pncp.gov.br/api/pncp`
+
+O pipeline preserva o conteúdo bruto recebido da fonte antes de qualquer transformação.
+
+## Arquitetura
+
+~~~mermaid
+flowchart LR
+    A[API PNCP] --> B[Evidência bruta]
+    B --> C[Validação estrutural]
+    C --> D[Normalização textual]
+    D --> E[Product Identity Engine]
+    E --> F[Normalização de unidades]
+    F --> G[Parquet]
+    G --> H[DuckDB]
+    H --> I[Grupos comparáveis]
+    I --> J[Análise robusta de preços]
+    J --> K[API de evidências]
+    K --> L[Dashboard]
 ~~~
 
-The system must retain the original description and explain every transformation. Similar text alone will never be treated as sufficient proof of product equivalence.
+### Camadas de dados
 
-## Quick start
+- **raw** — resposta original e imutável da fonte;
+- **bronze** — registros tipados e estruturalmente validados;
+- **silver** — atributos de produto, unidades e medidas normalizadas;
+- **gold** — grupos comparáveis, estatísticas e alertas explicáveis.
 
-Python 3.12 or newer is recommended.
+## Product Identity Engine
+
+Uma descrição como:
+
+`RES FOTOP A2 C/2 SERINGAS 4G`
+
+já pode ser transformada em uma representação estruturada:
+
+~~~text
+categoria: composite_resin
+cor: A2
+apresentacao: syringe
+quantidade_embalagem: 2
+quantidade_unitaria: 4 g
+quantidade_total: 8 g
+~~~
+
+O motor não usa apenas similaridade textual. Diferenças relevantes de categoria, apresentação, cor ou quantidade podem tornar dois itens incompatíveis mesmo quando os textos parecem semelhantes.
+
+## Preço normalizado
+
+Além do preço unitário informado pelo PNCP, a camada analítica calcula preço por unidade física quando a descrição oferece informação suficiente.
+
+Exemplo:
+
+~~~text
+Preço do item: R$ 80,00
+Embalagem: 2 seringas
+Conteúdo por seringa: 4 g
+Conteúdo total: 8 g
+
+Preço normalizado: R$ 10,00/g
+~~~
+
+Esse valor permite comparações mais defensáveis entre embalagens diferentes.
+
+## Início rápido
+
+Recomendado: Python 3.12 ou superior.
 
 ~~~bash
 python -m venv .venv
@@ -92,7 +120,7 @@ pip install -e ".[dev]"
 pytest
 ~~~
 
-On Windows PowerShell:
+No Windows PowerShell:
 
 ~~~powershell
 python -m venv .venv
@@ -101,66 +129,89 @@ pip install -e ".[dev]"
 pytest
 ~~~
 
-Inspect the items of a known PNCP procurement:
+Consultar itens de uma contratação conhecida:
 
 ~~~bash
 dpi items --cnpj 10000000000003 --year 2021 --sequence 1
 ~~~
 
-Capture the exact raw PNCP response with a SHA-256 evidence manifest:
+Capturar a resposta bruta com manifesto SHA-256:
 
 ~~~bash
 dpi capture-items --cnpj 10000000000003 --year 2021 --sequence 1
 ~~~
 
-Inspect awarded results for one item:
+Construir a camada analítica a partir de um arquivo bruto capturado:
 
 ~~~bash
-dpi results --cnpj 10000000000003 --year 2021 --sequence 1 --item 1
+dpi build-analytics \
+  --raw data/raw/objects/sha256/xx/arquivo.json \
+  --parquet data/silver/items.parquet \
+  --database data/analytics.duckdb
 ~~~
 
-## Repository layout
+Consultar o resumo analítico:
+
+~~~bash
+dpi analytics-summary --database data/analytics.duckdb
+~~~
+
+## Estrutura do repositório
 
 ~~~text
 src/dental_procurement_intelligence/
-  pncp/             public PNCP client and typed payload models
-  ingestion/        immutable raw evidence and provenance manifests
-  identity/         canonical product parsing and explainable comparability
-  normalization/    deterministic description and measurement parsing
-  cli.py            command-line interface
+  pncp/             cliente PNCP e modelos tipados
+  ingestion/        evidência bruta e proveniência
+  identity/         identidade canônica e comparabilidade
+  normalization/    normalização textual e de medidas
+  analytics/        Parquet, DuckDB e métricas analíticas
+  cli.py            interface de linha de comando
 
-tests/              unit tests
-docs/               architecture and technical decisions
-data/               local data-layer contract; generated data is ignored
+tests/              testes automatizados
+docs/               arquitetura e decisões técnicas
+data/               contrato das camadas locais
 ~~~
 
-## Methodological guardrail
+## Princípio de auditabilidade
 
-A statistically unusual price is not evidence of fraud, corruption or illegality. Future anomaly detection will identify records that deserve review and will expose the comparison group, method and source evidence used to produce that signal.
+Cada linha da camada analítica mantém o SHA-256 do arquivo bruto que a originou.
+
+Isso permite rastrear:
+
+`indicador → registro analítico → registro normalizado → evidência bruta → PNCP`
+
+## Salvaguarda metodológica
+
+Um preço estatisticamente atípico não constitui evidência de fraude, corrupção ou ilegalidade.
+
+Os futuros mecanismos de detecção de anomalias servirão para priorizar registros que merecem revisão. Cada sinal deverá apresentar população de comparação, método utilizado, tamanho da amostra e evidências de origem.
 
 ## Roadmap
 
-- [x] Repository architecture and package foundation
-- [x] PNCP item/result client
-- [x] Deterministic text normalization
-- [x] Measurement extraction baseline
-- [x] Reproducible raw ingestion with content hashes
-- [x] Dental vocabulary and canonical product model — baseline
-- [x] Packaging and unit-equivalence engine — baseline
-- [x] Product identity scoring with explanations — deterministic baseline
-- [ ] Expand domain vocabulary with validated dental taxonomy
-- [ ] Add semantic candidate retrieval without bypassing hard compatibility rules
-- [ ] Parquet/DuckDB analytical layer
-- [ ] Robust price-outlier detection
-- [ ] FastAPI evidence service
-- [ ] React analytical interface
-- [ ] Public methodology and data-quality report
+- [x] Estrutura inicial do projeto
+- [x] Cliente de itens e resultados do PNCP
+- [x] Normalização textual
+- [x] Extração de medidas
+- [x] Ingestão bruta com hash de conteúdo
+- [x] Vocabulário odontológico canônico — baseline
+- [x] Normalização de embalagem e unidade — baseline
+- [x] Product Identity Engine explicável — baseline
+- [x] Camada analítica Parquet
+- [x] Catálogo e consultas locais com DuckDB
+- [x] Preço normalizado por unidade física
+- [ ] Expandir taxonomia odontológica validada
+- [ ] Adicionar recuperação semântica de candidatos
+- [ ] Incorporar resultados homologados à camada analítica
+- [ ] Detecção robusta de preços atípicos
+- [ ] API FastAPI de evidências
+- [ ] Interface analítica em React
+- [ ] Relatório público de metodologia e qualidade dos dados
 
-## Principles
+## Princípios
 
-1. Source evidence is immutable.
-2. Transformations are reproducible.
-3. Product equivalence is explainable.
-4. Prices are compared only inside defensible groups.
-5. Missing or uncertain information remains explicit.
-6. Every analytical output must be traceable to its public source.
+1. A evidência de origem é imutável.
+2. Toda transformação deve ser reproduzível.
+3. A equivalência de produtos deve ser explicável.
+4. Preços só podem ser comparados dentro de grupos defensáveis.
+5. Ausência e incerteza devem permanecer explícitas.
+6. Todo resultado analítico deve ser rastreável à fonte pública.

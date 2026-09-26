@@ -1,12 +1,14 @@
-# Local data layers
+# Camadas locais de dados
 
-Generated datasets are intentionally not versioned in Git.
+Os datasets gerados pelo pipeline não são versionados diretamente no Git.
 
-The pipeline will use the following local folders:
+O projeto utiliza as seguintes pastas locais:
 
-- `raw/` — immutable PNCP responses and provenance metadata;
-- `bronze/` — typed source records;
-- `silver/` — normalized product attributes and units;
-- `gold/` — analytical tables and explainable anomaly outputs.
+- `raw/` — respostas imutáveis do PNCP e manifestos de proveniência;
+- `bronze/` — registros de origem tipados;
+- `silver/` — atributos, unidades, preços e produtos normalizados;
+- `gold/` — tabelas analíticas e futuros sinais explicáveis de anomalia.
 
-Only documentation, schemas and small test fixtures belong in the repository. Real bulk datasets should be reproducible from public sources rather than committed as opaque artifacts.
+Arquivos Parquet e bancos DuckDB são gerados localmente e permanecem ignorados pelo Git.
+
+O repositório deve conter apenas documentação, schemas e fixtures pequenas de teste. Bases reais em grande volume devem ser reproduzíveis a partir das fontes públicas, e não armazenadas como artefatos opacos.
