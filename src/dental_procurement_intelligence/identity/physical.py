@@ -91,9 +91,14 @@ def assess_price_normalization(
                 reason="invalid_explicit_package",
                 basis=None,
             )
+        reason = (
+            "explicit_package_total_confirmed"
+            if product.measurement_resolution == "package_total_confirmed"
+            else "explicit_package_count"
+        )
         return PriceNormalizationAssessment(
             status=PriceNormalizationStatus.DEFENSIBLE,
-            reason="explicit_package_count",
+            reason=reason,
             basis=product.total_quantity,
         )
 
