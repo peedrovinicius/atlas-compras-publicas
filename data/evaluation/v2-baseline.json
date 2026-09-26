@@ -1,0 +1,78 @@
+{
+  "dataset": "data/evaluation/v2.jsonl",
+  "dataset_version": "v2",
+  "frozen_dataset_commit": "78780c9e5156426b16e28d7e96f8261f90c660aa",
+  "evaluated_taxonomy_commit": "78780c9e5156426b16e28d7e96f8261f90c660aa",
+  "sample_count": 48,
+  "category_correct": 35,
+  "category_error_count": 13,
+  "category_accuracy": 0.7292,
+  "macro_precision": 0.6240,
+  "macro_recall": 0.5366,
+  "macro_f1": 0.5404,
+  "shade": {
+    "support": 7,
+    "accuracy": 1.0
+  },
+  "concentration_percent": {
+    "support": 5,
+    "accuracy": 1.0
+  },
+  "per_category": {
+    "composite_resin": {
+      "support": 7,
+      "true_positive": 0,
+      "false_positive": 2,
+      "false_negative": 7,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "dental_adhesive": {
+      "support": 2,
+      "true_positive": 0,
+      "false_positive": 0,
+      "false_negative": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "local_anesthetic": {
+      "support": 4,
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 3,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4
+    },
+    "phosphoric_acid": {
+      "support": 1,
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "prophylaxis_paste": {
+      "support": 1,
+      "true_positive": 1,
+      "false_positive": 0,
+      "false_negative": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "unknown": {
+      "support": 33,
+      "true_positive": 32,
+      "false_positive": 11,
+      "false_negative": 1,
+      "precision": 0.7442,
+      "recall": 0.9697,
+      "f1": 0.8421
+    }
+  },
+  "interpretation": "Independent frozen validation baseline. No taxonomy rules were changed after freezing v2 and before measuring this snapshot."
+}

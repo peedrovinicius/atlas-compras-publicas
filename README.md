@@ -6,7 +6,7 @@ O projeto constrói um pipeline reprodutível para coletar, normalizar, comparar
 
 ## Status atual
 
-**v0.9.0 — benchmark versionado da taxonomia**
+**v1.0.0 — validação independente congelada**
 
 O repositório já inclui:
 
@@ -30,7 +30,9 @@ O repositório já inclui:
 - dataset público de avaliação manual versionado;
 - métricas de acurácia, precisão, recall e F1 por categoria;
 - avaliação separada de cor e concentração;
-- relatório de erros de classificação rastreável à fonte.
+- relatório de erros de classificação rastreável à fonte;
+- benchmark independente v2 congelado antes da avaliação;
+- comparação explícita entre regressão interna e generalização.
 
 O GitHub Actions permanece desativado nesta fase para evitar consumo desnecessário de minutos de CI.
 
@@ -249,6 +251,63 @@ dpi evaluation-errors --dataset data/evaluation/v1.jsonl
 
 O snapshot completo está em `data/evaluation/v1-baseline.json` e a metodologia em `docs/benchmark-v1.md`.
 
+## Benchmark independente v2
+
+A v1.0.0 adiciona uma amostra **separada das fontes usadas no v1** e congelada antes da primeira medição.
+
+Fontes do v2:
+
+- Itanhaém/SP — PNCP `46578498000175-1-000289/2026`;
+- Araioses/MA — PNCP `06450191000170-1-000068/2026`.
+
+A amostra contém **48 itens** e foi commitada antes de qualquer ajuste de regra motivado por seus resultados.
+
+Baseline do código congelado no commit `78780c9`:
+
+~~~text
+amostras:                  48
+categorias corretas:       35
+erros de categoria:        13
+acurácia de categoria:     72,92%
+macro precision:           0,6240
+macro recall:              0,5366
+macro F1:                  0,5404
+
+cor:
+  suporte:                  7
+  acurácia:                 100,00%
+
+concentração:
+  suporte:                  5
+  acurácia:                 100,00%
+~~~
+
+Os principais erros observados, **sem ajuste posterior nesta versão**, foram:
+
+- resina microhíbrida não reconhecida como `composite_resin`;
+- adesivo com redações novas não reconhecido;
+- um adesivo contendo a expressão “resina composta” classificado falsamente como resina;
+- lidocaína, articaína e mepivacaína descritas pelo princípio ativo não reconhecidas como `local_anesthetic`;
+- um kit de acabamento contendo “resina composta” classificado falsamente como produto restaurador.
+
+Esse resultado é deliberadamente publicado porque mede melhor a capacidade de generalização do estado atual do sistema do que o benchmark v1.
+
+O v1 continua útil como teste de regressão. O v2 passa a ser a referência independente inicial.
+
+Executar:
+
+~~~bash
+dpi evaluate-taxonomy --dataset data/evaluation/v2.jsonl
+~~~
+
+Listar erros:
+
+~~~bash
+dpi evaluation-errors --dataset data/evaluation/v2.jsonl
+~~~
+
+O snapshot está em `data/evaluation/v2-baseline.json` e a análise detalhada em `docs/benchmark-v2.md`.
+
 ## Product Identity Engine
 
 Uma descrição como:
@@ -402,11 +461,12 @@ A qualidade da normalização também permanece auditável por item.
 - [x] Fila de itens não reconhecidos
 - [x] Dataset de avaliação manual versionado
 - [x] Benchmark de regressão com métricas por categoria
-- [ ] Criar amostra de validação independente e congelada
-- [ ] Validar taxonomia contra uma amostra real maior
+- [x] Criar amostra de validação independente e congelada
+- [x] Executar baseline independente v2
+- [ ] Melhorar regras usando os erros do v2 sem alterar seus rótulos
+- [ ] Criar benchmark v3 com novas fontes ainda não vistas
 - [ ] Modelar atributos técnicos específicos por categoria
 - [ ] Adicionar recuperação semântica de candidatos
-- [ ] Criar dataset de avaliação manual versionado
 - [ ] FastAPI de evidências
 - [ ] Dashboard React com mapa, séries e qualidade
 - [ ] Relatório público de qualidade dos dados
