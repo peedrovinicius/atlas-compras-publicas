@@ -1,10 +1,20 @@
+import json
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
 
 from dental_procurement_intelligence.config import Settings
 from dental_procurement_intelligence.pncp.models import PNCPItem, PNCPItemResult
+
+
+@dataclass(frozen=True, slots=True)
+class PNCPRawResponse:
+    url: str
+    status_code: int
+    content_type: str | None
+    content: bytes
 
 
 def _digits_only(value: str) -> str:
@@ -31,7 +41,7 @@ class PNCPClient:
             base_url=self.settings.pncp_base_url.rstrip("/"),
             timeout=self.settings.pncp_timeout_seconds,
             transport=transport,
-            headers={"Accept": "application/json", "User-Agent": "dental-procurement-intelligence/0.1"},
+            headers={"Accept": "application/json", "User-Agent": "dental-procurement-intelligence/0.2"},
         )
 
     def __enter__(self) -> "PNCPClient":
@@ -43,10 +53,19 @@ class PNCPClient:
     def close(self) -> None:
         self._client.close()
 
-    def _get_json(self, path: str) -> Any:
+    def _get_raw(self, path: str) -> PNCPRawResponse:
         response = self._client.get(path)
         response.raise_for_status()
-        return response.json()
+        return PNCPRawResponse(
+            url=str(response.url),
+            status_code=response.status_code,
+            content_type=response.headers.get("content-type"),
+            content=response.content,
+        )
+
+    def _get_json(self, path: str) -> Any:
+        raw = self._get_raw(path)
+        return json.loads(raw.content)
 
     @staticmethod
     def _ensure_list(payload: Any) -> Iterable[dict[str, Any]]:
@@ -57,11 +76,30 @@ class PNCPClient:
                 raise ValueError("Unexpected PNCP payload: array entries must be objects")
             yield record
 
+    def get_items_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
+        cnpj = _validate_cnpj(cnpj)
+        path = f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens"
+        return self._get_raw(path)
+
     def get_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
         cnpj = _validate_cnpj(cnpj)
         path = f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens"
         payload = self._get_json(path)
         return [PNCPItem.model_validate(record) for record in self._ensure_list(payload)]
+
+    def get_item_results_raw(
+        self,
+        cnpj: str,
+        year: int,
+        sequence: int,
+        item_number: int,
+    ) -> PNCPRawResponse:
+        cnpj = _validate_cnpj(cnpj)
+        path = (
+            f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens/"
+            f"{item_number}/resultados"
+        )
+        return self._get_raw(path)
 
     def get_item_results(
         self,

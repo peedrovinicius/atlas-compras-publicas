@@ -3,6 +3,7 @@ import json
 from collections.abc import Sequence
 from typing import Any
 
+from dental_procurement_intelligence.ingestion import EvidenceStore
 from dental_procurement_intelligence.pncp import PNCPClient
 
 
@@ -19,6 +20,12 @@ def build_parser() -> argparse.ArgumentParser:
     items.add_argument("--year", required=True, type=int)
     items.add_argument("--sequence", required=True, type=int)
 
+    capture = subparsers.add_parser("capture-items", help="Persist immutable raw evidence for PNCP items")
+    capture.add_argument("--cnpj", required=True)
+    capture.add_argument("--year", required=True, type=int)
+    capture.add_argument("--sequence", required=True, type=int)
+    capture.add_argument("--output", default="data/raw")
+
     results = subparsers.add_parser("results", help="Fetch awarded results for one PNCP item")
     results.add_argument("--cnpj", required=True)
     results.add_argument("--year", required=True, type=int)
@@ -32,6 +39,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     with PNCPClient() as client:
+        if args.command == "capture-items":
+            raw = client.get_items_raw(args.cnpj, args.year, args.sequence)
+            record = EvidenceStore(args.output).capture(raw)
+            print(_serialize(record))
+            return 0
         if args.command == "items":
             records = client.get_items(args.cnpj, args.year, args.sequence)
         else:

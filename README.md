@@ -6,7 +6,7 @@ This project builds a reproducible pipeline to collect, normalize and compare de
 
 ## Current status
 
-**v0.1.0 — foundation**
+**v0.2.0 — auditable ingestion**
 
 The repository currently includes:
 
@@ -16,7 +16,8 @@ The repository currently includes:
 - deterministic text and measurement normalization;
 - unit-tested parsing rules;
 - an explicit raw-to-evidence architecture;
-- a CLI for inspecting PNCP items and results.
+- a CLI for inspecting PNCP items and results;
+- content-addressed raw evidence storage with SHA-256 provenance manifests.
 
 No automated GitHub Actions workflow is enabled at this stage. Validation is designed to run locally so development does not consume unnecessary CI minutes.
 
@@ -105,6 +106,12 @@ Inspect the items of a known PNCP procurement:
 dpi items --cnpj 10000000000003 --year 2021 --sequence 1
 ~~~
 
+Capture the exact raw PNCP response with a SHA-256 evidence manifest:
+
+~~~bash
+dpi capture-items --cnpj 10000000000003 --year 2021 --sequence 1
+~~~
+
 Inspect awarded results for one item:
 
 ~~~bash
@@ -116,6 +123,7 @@ dpi results --cnpj 10000000000003 --year 2021 --sequence 1 --item 1
 ~~~text
 src/dental_procurement_intelligence/
   pncp/             public PNCP client and typed payload models
+  ingestion/        immutable raw evidence and provenance manifests
   normalization/    deterministic description and measurement parsing
   cli.py            command-line interface
 
@@ -134,7 +142,7 @@ A statistically unusual price is not evidence of fraud, corruption or illegality
 - [x] PNCP item/result client
 - [x] Deterministic text normalization
 - [x] Measurement extraction baseline
-- [ ] Reproducible raw ingestion with content hashes
+- [x] Reproducible raw ingestion with content hashes
 - [ ] Dental vocabulary and canonical product model
 - [ ] Packaging and unit-equivalence engine
 - [ ] Product identity scoring with explanations
