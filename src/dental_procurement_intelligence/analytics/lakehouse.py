@@ -233,6 +233,18 @@ class DuckDBWarehouse:
 
     def summary(self) -> list[dict[str, Any]]:
         with duckdb.connect(str(self.path), read_only=True) as connection:
+            column_types = {
+                row[1]: str(row[2]).upper()
+                for row in connection.execute(
+                    "PRAGMA table_info('silver_items')"
+                ).fetchall()
+            }
+            price_type = column_types.get("normalized_price_per_base_unit", "")
+            if not price_type.startswith("DECIMAL("):
+                raise ValueError(
+                    "silver_items precisa ser reconstruída com precisão decimal."
+                )
+
             cursor = connection.execute("SELECT * FROM category_price_summary")
             columns = [column[0] for column in cursor.description]
             return [
