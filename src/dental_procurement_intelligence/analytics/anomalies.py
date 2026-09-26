@@ -67,6 +67,8 @@ def build_price_signals(
         }
         required_columns = {
             "package_count",
+            "measurement_candidate_count",
+            "measurement_resolution",
             "unit_quantity_value",
             "unit_quantity_unit",
             "price_normalization_status",
@@ -108,6 +110,11 @@ def build_price_signals(
                   AND awarded_price_per_base_unit IS NOT NULL
                   AND awarded_price_per_base_unit > 0
                   AND price_normalization_status = 'defensible'
+                  AND measurement_resolution IN (
+                      'single',
+                      'package_derived',
+                      'package_total_confirmed'
+                  )
                   AND analysis_year IS NOT NULL
             ),
             scope_rows AS (
