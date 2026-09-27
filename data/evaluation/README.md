@@ -450,3 +450,20 @@ Após corrigir as lacunas observadas no v11, o mesmo conjunto congelado atingiu:
 O resultado está salvo em `technical-attributes-v11-post-v1.34.json`.
 
 Esse valor é regressão pós-tuning e não substitui as baselines independentes de 75,00% para categoria e 92,50% para atributos.
+
+
+## Atributos técnicos v12
+
+- 48 descrições;
+- 8 contratações inéditas;
+- 77 campos técnicos revisados;
+- 67 campos corretos na primeira medição;
+- micro accuracy independente de 87,01%;
+- 35/48 categorias corretas;
+- 0 falsos positivos;
+- 10 falsos negativos;
+- 0 mismatches.
+
+A baseline está preservada em `technical-attributes-v12-baseline.json`.
+
+Os erros do v12 não são corrigidos na v1.35.
