@@ -57,6 +57,10 @@ _ASSOCIATED_INGREDIENT = re.compile(
 _PLUS_INGREDIENT = re.compile(
     r"\+\s*(?P<ingredient>[A-Z][A-Z -]*?)(?=\s+\d|,|$)"
 )
+_POST_STRENGTH_ADJUNCT = re.compile(
+    r"\b(?:MCG|MG|G|UI)\s+"
+    r"(?P<ingredient>FELIPRESSINA|EPINEFRINA|NOREPINEFRINA|FENILEFRINA)\b"
+)
 _BENZYLPENICILLIN_PRESENTATION = re.compile(
     r"\bAPRESENTACAO\s+"
     r"(?P<qualifier>BENZATINA|PROCAINA|POTASSICA|SODICA)\b"
@@ -120,6 +124,12 @@ def _clean_active_ingredient(text: str) -> str | None:
         if plus_name and plus_name not in cleaned:
             cleaned = f"{cleaned} + {plus_name}".strip(" +")
 
+    adjunct = _POST_STRENGTH_ADJUNCT.search(without_code)
+    if adjunct:
+        adjunct_name = adjunct.group("ingredient")
+        if adjunct_name not in cleaned:
+            cleaned = f"{cleaned} + {adjunct_name}".strip(" +")
+
     if cleaned == "BENZILPENICILINA":
         qualifier = _BENZYLPENICILLIN_PRESENTATION.search(without_code)
         if qualifier:
@@ -156,7 +166,14 @@ def _extract_strength(
     denom_value = match.group("denom_value")
     denom_unit = match.group("denom_unit")
 
-    if dosage_form == MedicationDosageForm.OPHTHALMIC and denom_value:
+    if (
+        denom_value
+        and dosage_form
+        not in (
+            MedicationDosageForm.INJECTABLE,
+            MedicationDosageForm.ORAL_LIQUID,
+        )
+    ):
         return f"{value} {unit}"
 
     if denom_unit:
