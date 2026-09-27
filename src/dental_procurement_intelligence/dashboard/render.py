@@ -103,7 +103,12 @@ h1 {{ font-size: clamp(34px, 5vw, 64px); margin: 8px 0 12px; line-height: 1; }}
 .badge {{ border: 1px solid #30363d; border-radius: 999px; padding: 7px 11px; font-size: 12px; }}
 .grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }}
 .card {{ background: #161b22; border: 1px solid #30363d; border-radius: 14px; padding: 20px; }}
-.card .label {{ color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }}
+.card .label {{
+  color: #8b949e;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}}
 .card .value {{ font-size: 30px; font-weight: 700; margin-top: 10px; }}
 section {{ margin-top: 34px; }}
 section h2 {{ font-size: 22px; margin-bottom: 14px; }}
@@ -135,10 +140,22 @@ footer {{ color: #6e7681; margin-top: 42px; font-size: 12px; }}
   <div class="badges">{domain_badges}</div>
 </header>
 <div class="grid">
-  <article class="card"><div class="label">Itens</div><div class="value">{_format_value(total_items)}</div></article>
-  <article class="card"><div class="label">Reconhecidos</div><div class="value">{_format_value(recognized)}</div></article>
-  <article class="card"><div class="label">Estruturados</div><div class="value">{_format_value(fully_structured)}</div></article>
-  <article class="card"><div class="label">Qualidade média</div><div class="value">{_format_value(avg_quality)}</div></article>
+  <article class="card">
+    <div class="label">Itens</div>
+    <div class="value">{_format_value(total_items)}</div>
+  </article>
+  <article class="card">
+    <div class="label">Reconhecidos</div>
+    <div class="value">{_format_value(recognized)}</div>
+  </article>
+  <article class="card">
+    <div class="label">Estruturados</div>
+    <div class="value">{_format_value(fully_structured)}</div>
+  </article>
+  <article class="card">
+    <div class="label">Qualidade média</div>
+    <div class="value">{_format_value(avg_quality)}</div>
+  </article>
 </div>
 <section>
   <h2>Preços normalizados por categoria</h2>
@@ -153,7 +170,8 @@ footer {{ color: #6e7681; margin-top: 42px; font-size: 12px; }}
   {anomaly_table}
 </section>
 <footer>
-  O dashboard apresenta sinais analíticos. Sinais estatísticos não constituem prova de irregularidade.
+  O dashboard apresenta sinais analíticos.
+  Sinais estatísticos não constituem prova de irregularidade.
 </footer>
 </main>
 </body>
