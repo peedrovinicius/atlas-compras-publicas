@@ -1,0 +1,175 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v4.jsonl",
+  "dataset_version": "technical-attributes-v4",
+  "frozen_dataset_commit": "367c001c69fe06fd2aee2e417857cf99b5b2f18d",
+  "dataset_git_blob_sha": "acad1cd55f50f06808bbfd17e6c4ab92898a1b07",
+  "parser_commit": "de3bf04116b06e84b5e25223902f0d85ce370392",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.18.0",
+  "measurement_method": "deterministic_mirror_of_v1.18_parser",
+  "sample_count": 45,
+  "category_correct": 42,
+  "category_accuracy": 0.9333,
+  "evaluated_attribute_count": 87,
+  "correct_attribute_count": 77,
+  "micro_accuracy": 0.8851,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 23,
+      "correct_count": 20,
+      "accuracy": 0.8696,
+      "positive_support": 5,
+      "positive_correct": 2,
+      "positive_accuracy": 0.4,
+      "false_positive_count": 0,
+      "false_negative_count": 3,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 33,
+      "correct_count": 28,
+      "accuracy": 0.8485,
+      "positive_support": 19,
+      "positive_correct": 15,
+      "positive_accuracy": 0.7895,
+      "false_positive_count": 1,
+      "false_negative_count": 4,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 8,
+      "correct_count": 7,
+      "accuracy": 0.875,
+      "positive_support": 3,
+      "positive_correct": 2,
+      "positive_accuracy": 0.6667,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 2,
+      "correct_count": 2,
+      "accuracy": 1,
+      "positive_support": 2,
+      "positive_correct": 2,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 2,
+      "correct_count": 2,
+      "accuracy": 1,
+      "positive_support": 0,
+      "positive_correct": 0,
+      "positive_accuracy": null,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 9,
+      "correct_count": 9,
+      "accuracy": 1,
+      "positive_support": 8,
+      "positive_correct": 8,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 10,
+      "correct_count": 9,
+      "accuracy": 0.9,
+      "positive_support": 7,
+      "positive_correct": 6,
+      "positive_accuracy": 0.8571,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    }
+  },
+  "attribute_errors": [
+    {
+      "id": "ta4-pi-001",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta4-gr-005",
+      "attribute": "curing_mode",
+      "expected": null,
+      "predicted": "light_cure"
+    },
+    {
+      "id": "ta4-pa-002",
+      "attribute": "anesthetic_vasoconstrictor",
+      "expected": "epinephrine",
+      "predicted": null
+    },
+    {
+      "id": "ta4-tr-001",
+      "attribute": "adhesive_strategy",
+      "expected": "etch_and_rinse",
+      "predicted": null
+    },
+    {
+      "id": "ta4-nv-007",
+      "attribute": "resin_technology",
+      "expected": "microhybrid",
+      "predicted": null
+    },
+    {
+      "id": "ta4-nv-007",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta4-nv-008",
+      "attribute": "resin_technology",
+      "expected": "microhybrid",
+      "predicted": null
+    },
+    {
+      "id": "ta4-nv-008",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta4-nv-009",
+      "attribute": "resin_technology",
+      "expected": "microhybrid",
+      "predicted": null
+    },
+    {
+      "id": "ta4-nv-009",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    }
+  ],
+  "category_errors": [
+    {
+      "id": "ta4-nv-007",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta4-nv-008",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta4-nv-009",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    }
+  ],
+  "interpretation": "Independent technical-attribute v4 baseline frozen before any tuning. It intentionally includes contextual negatives and commercial shorthand. Technical v1-v3 and taxonomy holdout v5 remain separate."
+}
