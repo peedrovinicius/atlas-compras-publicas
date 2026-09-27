@@ -198,3 +198,19 @@ A baseline está preservada em `technical-attributes-v5-baseline.json`.
 dpi evaluate-technical-attributes \
   --dataset data/evaluation/technical-attributes-v5.jsonl
 ~~~
+
+
+### Resultado pós-tuning v1.22
+
+Após corrigir as lacunas de contexto, grafia e alternativas explícitas observadas no v5, o mesmo conjunto congelado atingiu:
+
+- 48/48 categorias corretas;
+- 92/92 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+O resultado está salvo em `technical-attributes-v5-post-v1.22.json`.
+
+Esse valor é regressão pós-tuning e não substitui as baselines independentes de 81,25% para categoria e 86,96% para atributos.
