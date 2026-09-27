@@ -324,3 +324,29 @@ Após corrigir as lacunas observadas no v8, o mesmo conjunto congelado atingiu:
 O resultado está salvo em `technical-attributes-v8-post-v1.28.json`.
 
 Esse valor é regressão pós-tuning e não substitui as baselines independentes de 89,58% para categoria e 90,36% para atributos.
+
+
+## Atributos técnicos v9
+
+O arquivo `technical-attributes-v9.jsonl` foi congelado após o tuning da v1.28 e antes da primeira medição.
+
+A amostra contém:
+
+- 48 descrições;
+- 8 contratações inéditas;
+- 84 campos técnicos revisados;
+- 81 campos corretos na primeira medição;
+- micro accuracy independente de 96,43%;
+- 42/48 categorias corretas;
+- 1 falso positivo técnico;
+- 2 falsos negativos técnicos;
+- nenhum mismatch.
+
+A baseline está preservada em `technical-attributes-v9-baseline.json`.
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v9.jsonl
+~~~
+
+Os erros do v9 não são corrigidos na v1.29. Qualquer tuning posterior deve manter esta baseline imutável e registrar o novo resultado separadamente.
