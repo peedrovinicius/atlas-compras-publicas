@@ -1,0 +1,55 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v1.jsonl",
+  "dataset_version": "technical-attributes-v1",
+  "baseline_file": "data/evaluation/technical-attributes-v1-baseline.json",
+  "baseline_micro_accuracy": 0.8525,
+  "parser_commit": "e99a8f58c00738ecbf8b66ade605a33acc070673",
+  "parser_version": "1.14.0",
+  "measurement_method": "deterministic_mirror_of_v1.14_parser",
+  "sample_count": 33,
+  "category_accuracy": 1,
+  "evaluated_attribute_count": 61,
+  "correct_attribute_count": 61,
+  "micro_accuracy": 1,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 0,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 5,
+      "correct_count": 5,
+      "accuracy": 1
+    },
+    "curing_mode": {
+      "evaluated_count": 15,
+      "correct_count": 15,
+      "accuracy": 1
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 4,
+      "correct_count": 4,
+      "accuracy": 1
+    },
+    "ionomer_use": {
+      "evaluated_count": 4,
+      "correct_count": 4,
+      "accuracy": 1
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 3,
+      "correct_count": 3,
+      "accuracy": 1
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 15,
+      "correct_count": 15,
+      "accuracy": 1
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 15,
+      "correct_count": 15,
+      "accuracy": 1
+    }
+  },
+  "interpretation": "Post-tuning regression result on the frozen technical-attributes-v1 dataset. It does not replace the independent 85.25% baseline."
+}
