@@ -1050,3 +1050,67 @@ def test_technical_v9_tuning_preserves_existing_positive_contexts() -> None:
     assert resinous_adhesive.category == ProductCategory.ADHESIVE
     assert generic_developer.category == ProductCategory.UNKNOWN
     assert filtek_z250.category == ProductCategory.COMPOSITE_RESIN
+
+
+def test_technical_v10_tuning_recognizes_bounded_variants() -> None:
+    free_light_cure = parse_product(
+        "CIMENTO DE IONOMERO DE VIDRO RESTAURADOR "
+        "MODIFICADO COM RESINA CURA PELA LUZ VISIVEL"
+    )
+    topical_fluoride = parse_product(
+        "FLUOR TOPICO GEL TIXOTROPICO "
+        "FLUORETO FOSFATO ACIDULADO A 1,23%"
+    )
+    reinforced_ionomer = parse_product(
+        "IONOMERO DE VIDRO RESTAURADOR REFORCADO C/ "
+        "RESINA FOTOPOLIMERIZAVEL"
+    )
+    zinc_eugenol_cement = parse_product(
+        "CIMENTO OBTURADOR DE CANAIS RADICULARES A BASE DE "
+        "OXIDO DE ZINCO E EUGENOL"
+    )
+    conflicting_vasoconstrictors = parse_product(
+        "MEPIVACAINA 2% ASSOCIADA COM NOREPINEFRINA "
+        "E EPINEFRINA 1:100.000"
+    )
+
+    assert free_light_cure.category == ProductCategory.GLASS_IONOMER
+    assert free_light_cure.technical_attributes.ionomer_use == "restorative"
+    assert free_light_cure.technical_attributes.curing_mode == "light_cure"
+
+    assert topical_fluoride.category == ProductCategory.FLUORIDE_GEL
+    assert topical_fluoride.technical_attributes.fluoride_formulation == "acidulated"
+
+    assert reinforced_ionomer.category == ProductCategory.GLASS_IONOMER
+    assert reinforced_ionomer.technical_attributes.ionomer_use == "restorative"
+    assert reinforced_ionomer.technical_attributes.curing_mode == "light_cure"
+
+    assert zinc_eugenol_cement.category == ProductCategory.UNKNOWN
+
+    assert conflicting_vasoconstrictors.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        conflicting_vasoconstrictors.technical_attributes.anesthetic_vasoconstrictor
+        is None
+    )
+
+
+def test_technical_v10_tuning_preserves_existing_positive_contexts() -> None:
+    epinephrine_synonyms = parse_product(
+        "LIDOCAINA 2% COM EPINEFRINA TAMBEM CONHECIDA COMO ADRENALINA"
+    )
+    zinc_oxide = parse_product("OXIDO DE ZINCO PO FRASCO 50G")
+    eugenol = parse_product("EUGENOL FRASCO 20ML")
+    composite_resin = parse_product("RESINA COMPOSTA FOTOPOLIMERIZAVEL A2")
+    fluoride_solution = parse_product(
+        "FLUORETO DE SODIO 0,2% FORMA FARMACEUTICA SOLUCAO BUCAL"
+    )
+
+    assert epinephrine_synonyms.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        epinephrine_synonyms.technical_attributes.anesthetic_vasoconstrictor
+        == "epinephrine"
+    )
+    assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
+    assert eugenol.category == ProductCategory.EUGENOL
+    assert composite_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert fluoride_solution.category == ProductCategory.UNKNOWN
