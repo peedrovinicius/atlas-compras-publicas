@@ -31,6 +31,39 @@ Rotas v1:
 
 A documentação OpenAPI é fornecida pelo FastAPI quando a API está em execução.
 
+## Paginação e filtros
+
+As coleções usam o envelope:
+
+~~~json
+{
+  "items": [],
+  "total": 0,
+  "limit": 50,
+  "offset": 0
+}
+~~~
+
+Parâmetros comuns:
+
+- `limit`: 1 a 500;
+- `offset`: posição inicial, maior ou igual a zero.
+
+Filtros disponíveis:
+
+- `/api/v1/categories`: `category`;
+- `/api/v1/awards`: `category`, `macroregion`, `year`;
+- `/api/v1/anomalies`: `category`, `scope`;
+- `/api/v1/unrecognized`: paginação por `limit` e `offset`.
+
+Exemplo:
+
+~~~text
+/api/v1/awards?category=composite_resin&macroregion=Nordeste&year=2026&limit=25&offset=0
+~~~
+
+Os filtros são aplicados sem interpolação de entrada do usuário em SQL.
+
 ## Dashboard HTML
 
 Gerar um snapshot:
@@ -72,7 +105,6 @@ A geração estática do dashboard usa somente dependências já presentes no pa
 
 ## Próximas melhorias
 
-- paginação e filtros da API;
 - endpoint de contratação/item;
 - gráficos interativos com dados reais;
 - publicação automatizada do snapshot;

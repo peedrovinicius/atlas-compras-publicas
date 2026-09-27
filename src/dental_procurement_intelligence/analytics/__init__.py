@@ -25,6 +25,7 @@ from .quality import (
     build_quality_views,
     quality_by_category,
     quality_summary,
+    unrecognized_count,
     unrecognized_items,
 )
 
@@ -48,6 +49,7 @@ __all__ = [
     "load_raw_results",
     "quality_by_category",
     "quality_summary",
+    "unrecognized_count",
     "unrecognized_items",
     "write_parquet",
 ]
