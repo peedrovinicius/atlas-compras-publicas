@@ -195,3 +195,25 @@ No mesmo conjunto congelado:
 As referências independentes continuam sendo 93,33% para categoria e 94,19% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v3-post-tuning.md`.
+
+
+## Benchmark técnico v4
+
+Um quarto conjunto independente foi congelado após o tuning do v3.
+
+Resultado inicial:
+
+- 45 exemplos;
+- 87 campos técnicos avaliados;
+- 77 campos corretos;
+- micro accuracy de 88,51%;
+- 42/45 categorias corretas;
+- 9 falsos negativos;
+- 1 falso positivo contextual;
+- nenhum mismatch.
+
+O falso positivo ocorreu quando `fotopolimerizável` qualificava a resina citada na descrição, mas foi atribuído ao adesivo.
+
+As lacunas do v4 ainda não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v4.md`.
