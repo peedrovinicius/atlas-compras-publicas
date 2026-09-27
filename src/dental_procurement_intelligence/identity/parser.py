@@ -407,6 +407,13 @@ def _zinc_oxide_context_excluded(text: str) -> bool:
     )
 
 
+def _eugenol_context_excluded(text: str) -> bool:
+    return (
+        _term_present(text, "CIMENTO ODONTOLOGICO")
+        and _term_present(text, "EUGENOL")
+    )
+
+
 def _looks_like_flowable_resin(text: str) -> bool:
     if not _has_any(text, _RESIN_HEAD_TERMS):
         return False
@@ -496,6 +503,11 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
         if (
             category == ProductCategory.ZINC_OXIDE
             and _zinc_oxide_context_excluded(text)
+        ):
+            continue
+        if (
+            category == ProductCategory.EUGENOL
+            and _eugenol_context_excluded(text)
         ):
             continue
         if category == ProductCategory.ALGINATE and _alginate_context_excluded(text):
