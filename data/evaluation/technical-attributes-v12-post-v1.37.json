@@ -1,0 +1,23 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v12.jsonl",
+  "dataset_version": "technical-attributes-v12",
+  "baseline_file": "data/evaluation/technical-attributes-v12-baseline.json",
+  "baseline_category_accuracy": 0.7292,
+  "baseline_micro_accuracy": 0.8701,
+  "parser_git_blob_sha": "70748de887a5bf1bfde683ad4ad3e293d6811108",
+  "dental_rules_git_blob_sha": "7028ca5ae0dc074bd9f797de887053cece0118c3",
+  "parser_version": "1.37.0",
+  "measurement_method": "frozen_dataset_full_regression_with_deterministic_mirror_validated_against_v11",
+  "sample_count": 48,
+  "category_correct": 48,
+  "category_accuracy": 1.0,
+  "evaluated_attribute_count": 77,
+  "correct_attribute_count": 77,
+  "micro_accuracy": 1.0,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 0,
+  "category_errors": [],
+  "attribute_errors": [],
+  "interpretation": "Post-tuning regression result on the frozen technical-attributes-v12 dataset. It does not replace the independent 87.01% technical baseline or 72.92% category baseline."
+}
