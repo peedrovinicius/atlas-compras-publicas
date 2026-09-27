@@ -1,0 +1,22 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v4.jsonl",
+  "dataset_version": "technical-attributes-v4",
+  "baseline_file": "data/evaluation/technical-attributes-v4-baseline.json",
+  "baseline_category_accuracy": 0.9333,
+  "baseline_micro_accuracy": 0.8851,
+  "parser_commit": "9aadd6979f7ecef4b64f4bdfc10576bc68e8f6f0",
+  "parser_version": "1.20.0",
+  "measurement_method": "deterministic_mirror_of_v1.20_parser",
+  "sample_count": 45,
+  "category_correct": 45,
+  "category_accuracy": 1,
+  "evaluated_attribute_count": 87,
+  "correct_attribute_count": 87,
+  "micro_accuracy": 1,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 0,
+  "category_errors": [],
+  "attribute_errors": [],
+  "interpretation": "Post-tuning regression result on the frozen technical-attributes-v4 dataset. It does not replace the independent 88.51% technical baseline or 93.33% category baseline."
+}
