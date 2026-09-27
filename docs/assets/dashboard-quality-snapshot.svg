@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720" role="img" aria-labelledby="title desc">
+<title id="title">Atlas de Compras Públicas, snapshot real de qualidade</title>
+<desc id="desc">Micro accuracy das baselines técnicas v1 a v12 e baseline do domínio de medicamentos.</desc>
+<style>
+  .bg{fill:#0d1117}.panel{fill:#161b22;stroke:#30363d;stroke-width:1}
+  .title{fill:#f0f6fc;font:700 30px system-ui,sans-serif}
+  .sub{fill:#8b949e;font:14px system-ui,sans-serif}
+  .cardn{fill:#f0f6fc;font:700 28px system-ui,sans-serif}
+  .cardl{fill:#8b949e;font:12px system-ui,sans-serif;text-transform:uppercase}
+  .axis{fill:#c9d1d9;font:12px system-ui,sans-serif}
+  .track{fill:#21262d}.bar{fill:#58a6ff}.value{fill:#c9d1d9;font:12px system-ui,sans-serif}
+  .med{fill:#3fb950}.note{fill:#8b949e;font:12px system-ui,sans-serif}
+</style>
+<rect width="980" height="720" class="bg"/>
+<text x="32" y="50" class="title">Atlas de Compras Públicas</text>
+<text x="32" y="76" class="sub">Snapshot real de qualidade, gerado das baselines congeladas do repositório</text>
+
+<rect x="32" y="104" width="210" height="74" rx="10" class="panel"/>
+<text x="48" y="128" class="cardl">Exemplos técnicos</text>
+<text x="48" y="160" class="cardn">548</text>
+
+<rect x="256" y="104" width="210" height="74" rx="10" class="panel"/>
+<text x="272" y="128" class="cardl">Campos técnicos</text>
+<text x="272" y="160" class="cardn">984</text>
+
+<rect x="480" y="104" width="210" height="74" rx="10" class="panel"/>
+<text x="496" y="128" class="cardl">Medicamentos</text>
+<text x="496" y="160" class="cardn">48 / 192</text>
+
+<rect x="704" y="104" width="244" height="74" rx="10" class="panel"/>
+<text x="720" y="128" class="cardl">Baseline medicamentos</text>
+<text x="720" y="160" class="cardn">87,50%</text>
+
+<text x="32" y="205" class="sub">Micro accuracy independente por holdout técnico</text>
+<text x="32" y="225" class="axis">v1</text>
+<rect x="80" y="210" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="210" width="494" height="20" rx="4" class="bar"/>
+<text x="675" y="225" class="value">85,25%</text>
+<text x="32" y="259" class="axis">v2</text>
+<rect x="80" y="244" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="244" width="542" height="20" rx="4" class="bar"/>
+<text x="675" y="259" class="value">93,51%</text>
+<text x="32" y="293" class="axis">v3</text>
+<rect x="80" y="278" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="278" width="546" height="20" rx="4" class="bar"/>
+<text x="675" y="293" class="value">94,19%</text>
+<text x="32" y="327" class="axis">v4</text>
+<rect x="80" y="312" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="312" width="513" height="20" rx="4" class="bar"/>
+<text x="675" y="327" class="value">88,51%</text>
+<text x="32" y="361" class="axis">v5</text>
+<rect x="80" y="346" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="346" width="504" height="20" rx="4" class="bar"/>
+<text x="675" y="361" class="value">86,96%</text>
+<text x="32" y="395" class="axis">v6</text>
+<rect x="80" y="380" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="380" width="541" height="20" rx="4" class="bar"/>
+<text x="675" y="395" class="value">93,33%</text>
+<text x="32" y="429" class="axis">v7</text>
+<rect x="80" y="414" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="414" width="531" height="20" rx="4" class="bar"/>
+<text x="675" y="429" class="value">91,57%</text>
+<text x="32" y="463" class="axis">v8</text>
+<rect x="80" y="448" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="448" width="524" height="20" rx="4" class="bar"/>
+<text x="675" y="463" class="value">90,36%</text>
+<text x="32" y="497" class="axis">v9</text>
+<rect x="80" y="482" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="482" width="559" height="20" rx="4" class="bar"/>
+<text x="675" y="497" class="value">96,43%</text>
+<text x="32" y="531" class="axis">v10</text>
+<rect x="80" y="516" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="516" width="552" height="20" rx="4" class="bar"/>
+<text x="675" y="531" class="value">95,24%</text>
+<text x="32" y="565" class="axis">v11</text>
+<rect x="80" y="550" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="550" width="537" height="20" rx="4" class="bar"/>
+<text x="675" y="565" class="value">92,50%</text>
+<text x="32" y="599" class="axis">v12</text>
+<rect x="80" y="584" width="580" height="20" rx="4" class="track"/>
+<rect x="80" y="584" width="505" height="20" rx="4" class="bar"/>
+<text x="675" y="599" class="value">87,01%</text>
+
+<rect x="32" y="624" width="916" height="64" rx="10" class="panel"/>
+<rect x="48" y="643" width="507" height="14" rx="4" class="track"/>
+<rect x="48" y="643" width="444" height="14" rx="4" class="med"/>
+<text x="570" y="655" class="axis">Medicamentos v1: 87,50%</text>
+<text x="48" y="678" class="note">Ingrediente 64,58% · Concentração 89,58% · Forma 97,92% · Via 97,92%</text>
+</svg>
