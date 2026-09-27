@@ -102,3 +102,21 @@ Baseline:
 - nenhum mismatch.
 
 O relatório completo está em `docs/benchmark-technical-attributes-v1.md`.
+
+
+## Resultado pós-tuning v1.14
+
+As nove lacunas observadas na baseline independente foram corrigidas sem alterar o arquivo de baseline.
+
+No mesmo conjunto congelado:
+
+- 61 campos avaliados;
+- 61 campos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+Esse resultado é regressão pós-tuning e não substitui a baseline independente de 85,25%.
+
+Detalhes: `docs/benchmark-technical-attributes-v1-post-tuning.md`.
