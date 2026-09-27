@@ -62,3 +62,26 @@ dpi technical-attribute-errors \
 ~~~
 
 A baseline publicada não deve ser sobrescrita por resultados pós-tuning.
+
+
+## Atributos técnicos v2
+
+O arquivo `technical-attributes-v2.jsonl` é um novo benchmark independente, congelado após o tuning do v1 e antes de qualquer nova correção.
+
+A amostra contém:
+
+- 41 descrições;
+- 8 contratações inéditas;
+- 77 campos técnicos revisados;
+- 72 campos corretos na primeira medição;
+- micro accuracy independente de 93,51%;
+- 5 falsos negativos;
+- nenhum falso positivo;
+- nenhum mismatch.
+
+A baseline está preservada em `technical-attributes-v2-baseline.json`.
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v2.jsonl
+~~~
