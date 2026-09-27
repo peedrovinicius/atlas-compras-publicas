@@ -219,6 +219,20 @@ dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 
 O domínio permanece em `benchmark_required` até um ciclo posterior de tuning.
 
+## Snapshot real
+
+![Snapshot real de qualidade e benchmarks](docs/assets/dashboard-quality-snapshot.svg)
+
+O primeiro snapshot publicado é gerado exclusivamente das baselines congeladas
+do projeto: 548 exemplos técnicos, 984 campos técnicos e o benchmark independente
+de medicamentos.
+
+- [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
+- [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
+
+O snapshot não simula preços, homologações ou sinais. Esses painéis só serão
+publicados quando existir uma base DuckDB analítica consolidada.
+
 ## API e dashboard
 
 A camada analítica pode ser exposta por API HTTP ou por um dashboard HTML estático,
@@ -276,7 +290,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Próximos passos
 
 - fazer tuning controlado do benchmark de medicamentos sem alterar sua baseline
-- publicar snapshot real do dashboard quando houver base analítica consolidada
+- consolidar uma base DuckDB real para os painéis de preços e homologações
 
 ## Fonte dos dados
 

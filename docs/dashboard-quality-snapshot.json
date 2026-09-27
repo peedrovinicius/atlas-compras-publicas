@@ -1,0 +1,87 @@
+{
+  "generated_from": "versioned_frozen_baselines",
+  "technical": {
+    "sample_count": 548,
+    "evaluated_field_count": 984,
+    "correct_field_count": 899,
+    "weighted_micro_accuracy": 0.9136,
+    "holdouts": {
+      "v1": {
+        "sample_count": 33,
+        "evaluated_field_count": 61,
+        "micro_accuracy": 0.8525
+      },
+      "v2": {
+        "sample_count": 41,
+        "evaluated_field_count": 77,
+        "micro_accuracy": 0.9351
+      },
+      "v3": {
+        "sample_count": 45,
+        "evaluated_field_count": 86,
+        "micro_accuracy": 0.9419
+      },
+      "v4": {
+        "sample_count": 45,
+        "evaluated_field_count": 87,
+        "micro_accuracy": 0.8851
+      },
+      "v5": {
+        "sample_count": 48,
+        "evaluated_field_count": 92,
+        "micro_accuracy": 0.8695999999999999
+      },
+      "v6": {
+        "sample_count": 48,
+        "evaluated_field_count": 90,
+        "micro_accuracy": 0.9333
+      },
+      "v7": {
+        "sample_count": 48,
+        "evaluated_field_count": 83,
+        "micro_accuracy": 0.9157
+      },
+      "v8": {
+        "sample_count": 48,
+        "evaluated_field_count": 83,
+        "micro_accuracy": 0.9036
+      },
+      "v9": {
+        "sample_count": 48,
+        "evaluated_field_count": 84,
+        "micro_accuracy": 0.9643
+      },
+      "v10": {
+        "sample_count": 48,
+        "evaluated_field_count": 84,
+        "micro_accuracy": 0.9523999999999999
+      },
+      "v11": {
+        "sample_count": 48,
+        "evaluated_field_count": 80,
+        "micro_accuracy": 0.925
+      },
+      "v12": {
+        "sample_count": 48,
+        "evaluated_field_count": 77,
+        "micro_accuracy": 0.8701000000000001
+      }
+    }
+  },
+  "medications": {
+    "sample_count": 48,
+    "evaluated_field_count": 192,
+    "correct_field_count": 168,
+    "micro_accuracy": 0.875,
+    "per_field": {
+      "active_ingredient": 0.6458,
+      "strength": 0.8958,
+      "dosage_form": 0.9792,
+      "route": 0.9792
+    }
+  },
+  "limitations": [
+    "This snapshot summarizes frozen evaluation artifacts, not live procurement prices.",
+    "Price and award panels require a consolidated DuckDB analytics database."
+  ]
+}
