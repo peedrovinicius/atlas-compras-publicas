@@ -1,0 +1,171 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v7.jsonl",
+  "dataset_version": "technical-attributes-v7",
+  "frozen_dataset_commit": "607c9aa9b4089fdadf976a99308cbd90cbd6e865",
+  "dataset_git_blob_sha": "f39468d7236cae29ec4f2fdbff4e46d2b6de6e38",
+  "parser_commit": "d9a9540b1835049dbb08ab2c565609f85266bc00",
+  "parser_git_blob_sha": "2c9b94614b4cbf9d7d3653a627b309821eff8aa0",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.24.0",
+  "measurement_method": "deterministic_mirror_of_v1.24_parser",
+  "sample_count": 48,
+  "category_correct": 43,
+  "category_accuracy": 0.8958,
+  "evaluated_attribute_count": 83,
+  "correct_attribute_count": 76,
+  "micro_accuracy": 0.9157,
+  "false_positive_count": 1,
+  "false_negative_count": 6,
+  "mismatch_count": 0,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 13,
+      "correct_count": 13,
+      "accuracy": 1.0,
+      "positive_support": 5,
+      "positive_correct": 5,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 28,
+      "correct_count": 28,
+      "accuracy": 1.0,
+      "positive_support": 18,
+      "positive_correct": 18,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 9,
+      "correct_count": 7,
+      "accuracy": 0.7778,
+      "positive_support": 2,
+      "positive_correct": 1,
+      "positive_accuracy": 0.5,
+      "false_positive_count": 1,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 7,
+      "correct_count": 5,
+      "accuracy": 0.7143,
+      "positive_support": 5,
+      "positive_correct": 3,
+      "positive_accuracy": 0.6,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 10,
+      "correct_count": 10,
+      "accuracy": 1.0,
+      "positive_support": 4,
+      "positive_correct": 4,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 8,
+      "correct_count": 5,
+      "accuracy": 0.625,
+      "positive_support": 8,
+      "positive_correct": 5,
+      "positive_accuracy": 0.625,
+      "false_positive_count": 0,
+      "false_negative_count": 3,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 8,
+      "correct_count": 8,
+      "accuracy": 1.0,
+      "positive_support": 1,
+      "positive_correct": 1,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    }
+  },
+  "attribute_errors": [
+    {
+      "id": "ta7-bg-009",
+      "attribute": "anesthetic_active_ingredient",
+      "expected": "benzocaine",
+      "predicted": null
+    },
+    {
+      "id": "ta7-ib-009",
+      "attribute": "anesthetic_active_ingredient",
+      "expected": "benzocaine",
+      "predicted": null
+    },
+    {
+      "id": "ta7-na-009",
+      "attribute": "adhesive_strategy",
+      "expected": null,
+      "predicted": "universal"
+    },
+    {
+      "id": "ta7-sr-001",
+      "attribute": "adhesive_strategy",
+      "expected": "etch_and_rinse",
+      "predicted": null
+    },
+    {
+      "id": "ta7-sr-005",
+      "attribute": "anesthetic_active_ingredient",
+      "expected": "benzocaine",
+      "predicted": null
+    },
+    {
+      "id": "ta7-dd-051",
+      "attribute": "ionomer_use",
+      "expected": "liner_base",
+      "predicted": null
+    },
+    {
+      "id": "ta7-ca-061",
+      "attribute": "ionomer_use",
+      "expected": "restorative",
+      "predicted": null
+    }
+  ],
+  "category_errors": [
+    {
+      "id": "ta7-na-009",
+      "expected": "unknown",
+      "predicted": "dental_adhesive"
+    },
+    {
+      "id": "ta7-sr-027",
+      "expected": "glass_ionomer",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta7-sr-073",
+      "expected": "radiographic_developer",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta7-ca-121",
+      "expected": "unknown",
+      "predicted": "glass_ionomer"
+    },
+    {
+      "id": "ta7-ma-4049",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    }
+  ],
+  "interpretation": "Independent technical-attribute v7 baseline frozen before tuning. It measures generalization after v1.24 with eight previously unused procurements and includes contextual negatives, benzocaine, commercial short forms, spelling noise and morphology variants."
+}

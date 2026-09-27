@@ -323,3 +323,25 @@ Os limites de holdouts anteriores continuam preservados e a suíte passa a exigi
 As referências independentes continuam sendo 91,67% para categoria e 93,33% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v6-post-tuning.md`.
+
+
+## Benchmark técnico v7
+
+Um sétimo conjunto independente foi congelado após o tuning restrito da v1.24.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 83 campos técnicos avaliados;
+- 76 campos corretos;
+- micro accuracy de 91,57%;
+- 43/48 categorias corretas;
+- 6 falsos negativos;
+- 1 falso positivo;
+- nenhum mismatch.
+
+O v7 introduz novas formas adversariais de contexto, produtos comerciais com descrição curta, benzocaína, variações morfológicas e erros ortográficos.
+
+As lacunas do v7 não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v7.md`.

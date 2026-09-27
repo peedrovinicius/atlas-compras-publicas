@@ -238,3 +238,29 @@ A baseline está preservada em `technical-attributes-v6-baseline.json`.
 dpi evaluate-technical-attributes \
   --dataset data/evaluation/technical-attributes-v6.jsonl
 ~~~
+
+
+## Atributos técnicos v7
+
+O arquivo `technical-attributes-v7.jsonl` foi congelado depois do tuning restrito da v1.24 e antes de qualquer nova correção.
+
+A amostra contém:
+
+- 48 descrições;
+- 8 contratações inéditas;
+- 83 campos técnicos revisados;
+- 76 campos corretos na primeira medição;
+- micro accuracy independente de 91,57%;
+- 43/48 categorias corretas;
+- 6 falsos negativos técnicos;
+- 1 falso positivo técnico;
+- nenhum mismatch.
+
+A baseline está preservada em `technical-attributes-v7-baseline.json`.
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v7.jsonl
+~~~
+
+Os erros do v7 não são corrigidos na v1.25. Qualquer tuning posterior deve manter esta baseline imutável e registrar o novo resultado separadamente.
