@@ -134,3 +134,27 @@ Após corrigir as lacunas observadas no v3, o mesmo conjunto congelado atingiu:
 O resultado está salvo em `technical-attributes-v3-post-v1.18.json`.
 
 Esse valor é regressão pós-tuning e não substitui as baselines independentes de 93,33% para categoria e 94,19% para atributos.
+
+
+## Atributos técnicos v4
+
+O arquivo `technical-attributes-v4.jsonl` foi congelado depois do tuning do v3 e antes de qualquer nova correção.
+
+A amostra contém:
+
+- 45 descrições;
+- 8 contratações inéditas;
+- 87 campos técnicos revisados;
+- 77 campos corretos na primeira medição;
+- micro accuracy independente de 88,51%;
+- 42/45 categorias corretas;
+- 9 falsos negativos;
+- 1 falso positivo contextual;
+- nenhum mismatch.
+
+A baseline está preservada em `technical-attributes-v4-baseline.json`.
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v4.jsonl
+~~~
