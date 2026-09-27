@@ -174,3 +174,27 @@ Após corrigir as lacunas técnicas e o falso positivo contextual observados no 
 O resultado está salvo em `technical-attributes-v4-post-v1.20.json`.
 
 Esse valor é regressão pós-tuning e não substitui as baselines independentes de 93,33% para categoria e 88,51% para atributos.
+
+
+## Atributos técnicos v5
+
+O arquivo `technical-attributes-v5.jsonl` foi congelado depois do tuning contextual da v1.20 e antes de qualquer nova correção.
+
+A amostra contém:
+
+- 48 descrições;
+- 8 contratações inéditas;
+- 92 campos técnicos revisados;
+- 80 campos corretos na primeira medição;
+- micro accuracy independente de 86,96%;
+- 39/48 categorias corretas;
+- 10 falsos negativos técnicos;
+- 2 falsos positivos técnicos;
+- nenhum mismatch.
+
+A baseline está preservada em `technical-attributes-v5-baseline.json`.
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v5.jsonl
+~~~
