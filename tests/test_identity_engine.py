@@ -635,3 +635,74 @@ def test_technical_v3_category_rules_are_not_unbounded() -> None:
 
     for description in unrelated:
         assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v4_tuning_recognizes_registered_variants() -> None:
+    adhesive_photo = parse_product(
+        "AGENTE DE UNIAO MULTI-USO ADESIVO FOTO"
+    )
+    apinephrine = parse_product(
+        "ANESTESICO ARTICAINA COM APINEFRINA"
+    )
+    total_etch = parse_product(
+        "ADESIVO FOTOPOLIMERIZAVEL COMPATIVEL COM "
+        "CONDICIONAMENTO ACIDO TOTAL"
+    )
+    photo_resin = parse_product(
+        "RESINA FOTOPOLIMERIZAVEL COR A2 MICROHIBRIDA SERINGA 4G"
+    )
+
+    assert adhesive_photo.category == ProductCategory.ADHESIVE
+    assert adhesive_photo.technical_attributes.curing_mode == "light_cure"
+    assert (
+        apinephrine.technical_attributes.anesthetic_vasoconstrictor
+        == "epinephrine"
+    )
+    assert (
+        total_etch.technical_attributes.adhesive_strategy
+        == "etch_and_rinse"
+    )
+    assert total_etch.technical_attributes.curing_mode == "light_cure"
+    assert photo_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert photo_resin.technical_attributes.resin_technology == "microhybrid"
+    assert photo_resin.technical_attributes.curing_mode == "light_cure"
+
+
+def test_adhesive_curing_mode_ignores_resin_context() -> None:
+    product = parse_product(
+        "ADESIVO PARA RESINA FOTOPOLIMERIZAVEL FRASCO UNICO 5ML"
+    )
+
+    assert product.category == ProductCategory.ADHESIVE
+    assert product.technical_attributes.curing_mode is None
+
+
+def test_adhesive_curing_mode_keeps_direct_adhesive_evidence() -> None:
+    product = parse_product(
+        "ADESIVO FOTOPOLIMERIZAVEL PARA RESINA COMPOSTA FRASCO 5ML"
+    )
+
+    assert product.category == ProductCategory.ADHESIVE
+    assert product.technical_attributes.curing_mode == "light_cure"
+
+
+def test_technical_v4_tuning_keeps_v5_holdout_failures_unchanged() -> None:
+    descriptions = (
+        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+        "PASTA PROFIATICA",
+        "FLUORETO DE SODIO 2% GEL NEUTRO",
+    )
+
+    for description in descriptions:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v4_category_rules_remain_bounded() -> None:
+    unrelated = (
+        "MATERIAL FOTOPOLIMERIZAVEL A2",
+        "PRODUTO MICROHIBRIDO 4G",
+        "GEL DE SODIO 100G",
+    )
+
+    for description in unrelated:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
