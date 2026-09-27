@@ -101,7 +101,7 @@ O v9 usa outras oito contratações inéditas e preserva descrições comerciais
 
 O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.32, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
-O v11 usa oito novas contratações com descrições ainda mais curtas e ruidosas, incluindo `CIV`, `RESINA A1`, revelador para película e pontuação interna na identidade do produto. A baseline independente ficou em 92,50% de micro accuracy, com 36/48 categorias corretas, nenhum falso positivo técnico, 6 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.33.
+O v11 usa oito novas contratações com descrições ainda mais curtas e ruidosas, incluindo `CIV`, `RESINA A1`, revelador para película e pontuação interna na identidade do produto. A baseline independente ficou em 92,50% de micro accuracy, com 36/48 categorias corretas, nenhum falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.34, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 Documentação completa:
 
@@ -131,6 +131,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
 - [Regressão técnica v10 pós-tuning v1.32](docs/benchmark-technical-attributes-v10-post-tuning.md)
 - [Benchmark de atributos técnicos v11](docs/benchmark-technical-attributes-v11.md)
+- [Regressão técnica v11 pós-tuning v1.34](docs/benchmark-technical-attributes-v11-post-tuning.md)
 - [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
 
 ## Exemplo de normalização
@@ -224,9 +225,9 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- corrigir as lacunas do benchmark técnico v11 sem alterar sua baseline
-- criar novo holdout técnico após o próximo ciclo de regras
+- criar novo holdout técnico independente após o tuning da v1.34
 - consolidar os benchmarks técnicos v1–v11
+- revisar a arquitetura de regras e contextos
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
