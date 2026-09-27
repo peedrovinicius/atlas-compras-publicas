@@ -46,6 +46,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RESINA FOTO",
             "RESINA BULK FILL",
             "RESINA FILTEK Z250",
+            "RESINA - Z250",
         ),
     ),
     (
@@ -67,6 +68,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "CIMENTO IONOMERO",
             "CIV RESTAURADOR",
             "LONOMERO DE VIDRO",
+            "IONOMERO - DE VIDRO",
         ),
     ),
     (
@@ -120,6 +122,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "REVELADOR RADIOGRAFICO",
             "REVELADOR RADIOLOGICO",
             "REVELADOR ODONTOLOGICO",
+            "REVELADOR - DENTAL",
             "REVELADORREVELADOR",
         ),
     ),
@@ -194,6 +197,7 @@ _ADHESIVE_CONTEXT_EXCLUSIONS = (
     re.compile(r"\bAPLICADOR(?:ES)?\s+DE\s+ADESIVO\b"),
     re.compile(r"\bADESIVO\s+PARA\s+MOLDEIRAS?\b"),
     re.compile(r"\bSELANTE\b.*\bADESIVO\b"),
+    re.compile(r"\bCIMENTO ODONTOLOGICO\b.*\bADESIVO RESINOSO\b"),
 )
 
 _GLASS_IONOMER_CONTEXT_EXCLUSIONS = (
@@ -330,7 +334,7 @@ _VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("epinephrine", ("EPINEFRINA", "APINEFRINA", "ADRENALINA")),
     ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
     ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
-    ("phenylephrine", ("FENILEFRINA", "PHENYLEPHRINE")),
+    ("phenylephrine", ("FENILEFRINA", "FELILEFRINA", "PHENYLEPHRINE")),
 )
 
 
@@ -386,11 +390,20 @@ def _glass_ionomer_context_excluded(text: str) -> bool:
     )
 
 
-def _zinc_eugenol_cement_excluded(text: str) -> bool:
+def _zinc_oxide_context_excluded(text: str) -> bool:
+    has_zinc_oxide = (
+        _term_present(text, "OXIDO DE ZINCO")
+        or _term_present(text, "OXIDO ZINCO")
+    )
+    if not has_zinc_oxide:
+        return False
+
+    if _term_present(text, "CIMENTO ODONTOLOGICO"):
+        return True
+
     return (
-        _term_present(text, "CIMENTO ODONTOLOGICO")
-        and _term_present(text, "OXIDO DE ZINCO")
-        and _term_present(text, "EUGENOL")
+        _term_present(text, "COMPOSICAO BASE")
+        and _term_present(text, "FOSFATO CALCIO")
     )
 
 
@@ -481,8 +494,8 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
         ):
             continue
         if (
-            category in (ProductCategory.ZINC_OXIDE, ProductCategory.EUGENOL)
-            and _zinc_eugenol_cement_excluded(text)
+            category == ProductCategory.ZINC_OXIDE
+            and _zinc_oxide_context_excluded(text)
         ):
             continue
         if category == ProductCategory.ALGINATE and _alginate_context_excluded(text):
@@ -603,7 +616,7 @@ def _technical_attributes(
             _ANESTHETIC_INGREDIENT_RULES,
         )
         if re.search(
-            r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR|VASOCONTRITOR)\b"
+            r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR|VASOCONTRITOR|VASOCONSTRICTOR)\b"
             r"|\bS\s*/\s*VASO(?:CONSTR(?:ITOR)?)?\b)",
             text,
         ):
