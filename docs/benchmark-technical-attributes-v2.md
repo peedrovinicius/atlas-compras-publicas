@@ -67,3 +67,10 @@ Esta baseline deve permanecer imutável.
 As cinco lacunas podem orientar um ciclo posterior de tuning, mas qualquer resultado após ajuste deve ser salvo em artefato separado.
 
 O benchmark técnico v1 e o holdout v5 da taxonomia permanecem independentes deste conjunto.
+
+
+## Resultado posterior
+
+A v1.16 corrigiu as cinco lacunas observadas e atingiu 77/77 no mesmo conjunto.
+
+Esse valor é registrado separadamente como regressão pós-tuning em `docs/benchmark-technical-attributes-v2-post-tuning.md` e não substitui a baseline independente de 93,51%.
