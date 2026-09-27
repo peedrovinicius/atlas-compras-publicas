@@ -58,7 +58,7 @@ _PLUS_INGREDIENT = re.compile(
     r"\+\s*(?P<ingredient>[A-Z][A-Z -]*?)(?=\s+\d|,|$)"
 )
 _POST_STRENGTH_ADJUNCT = re.compile(
-    r"\b(?:MCG|MG|G|UI)\s+"
+    r"(?:MCG|MG|G|UI)\s+"
     r"(?P<ingredient>FELIPRESSINA|EPINEFRINA|NOREPINEFRINA|FENILEFRINA)\b"
 )
 _BENZYLPENICILLIN_PRESENTATION = re.compile(
