@@ -211,6 +211,7 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
         "light_cure",
         (
             "FOTOPOLIMERIZAVEL",
+            "FOTOPOLIMERIZAVEIS",
             "FOTOPOLIMERIZACAO",
             "FOTOPOLIMERIZADO",
             "FOTOPOLIMERIZADA",
