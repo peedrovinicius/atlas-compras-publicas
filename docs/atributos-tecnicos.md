@@ -139,3 +139,21 @@ Resultado inicial:
 As cinco lacunas ainda não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v2.md`.
+
+
+## Resultado pós-tuning v1.16
+
+As cinco lacunas observadas no benchmark técnico v2 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 77 campos avaliados;
+- 77 campos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+A referência independente continua sendo 93,51%.
+
+Detalhes: `docs/benchmark-technical-attributes-v2-post-tuning.md`.
