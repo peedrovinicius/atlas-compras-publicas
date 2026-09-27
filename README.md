@@ -219,14 +219,19 @@ O primeiro holdout independente contém 48 exemplos e 192 campos.
 A baseline ficou em **87,50%** de micro accuracy, com melhor desempenho
 em forma farmacêutica e via do que em ingrediente ativo.
 
+Após o tuning da v1.44, o mesmo conjunto congelado atingiu
+**192/192 campos corretos e 100% de micro accuracy**, sem substituir
+a baseline independente.
+
 ~~~bash
 dpi evaluate-medications --dataset data/evaluation/medications-v1.jsonl
 dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 ~~~
 
 - [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
+- [Medicamentos v1 pós-tuning v1.44](docs/benchmark-medications-v1-post-tuning.md)
 
-O domínio permanece em `benchmark_required` até um ciclo posterior de tuning.
+O domínio permanece em `benchmark_required` até um novo holdout independente pós-tuning.
 
 ## Snapshot real
 
@@ -298,7 +303,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- fazer tuning controlado do benchmark de medicamentos sem alterar sua baseline
+- criar um novo holdout independente de medicamentos após o tuning da v1.44
 - consolidar uma base DuckDB real para os painéis de preços e homologações
 
 ## Fonte dos dados

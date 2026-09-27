@@ -36,22 +36,54 @@ class MedicationIdentity:
 
 
 _LEADING_CODE = re.compile(
-    r"^(?:\(BR\d+\)\s*|\d+\s*-\s*)+"
+    r"^(?:(?:BR\d+|\d+)\s*(?:-\s*)?)+"
 )
 _STRENGTH = re.compile(
-    r"(?<![A-Z0-9])(?P<value>\d+(?:[.,]\d+)?)\s*"
-    r"(?P<unit>MCG|MG|G|UI)(?:\s*/\s*(?P<denom>ML|G))?"
+    r"(?P<value>(?:\d{1,3}(?:\.\d{3})+|\d+(?:[.,]\d+)?))\s*"
+    r"(?P<unit>MCG|MG|G|UI)"
+    r"(?:\s*/\s*(?:(?P<denom_value>\d+(?:[.,]\d+)?)\s*)?"
+    r"(?P<denom_unit>ML|G|L))?"
 )
 _INGREDIENT_STOP = re.compile(
     r"\s+(?:DOSAGEM|CONCENTRACAO|COMPOSICAO|APRESENTACAO|"
-    r"FORMA FARMACEUTICA|FORMA FARMACEUTICA|USO|APLICACAO|"
-    r"TIPO MEDICAMENTO)\s*:"
+    r"FORMA FARMACEUTICA|USO|APLICACAO|TIPO MEDICAMENTO)\b"
 )
+_ASSOCIATED_INGREDIENT = re.compile(
+    r"\bASSOCIAD[OA]\s+(?:AO|A)\s+"
+    r"(?P<ingredient>[A-Z][A-Z -]*?)"
+    r"(?=,|\s+(?:CONCENTRACAO|DOSAGEM|APRESENTACAO|"
+    r"FORMA FARMACEUTICA|USO|COMPRIMIDO)\b|$)"
+)
+_PLUS_INGREDIENT = re.compile(
+    r"\+\s*(?P<ingredient>[A-Z][A-Z -]*?)(?=\s+\d|,|$)"
+)
+_POST_STRENGTH_ADJUNCT = re.compile(
+    r"(?:MCG|MG|G|UI)\s+"
+    r"(?P<ingredient>FELIPRESSINA|EPINEFRINA|NOREPINEFRINA|FENILEFRINA)\b"
+)
+_BENZYLPENICILLIN_PRESENTATION = re.compile(
+    r"\bAPRESENTACAO\s+"
+    r"(?P<qualifier>BENZATINA|PROCAINA|POTASSICA|SODICA)\b"
+)
+
+_TEXT_REWRITES = (
+    ("ACIDOFOLICO", "ACIDO FOLICO"),
+)
+_BRAND_ONLY_NAMES = {
+    "BENESTARE",
+}
+
+
+def _prepare_text(description: str) -> str:
+    text = normalize_description(description)
+    for source, target in _TEXT_REWRITES:
+        text = text.replace(source, target)
+    return text
 
 
 def _clean_active_ingredient(text: str) -> str | None:
-    cleaned = _LEADING_CODE.sub("", text).strip()
-    cleaned = _INGREDIENT_STOP.split(cleaned, maxsplit=1)[0].strip(" ,-")
+    without_code = _LEADING_CODE.sub("", text).strip()
+    cleaned = _INGREDIENT_STOP.split(without_code, maxsplit=1)[0].strip(" ,-")
 
     strength_match = _STRENGTH.search(cleaned)
     if strength_match:
@@ -70,6 +102,7 @@ def _clean_active_ingredient(text: str) -> str | None:
         " XAROPE",
         " POMADA",
         " CREME",
+        " TUBETE",
     )
     positions = [
         cleaned.find(marker)
@@ -79,6 +112,29 @@ def _clean_active_ingredient(text: str) -> str | None:
     if positions:
         cleaned = cleaned[: min(positions)].strip(" ,-")
 
+    associated = _ASSOCIATED_INGREDIENT.search(without_code)
+    if associated:
+        associated_name = associated.group("ingredient").strip(" ,-")
+        if associated_name and associated_name not in cleaned:
+            cleaned = f"{cleaned} + {associated_name}".strip(" +")
+
+    plus_match = _PLUS_INGREDIENT.search(without_code)
+    if plus_match:
+        plus_name = plus_match.group("ingredient").strip(" ,-")
+        if plus_name and plus_name not in cleaned:
+            cleaned = f"{cleaned} + {plus_name}".strip(" +")
+
+    adjunct = _POST_STRENGTH_ADJUNCT.search(without_code)
+    if adjunct:
+        adjunct_name = adjunct.group("ingredient")
+        if adjunct_name not in cleaned:
+            cleaned = f"{cleaned} + {adjunct_name}".strip(" +")
+
+    if cleaned == "BENZILPENICILINA":
+        qualifier = _BENZYLPENICILLIN_PRESENTATION.search(without_code)
+        if qualifier:
+            cleaned = f"{cleaned} {qualifier.group('qualifier')}"
+
     generic_noise = {
         "",
         "MEDICAMENTO",
@@ -86,20 +142,46 @@ def _clean_active_ingredient(text: str) -> str | None:
         "COMPRIMIDO",
         "CAPSULA",
     }
-    if cleaned in generic_noise:
+    if cleaned in generic_noise or cleaned in _BRAND_ONLY_NAMES:
         return None
     return cleaned or None
 
 
-def _extract_strength(text: str) -> str | None:
+def _normalize_number(value: str) -> str:
+    if re.fullmatch(r"\d{1,3}(?:\.\d{3})+", value):
+        return value.replace(".", "")
+    return value.replace(",", ".")
+
+
+def _extract_strength(
+    text: str,
+    dosage_form: MedicationDosageForm,
+) -> str | None:
     match = _STRENGTH.search(text)
     if not match:
         return None
-    value = match.group("value").replace(",", ".")
+
+    value = _normalize_number(match.group("value"))
     unit = match.group("unit").lower()
-    denom = match.group("denom")
-    if denom:
-        return f"{value} {unit}/{denom.lower()}"
+    denom_value = match.group("denom_value")
+    denom_unit = match.group("denom_unit")
+
+    if (
+        denom_value
+        and dosage_form
+        not in (
+            MedicationDosageForm.INJECTABLE,
+            MedicationDosageForm.ORAL_LIQUID,
+        )
+    ):
+        return f"{value} {unit}"
+
+    if denom_unit:
+        denominator = denom_unit.lower()
+        if denom_value:
+            denominator = f"{_normalize_number(denom_value)} {denominator}"
+        return f"{value} {unit}/{denominator}"
+
     return f"{value} {unit}"
 
 
@@ -128,6 +210,8 @@ def _dosage_form(text: str) -> MedicationDosageForm:
         return MedicationDosageForm.CAPSULE
     if "POMADA" in text or "CREME" in text:
         return MedicationDosageForm.TOPICAL
+    if "TUBETE" in text:
+        return MedicationDosageForm.OTHER
     return MedicationDosageForm.UNKNOWN
 
 
@@ -137,7 +221,12 @@ def _route(
 ) -> MedicationRoute:
     if "SUBLINGUAL" in text:
         return MedicationRoute.SUBLINGUAL
-    if dosage_form == MedicationDosageForm.INJECTABLE:
+    if (
+        dosage_form == MedicationDosageForm.INJECTABLE
+        or "INTRAVENOSO" in text
+        or "ENDOVENOSO" in text
+        or re.search(r"\bIV\b", text)
+    ):
         return MedicationRoute.INJECTABLE
     if dosage_form == MedicationDosageForm.OPHTHALMIC:
         return MedicationRoute.OPHTHALMIC
@@ -155,14 +244,14 @@ def _route(
 
 
 def parse_medication(description: str) -> MedicationIdentity:
-    text = normalize_description(description)
+    text = _prepare_text(description)
     dosage_form = _dosage_form(text)
 
     return MedicationIdentity(
         original_description=description,
         normalized_description=text,
         active_ingredient=_clean_active_ingredient(text),
-        strength=_extract_strength(text),
+        strength=_extract_strength(text, dosage_form),
         dosage_form=dosage_form,
         route=_route(text, dosage_form),
     )
