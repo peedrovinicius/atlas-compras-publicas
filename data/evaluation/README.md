@@ -366,3 +366,29 @@ Após corrigir as lacunas observadas no v9, o mesmo conjunto congelado atingiu:
 O resultado está salvo em `technical-attributes-v9-post-v1.30.json`.
 
 Esse valor é regressão pós-tuning e não substitui as baselines independentes de 87,50% para categoria e 96,43% para atributos.
+
+
+## Atributos técnicos v10
+
+O arquivo `technical-attributes-v10.jsonl` foi congelado após o tuning da v1.30 e antes da primeira medição.
+
+A amostra contém:
+
+- 48 descrições;
+- 8 contratações inéditas;
+- 84 campos técnicos revisados;
+- 80 campos corretos na primeira medição;
+- micro accuracy independente de 95,24%;
+- 45/48 categorias corretas;
+- 1 falso positivo técnico;
+- 3 falsos negativos técnicos;
+- nenhum mismatch.
+
+A baseline está preservada em `technical-attributes-v10-baseline.json`.
+
+~~~bash
+dpi evaluate-technical-attributes \
+  --dataset data/evaluation/technical-attributes-v10.jsonl
+~~~
+
+Os erros do v10 não são corrigidos na v1.31. Qualquer tuning posterior deve manter esta baseline imutável e registrar o novo resultado separadamente.
