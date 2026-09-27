@@ -45,6 +45,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RESINA FORMA NANOHIBRIDA",
             "RESINA FOTO",
             "RESINA BULK FILL",
+            "RESINA FILTEK Z250",
         ),
     ),
     (
@@ -65,6 +66,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "IONOMEROS DE VIDRO",
             "CIMENTO IONOMERO",
             "CIV RESTAURADOR",
+            "LONOMERO DE VIDRO",
         ),
     ),
     (
@@ -114,7 +116,11 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.RADIOGRAPHIC_DEVELOPER,
-        ("REVELADOR RADIOGRAFICO", "REVELADOR ODONTOLOGICO"),
+        (
+            "REVELADOR RADIOGRAFICO",
+            "REVELADOR ODONTOLOGICO",
+            "REVELADORREVELADOR",
+        ),
     ),
     (
         ProductCategory.LOCAL_ANESTHETIC,
@@ -185,6 +191,11 @@ _COMPOSITE_CONTEXT_EXCLUSIONS = (
 
 _ADHESIVE_CONTEXT_EXCLUSIONS = (
     re.compile(r"\bAPLICADOR(?:ES)?\s+DE\s+ADESIVO\b"),
+    re.compile(r"\bADESIVO\s+PARA\s+MOLDEIRAS?\b"),
+)
+
+_GLASS_IONOMER_CONTEXT_EXCLUSIONS = (
+    re.compile(r"\bSELANTE\b.*\bIONOMERO\s+DE\s+VIDRO\b"),
 )
 
 _ADHESIVE_HINTS = (
@@ -269,17 +280,24 @@ _ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "CONDICIONAMENTO ACIDO TOTAL",
             "TOTAL ETCH",
             "ETCH AND RINSE",
+            "DECAPAGEM TOTAL",
         ),
     ),
 )
 
 _IONOMER_USE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("restorative", ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO")),
+    (
+        "restorative",
+        ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO", "RESTAURACOES"),
+    ),
     (
         "luting",
         ("CIMENTACAO", "CIMENTACOES", "CIMENTANTE", "FIXACAO"),
     ),
-    ("liner_base", ("FORRAMENTO", "FORRADOR", "BASE CAVITARIA")),
+    (
+        "liner_base",
+        ("FORRAMENTO", "FORRACAO", "FORRADOR", "BASE CAVITARIA"),
+    ),
 )
 
 _FLUORIDE_FORMULATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -301,6 +319,7 @@ _ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("articaine", ("ARTICAINA", "ARTICAINE")),
     ("mepivacaine", ("MEPIVACAINA",)),
     ("prilocaine", ("PRILOCAINA",)),
+    ("benzocaine", ("BENZOCAINA",)),
 )
 
 _VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -355,6 +374,12 @@ def _composite_context_excluded(text: str) -> bool:
 
 def _adhesive_context_excluded(text: str) -> bool:
     return any(pattern.search(text) for pattern in _ADHESIVE_CONTEXT_EXCLUSIONS)
+
+
+def _glass_ionomer_context_excluded(text: str) -> bool:
+    return any(
+        pattern.search(text) for pattern in _GLASS_IONOMER_CONTEXT_EXCLUSIONS
+    )
 
 
 def _looks_like_flowable_resin(text: str) -> bool:
@@ -436,6 +461,11 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
         if (
             category == ProductCategory.COMPOSITE_RESIN
             and _composite_context_excluded(text)
+        ):
+            continue
+        if (
+            category == ProductCategory.GLASS_IONOMER
+            and _glass_ionomer_context_excluded(text)
         ):
             continue
         if category == ProductCategory.ALGINATE and _alginate_context_excluded(text):
