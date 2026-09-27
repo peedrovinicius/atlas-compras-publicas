@@ -156,7 +156,10 @@ def _zinc_oxide_context_excluded(text: str) -> bool:
     if _term_present(text, "CIMENTO ODONTOLOGICO") or _term_present(text, "CIMENTO"):
         return True
 
-    if _term_present(text, "RESTAURADOR TEMPORARIO"):
+    if (
+        _term_present(text, "RESTAURADOR TEMPORARIO")
+        or _term_present(text, "PASTA MOLDAGEM")
+    ):
         return True
 
     return (
@@ -171,6 +174,7 @@ def _eugenol_context_excluded(text: str) -> bool:
             _term_present(text, "CIMENTO ODONTOLOGICO")
             or _term_present(text, "CIMENTO")
             or _term_present(text, "RESTAURADOR TEMPORARIO")
+            or _term_present(text, "PASTA MOLDAGEM")
         )
         and _term_present(text, "EUGENOL")
     )
@@ -309,10 +313,14 @@ def _single_attribute_match(
 def _anesthetic_vasoconstrictor(text: str) -> str | None:
     if re.search(
         r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR|VASOCONTRITOR|VASOCONSTRICTOR)\b"
-        r"|\bS\s*/\s*VASO(?:CONSTR(?:ITOR)?)?\b)",
+        r"|\bS\s*/\s*VASO(?:CONSTR(?:ITOR)?)?\b"
+        r"|\bSV\b)",
         text,
     ):
         return "none"
+
+    if re.search(r"\bEPINEFRINA(?=\d)", text):
+        return "epinephrine"
 
     return _single_attribute_match(text, _VASOCONSTRICTOR_RULES)
 
