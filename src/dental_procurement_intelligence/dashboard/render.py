@@ -43,7 +43,7 @@ def render_dashboard(overview: dict[str, Any]) -> str:
     domains = overview.get("domains") or []
 
     total_items = quality.get("total_items", "—")
-    recognized = quality.get("recognized_items", "—")
+    recognized = quality.get("category_identified_items", "—")
     fully_structured = quality.get("fully_structured_items", "—")
     avg_quality = quality.get("average_quality_score", "—")
 
