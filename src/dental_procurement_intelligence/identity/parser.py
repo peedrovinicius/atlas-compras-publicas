@@ -41,6 +41,9 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RESINAS FOTOPOLIMERIZAVEIS",
             "RESINA FOTOPOLIMERIZAVEL",
             "RESINA FOTOPOLIMERIZAVEIS",
+            "RESINA ODONTOLOGICA",
+            "RESINA FORMA NANOHIBRIDA",
+            "RESINA FOTO",
             "RESINA BULK FILL",
         ),
     ),
@@ -80,6 +83,8 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "FLUOR ACIDO GEL",
             "GEL FLUORETADO",
             "GEL DE FLUORETO DE SODIO",
+            "FLUOR NEUTRO",
+            "FLUOR ACIDULADO",
         ),
     ),
     (
@@ -175,6 +180,11 @@ _CONCENTRATION_CRITICAL = {
 _COMPOSITE_CONTEXT_EXCLUSIONS = (
     re.compile(r"\b(?:KIT|PONTAS?)\b.*\b(?:ACABAMENTO|POLIMENTO)\b.*\bRESINA\b"),
     re.compile(r"\b(?:ACABAMENTO|POLIMENTO)\b.*\bDE\s+RESINA\b"),
+    re.compile(r"\bSELANTE\b.*\bRESINA\b"),
+)
+
+_ADHESIVE_CONTEXT_EXCLUSIONS = (
+    re.compile(r"\bAPLICADOR(?:ES)?\s+DE\s+ADESIVO\b"),
 )
 
 _ADHESIVE_HINTS = (
@@ -204,7 +214,10 @@ _MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
 _RESIN_TECHNOLOGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("bulk_fill", ("BULK FILL", "BULKFILL")),
     ("nanohybrid", ("NANOHIBRIDA", "NANO-HIBRIDA", "NANOHYBRID")),
-    ("microhybrid", ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICROHYBRID")),
+    (
+        "microhybrid",
+        ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICROHIDRIDA", "MICROHYBRID"),
+    ),
 )
 
 _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -217,6 +230,8 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "FOTOPOLIMERIZACAO",
             "FOTOPOLIMERIZADO",
             "FOTOPOLIMERIZADA",
+            "FOTOPOLIMERIZALVEL",
+            "FOTOPOLIMERIXAVE",
             "FOTOATIVADO",
             "FOTOATIVADA",
             "LIGHT CURE",
@@ -317,6 +332,7 @@ def _term_negated(text: str, term: str) -> bool:
         rf"\bLIVRE\s+DE\s+{escaped}\b",
         rf"\bNAO\s+CONTEM\s+{escaped}\b",
         rf"\bNAO\s+{escaped}\b",
+        rf"\bDISPENSA(?:\s+O)?\s+USO\s+DE\s+{escaped}\b",
     )
     return any(re.search(pattern, text) for pattern in patterns)
 
@@ -335,6 +351,10 @@ def _is_mixed_kit(text: str) -> bool:
 
 def _composite_context_excluded(text: str) -> bool:
     return any(pattern.search(text) for pattern in _COMPOSITE_CONTEXT_EXCLUSIONS)
+
+
+def _adhesive_context_excluded(text: str) -> bool:
+    return any(pattern.search(text) for pattern in _ADHESIVE_CONTEXT_EXCLUSIONS)
 
 
 def _looks_like_flowable_resin(text: str) -> bool:
@@ -369,7 +389,10 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
         )
         return ProductCategory.LOCAL_ANESTHETIC, matches
 
-    if _has_any(text, ("ADESIVO", "ADESIVOS")):
+    if (
+        _has_any(text, ("ADESIVO", "ADESIVOS"))
+        and not _adhesive_context_excluded(text)
+    ):
         matches = tuple(
             term
             for term in _ADHESIVE_HINTS
@@ -419,6 +442,26 @@ def _first_attribute_match(
     return None
 
 
+def _single_attribute_match(
+    text: str,
+    rules: tuple[tuple[str, tuple[str, ...]], ...],
+) -> str | None:
+    matches = {
+        canonical
+        for canonical, terms in rules
+        if any(_term_present(text, term) for term in terms)
+    }
+    if len(matches) == 1:
+        return next(iter(matches))
+    return None
+
+
+def _resin_curing_mode(text: str) -> str | None:
+    if re.search(r"\bRESINA(?:S)?\s+FOTO\b", text):
+        return "light_cure"
+    return _first_attribute_match(text, _CURING_MODE_RULES)
+
+
 def _adhesive_curing_mode(text: str) -> str | None:
     if re.search(r"\bADESIVO\s+FOTO\b", text):
         return "light_cure"
@@ -444,8 +487,8 @@ def _technical_attributes(
     anesthetic_vasoconstrictor = None
 
     if category in (ProductCategory.COMPOSITE_RESIN, ProductCategory.FLOWABLE_RESIN):
-        resin_technology = _first_attribute_match(text, _RESIN_TECHNOLOGY_RULES)
-        curing_mode = _first_attribute_match(text, _CURING_MODE_RULES)
+        resin_technology = _single_attribute_match(text, _RESIN_TECHNOLOGY_RULES)
+        curing_mode = _resin_curing_mode(text)
 
     elif category == ProductCategory.ADHESIVE:
         adhesive_strategy = _first_attribute_match(text, _ADHESIVE_STRATEGY_RULES)
