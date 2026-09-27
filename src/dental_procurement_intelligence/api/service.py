@@ -10,6 +10,7 @@ from dental_procurement_intelligence.analytics import (
     award_summary,
     quality_by_category,
     quality_summary,
+    unrecognized_count,
     unrecognized_items,
 )
 from dental_procurement_intelligence.identity import available_domains
@@ -57,9 +58,48 @@ def analytics_overview(database_path: str | Path) -> dict[str, Any]:
     }
 
 
-def analytics_categories(database_path: str | Path) -> list[dict[str, Any]]:
+def _matches(value: Any, expected: Any) -> bool:
+    if expected is None:
+        return True
+    if isinstance(value, str) and isinstance(expected, str):
+        return value.casefold() == expected.casefold()
+    return value == expected
+
+
+def _paginate(
+    rows: list[dict[str, Any]],
+    *,
+    limit: int,
+    offset: int,
+) -> dict[str, Any]:
+    if limit < 1 or limit > 500:
+        raise ValueError("limit deve estar entre 1 e 500")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
+
+    return {
+        "items": rows[offset : offset + limit],
+        "total": len(rows),
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+def analytics_categories(
+    database_path: str | Path,
+    *,
+    category: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict[str, Any]:
     path = _require_database(database_path)
-    return DuckDBWarehouse(path).summary()
+    rows = DuckDBWarehouse(path).summary()
+    filtered = [
+        row
+        for row in rows
+        if _matches(row.get("product_category"), category)
+    ]
+    return _paginate(filtered, limit=limit, offset=offset)
 
 
 def analytics_quality(database_path: str | Path) -> dict[str, Any]:
@@ -70,20 +110,65 @@ def analytics_quality(database_path: str | Path) -> dict[str, Any]:
     }
 
 
-def analytics_awards(database_path: str | Path) -> list[dict[str, Any]]:
+def analytics_awards(
+    database_path: str | Path,
+    *,
+    category: str | None = None,
+    macroregion: str | None = None,
+    year: int | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict[str, Any]:
     path = _require_database(database_path)
-    return _optional_rows(award_summary, path)
+    rows = _optional_rows(award_summary, path)
+    filtered = [
+        row
+        for row in rows
+        if _matches(row.get("product_category"), category)
+        and _matches(row.get("macroregion"), macroregion)
+        and _matches(row.get("analysis_year"), year)
+    ]
+    return _paginate(filtered, limit=limit, offset=offset)
 
 
-def analytics_anomalies(database_path: str | Path) -> list[dict[str, Any]]:
+def analytics_anomalies(
+    database_path: str | Path,
+    *,
+    category: str | None = None,
+    scope: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict[str, Any]:
     path = _require_database(database_path)
-    return _optional_rows(anomaly_summary, path)
+    rows = _optional_rows(anomaly_summary, path)
+    filtered = [
+        row
+        for row in rows
+        if _matches(row.get("product_category"), category)
+        and _matches(row.get("comparison_scope"), scope)
+    ]
+    return _paginate(filtered, limit=limit, offset=offset)
 
 
 def analytics_unrecognized(
     database_path: str | Path,
     *,
     limit: int = 50,
-) -> list[dict[str, Any]]:
+    offset: int = 0,
+) -> dict[str, Any]:
     path = _require_database(database_path)
-    return unrecognized_items(path, limit=limit)
+    if limit < 1 or limit > 500:
+        raise ValueError("limit deve estar entre 1 e 500")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
+
+    return {
+        "items": unrecognized_items(
+            path,
+            limit=limit,
+            offset=offset,
+        ),
+        "total": unrecognized_count(path),
+        "limit": limit,
+        "offset": offset,
+    }
