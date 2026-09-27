@@ -1184,3 +1184,78 @@ def test_technical_v11_tuning_preserves_existing_boundaries() -> None:
     assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
     assert eugenol.category == ProductCategory.EUGENOL
     assert mixed_kit.category == ProductCategory.UNKNOWN
+
+
+def test_technical_v12_tuning_recognizes_bounded_variants() -> None:
+    mepivacana = parse_product("ANESTESICO MEPIVACANA SEM VASO CONSTRITOR")
+    sv = parse_product("ANESTESICO AD MEPIVACAINA SV 3%")
+    maxxion = parse_product("IONOMERO VIDRO MAXXION-R A3 PO + LIQ")
+    self_etch = parse_product("ADESIVO AUTO-CONDICIONANTE FOTOPOLIMERIZAVEL")
+    fenilefina = parse_product("ANESTESICO LIDOCAINA 2% COM FENILEFINA")
+    dental_resin = parse_product(
+        "RESINA DENTAL MICRO HIBRIDA, FOTO COR A1"
+    )
+    ionomer_kit = parse_product("KIT - IONOMERO RESTAURADOR")
+    ionofast = parse_product("IONOMERO DE VIDRO FORRADOR FOTO IONOFAST")
+    epinephrine_joined = parse_product(
+        "ANESTESICO DE LIDOCAINA COM EPINEFRINA1:100.000"
+    )
+    developer_rx = parse_product("REVELADOR PARA RX DE USO ODONTOLOGICO")
+    fixer_rx = parse_product("FIXADOR P/ RX SOLUCAO PRONTA")
+    z100 = parse_product("RESINA Z 100 A1")
+    film_developer = parse_product("REVELADOR DE FILME RADIOGRAFICO ODONTOLOGICO")
+    film_fixer = parse_product("FIXADOR DE FILME RADIOGRAFICO ODONTOLOGICO")
+    molding_paste = parse_product(
+        "PASTA MOLDAGEM MATERIAL BASICO OXIDO DE ZINCO E EUGENOL"
+    )
+
+    assert mepivacana.category == ProductCategory.LOCAL_ANESTHETIC
+    assert mepivacana.technical_attributes.anesthetic_active_ingredient == "mepivacaine"
+
+    assert sv.category == ProductCategory.LOCAL_ANESTHETIC
+    assert sv.technical_attributes.anesthetic_vasoconstrictor == "none"
+
+    assert maxxion.category == ProductCategory.GLASS_IONOMER
+    assert maxxion.technical_attributes.ionomer_use == "restorative"
+
+    assert self_etch.category == ProductCategory.ADHESIVE
+    assert self_etch.technical_attributes.adhesive_strategy == "self_etch"
+
+    assert fenilefina.category == ProductCategory.LOCAL_ANESTHETIC
+    assert fenilefina.technical_attributes.anesthetic_vasoconstrictor == "phenylephrine"
+
+    assert dental_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert dental_resin.technical_attributes.resin_technology == "microhybrid"
+    assert dental_resin.technical_attributes.curing_mode == "light_cure"
+
+    assert ionomer_kit.category == ProductCategory.GLASS_IONOMER
+    assert ionomer_kit.technical_attributes.ionomer_use == "restorative"
+
+    assert ionofast.category == ProductCategory.GLASS_IONOMER
+    assert ionofast.technical_attributes.ionomer_use == "liner_base"
+    assert ionofast.technical_attributes.curing_mode == "light_cure"
+
+    assert epinephrine_joined.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        epinephrine_joined.technical_attributes.anesthetic_vasoconstrictor
+        == "epinephrine"
+    )
+
+    assert developer_rx.category == ProductCategory.RADIOGRAPHIC_DEVELOPER
+    assert fixer_rx.category == ProductCategory.RADIOGRAPHIC_FIXER
+    assert z100.category == ProductCategory.COMPOSITE_RESIN
+    assert film_developer.category == ProductCategory.RADIOGRAPHIC_DEVELOPER
+    assert film_fixer.category == ProductCategory.RADIOGRAPHIC_FIXER
+    assert molding_paste.category == ProductCategory.UNKNOWN
+
+
+def test_technical_v12_tuning_keeps_context_rules_bounded() -> None:
+    zinc_oxide = parse_product("OXIDO DE ZINCO PO ODONTOLOGICO")
+    eugenol = parse_product("EUGENOL LIQUIDO")
+    resin = parse_product("RESINA UNIVERSAL FOTOPOLIMERIZAVEL")
+    generic_xray = parse_product("CARTAO PARA RAIO X ODONTOLOGICO")
+
+    assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
+    assert eugenol.category == ProductCategory.EUGENOL
+    assert resin.category == ProductCategory.COMPOSITE_RESIN
+    assert generic_xray.category == ProductCategory.UNKNOWN
