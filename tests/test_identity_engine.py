@@ -576,3 +576,62 @@ def test_technical_v2_tuning_keeps_taxonomy_holdout_unchanged() -> None:
 
     for description in descriptions:
         assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v3_tuning_recognizes_registered_variants() -> None:
+    abbreviated_no_vaso = parse_product(
+        "ANESTESICO LOCAL MEPIVACAINA 3% S/VASOCONSTR."
+    )
+    misspelled_no_vaso = parse_product(
+        "ANESTESICO LOCAL MEPIVACAINA 3% SEM VASOCONTRITOR"
+    )
+    photoactivated = parse_product(
+        "IONOMERO DE VIDRO FOTOATIVADO"
+    )
+    plural_resin = parse_product(
+        "RESINAS FOTOPOLIMERIZAVEIS A1 SERINGA 4G"
+    )
+    bulk_fill = parse_product(
+        "RESINA BULK FILL SERINGA 4G"
+    )
+    fluoride = parse_product(
+        "GEL DE FLUORETO DE SODIO A 1,23% BISNAGA 100G"
+    )
+
+    assert (
+        abbreviated_no_vaso.technical_attributes.anesthetic_vasoconstrictor
+        == "none"
+    )
+    assert (
+        misspelled_no_vaso.technical_attributes.anesthetic_vasoconstrictor
+        == "none"
+    )
+    assert photoactivated.category == ProductCategory.GLASS_IONOMER
+    assert photoactivated.technical_attributes.curing_mode == "light_cure"
+    assert plural_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert plural_resin.technical_attributes.curing_mode == "light_cure"
+    assert bulk_fill.category == ProductCategory.COMPOSITE_RESIN
+    assert bulk_fill.technical_attributes.resin_technology == "bulk_fill"
+    assert fluoride.category == ProductCategory.FLUORIDE_GEL
+
+
+def test_technical_v3_tuning_keeps_v5_holdout_failures_unchanged() -> None:
+    descriptions = (
+        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+        "PASTA PROFIATICA",
+        "FLUORETO DE SODIO 2% GEL NEUTRO",
+    )
+
+    for description in descriptions:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v3_category_rules_are_not_unbounded() -> None:
+    unrelated = (
+        "MATERIAL BULK FILL 4G",
+        "GEL DE SODIO 100G",
+        "FOTOPOLIMERIZAVEL A1 4G",
+    )
+
+    for description in unrelated:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
