@@ -389,3 +389,23 @@ As descrições são trechos curtos e fiéis às fontes públicas, sem preço, q
 As lacunas do v8 não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v8.md`.
+
+
+## Resultado pós-tuning v1.28
+
+As lacunas observadas no benchmark técnico v8 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 83/83 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+As correções ficaram restritas a benzocaína como identidade anestésica, abreviação `FOTOPOL.`, alternativas explícitas de tecnologia e flúor, referência subordinada a adesivo, marca de referência, cimento de óxido de zinco e eugenol e a forma `Revelador Radiológico`.
+
+As referências independentes continuam sendo 89,58% para categoria e 90,36% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v8-post-tuning.md`.
