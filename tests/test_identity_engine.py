@@ -706,3 +706,114 @@ def test_technical_v4_category_rules_remain_bounded() -> None:
 
     for description in unrelated:
         assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v5_context_keeps_primary_product_category() -> None:
+    ionomer = parse_product(
+        "CIMENTO DE IONOMERO DE VIDRO DE ALTA VISCOSIDADE "
+        "DISPENSA O USO DE ADESIVO"
+    )
+    applicator = parse_product(
+        "APLICADOR DE ADESIVO DESCARTAVEL CAIXA COM 100 UNIDADES"
+    )
+    sealant = parse_product(
+        "SELANTE PARA FOSSULAS E FISSURAS FOTOPOLIMERIZAVEL "
+        "COMPOSTO POR RESINA FOTOPOLIMERIZAVEL DE ALTA FLUIDEZ"
+    )
+
+    assert ionomer.category == ProductCategory.GLASS_IONOMER
+    assert applicator.category == ProductCategory.UNKNOWN
+    assert sealant.category == ProductCategory.UNKNOWN
+    assert sealant.technical_attributes.curing_mode is None
+
+
+def test_technical_v5_recognizes_registered_spelling_variants() -> None:
+    resin_typo = parse_product(
+        "RESINA COMPOSTA A1 FOTOPOLIMERIZALVEL SERINGA 4G"
+    )
+    ionomer_typo = parse_product(
+        "CIMENTO DE IONOMERO DE VIDRO FOTOPOLIMERIXAVE"
+    )
+    microhybrid_typo = parse_product(
+        "RESINA COMPOSTA MICROHIDRIDA A2 SERINGA 4G"
+    )
+
+    assert resin_typo.technical_attributes.curing_mode == "light_cure"
+    assert ionomer_typo.technical_attributes.curing_mode == "light_cure"
+    assert (
+        microhybrid_typo.technical_attributes.resin_technology
+        == "microhybrid"
+    )
+
+
+def test_technical_v5_recognizes_new_explicit_product_forms() -> None:
+    dental_resin = parse_product(
+        "RESINA ODONTOLOGICA FOTOPOLIMERIZAVEL COR A2"
+    )
+    form_resin = parse_product(
+        "RESINA FORMA NANOHIBRIDA 4G COR A1B"
+    )
+    neutral_fluoride = parse_product(
+        "FLUOR NEUTRO FRASCO 200ML"
+    )
+    acidulated_fluoride = parse_product(
+        "FLUOR ACIDULADO FRASCO 200ML"
+    )
+    photo_resin = parse_product(
+        "RESINA FOTO B1 CHARISMA 4G"
+    )
+    photo_flow = parse_product(
+        "RESINA FOTO A1 OPALLIS FLOW 2G"
+    )
+
+    assert dental_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert dental_resin.technical_attributes.curing_mode == "light_cure"
+    assert form_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert form_resin.technical_attributes.resin_technology == "nanohybrid"
+    assert neutral_fluoride.category == ProductCategory.FLUORIDE_GEL
+    assert (
+        neutral_fluoride.technical_attributes.fluoride_formulation
+        == "neutral"
+    )
+    assert acidulated_fluoride.category == ProductCategory.FLUORIDE_GEL
+    assert (
+        acidulated_fluoride.technical_attributes.fluoride_formulation
+        == "acidulated"
+    )
+    assert photo_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert photo_resin.technical_attributes.curing_mode == "light_cure"
+    assert photo_flow.category == ProductCategory.FLOWABLE_RESIN
+    assert photo_flow.technical_attributes.curing_mode == "light_cure"
+
+
+def test_technical_v5_explicit_alternative_has_no_single_resin_technology() -> None:
+    product = parse_product(
+        "RESINA COMPOSTA FOTOPOLIMERIZAVEL "
+        "MICRO-HIBRIDA OU NANO-HIBRIDA COR A1"
+    )
+
+    assert product.category == ProductCategory.COMPOSITE_RESIN
+    assert product.technical_attributes.resin_technology is None
+    assert product.technical_attributes.curing_mode == "light_cure"
+
+
+def test_technical_v5_tuning_keeps_taxonomy_holdout_unchanged() -> None:
+    descriptions = (
+        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+        "PASTA PROFIATICA",
+        "FLUORETO DE SODIO 2% GEL NEUTRO",
+    )
+
+    for description in descriptions:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v5_category_rules_remain_bounded() -> None:
+    unrelated = (
+        "APLICADOR UNIVERSAL DESCARTAVEL",
+        "MATERIAL FOTO A2 4G",
+        "PRODUTO ODONTOLOGICO NANOHIBRIDO",
+    )
+
+    for description in unrelated:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
