@@ -211,7 +211,13 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
     (
         "self_cure",
-        ("AUTOPOLIMERIZAVEL", "AUTOPOLIMERIZACAO", "SELF CURE"),
+        (
+            "AUTOPOLIMERIZAVEL",
+            "AUTOPOLIMERIZACAO",
+            "QUIMICAMENTE ATIVADO",
+            "QUIMICAMENTE ATIVADA",
+            "SELF CURE",
+        ),
     ),
 )
 
@@ -236,7 +242,10 @@ _ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 _IONOMER_USE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("restorative", ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO")),
-    ("luting", ("CIMENTACAO", "CIMENTANTE", "FIXACAO")),
+    (
+        "luting",
+        ("CIMENTACAO", "CIMENTACOES", "CIMENTANTE", "FIXACAO"),
+    ),
     ("liner_base", ("FORRAMENTO", "FORRADOR", "BASE CAVITARIA")),
 )
 
@@ -249,6 +258,7 @@ _FLUORIDE_FORMULATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "FLUOR ACIDULADO",
             "FLUOR ACIDO",
             "ACIDULADO",
+            "ACIDULATO",
         ),
     ),
 )
@@ -427,7 +437,8 @@ def _technical_attributes(
             _ANESTHETIC_INGREDIENT_RULES,
         )
         if re.search(
-            r"\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR)\b",
+            r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR)\b"
+            r"|\bS\s*/\s*VASO\b)",
             text,
         ):
             anesthetic_vasoconstrictor = "none"
