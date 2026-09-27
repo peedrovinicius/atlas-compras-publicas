@@ -493,3 +493,25 @@ As correções ficaram restritas a linguagem de cura pela luz, identidade de fl�
 As referências independentes continuam sendo 93,75% para categoria e 95,24% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v10-post-tuning.md`.
+
+
+## Benchmark técnico v11
+
+Um décimo primeiro conjunto independente foi congelado após o tuning da v1.32.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 80 campos técnicos avaliados;
+- 74 campos corretos;
+- micro accuracy de 92,50%;
+- 36/48 categorias corretas;
+- nenhum falso positivo;
+- 6 falsos negativos;
+- nenhum mismatch.
+
+O v11 adiciona descrições muito curtas, abreviação `CIV`, resina descrita apenas por cor, epinefrina truncada, revelador para película, pontuação dentro da identidade do produto e composições subordinadas.
+
+As lacunas do v11 não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v11.md`.
