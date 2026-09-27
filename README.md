@@ -1,5 +1,7 @@
 # Atlas de Compras Públicas
 
+![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)
+
 **Inteligência de dados auditável para compras públicas no Brasil.**
 
 O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas (PNCP) em informação comparável, rastreável e explicável. O projeto combina engenharia de dados, normalização de produtos, análise de preços e validação quantitativa para apoiar a exploração de compras públicas em diferentes regiões e períodos.
@@ -39,6 +41,13 @@ flowchart LR
 A cadeia de rastreabilidade segue o princípio:
 
 `sinal → grupo comparável → homologação → item → contratação → SHA-256 → resposta original → PNCP`
+
+## Integração contínua
+
+O repositório possui um CI enxuto em GitHub Actions para `ruff`, `pytest`,
+consistência de versão, proteção de artefatos congelados e validação do snapshot.
+
+- [Detalhes do CI](docs/ci.md)
 
 ## Stack
 
@@ -80,7 +89,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v10 | 48 | 84 | 95,24% |
 | atributos técnicos v11 | 48 | 80 | 92,50% |
 | atributos técnicos v12 | 48 | 77 | 87,01% |
-| atributos técnicos v10 | 48 | 84 | 95,24% |
+
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
 
