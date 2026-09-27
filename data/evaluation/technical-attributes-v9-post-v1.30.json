@@ -1,0 +1,33 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v9.jsonl",
+  "dataset_version": "technical-attributes-v9",
+  "baseline_file": "data/evaluation/technical-attributes-v9-baseline.json",
+  "baseline_category_accuracy": 0.875,
+  "baseline_micro_accuracy": 0.9643,
+  "parser_commit": "d27cbbc707d65d22b950bd65dce0c55d9755baba",
+  "parser_git_blob_sha": "1d12b6db4c599ce008049ec255e18472638f207f",
+  "parser_version": "1.30.0",
+  "measurement_method": "frozen_dataset_full_regression_with_deterministic_mirror_validated_against_v8",
+  "sample_count": 48,
+  "category_correct": 48,
+  "category_accuracy": 1.0,
+  "evaluated_attribute_count": 84,
+  "correct_attribute_count": 84,
+  "micro_accuracy": 1.0,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 0,
+  "category_errors": [],
+  "attribute_errors": [],
+  "impacted_row_ids": [
+    "ta9-bar-012",
+    "ta9-col-1001",
+    "ta9-col-1003",
+    "ta9-col-1014",
+    "ta9-rec-003",
+    "ta9-cbm-007",
+    "ta9-ufe-004",
+    "ta9-ufe-009"
+  ],
+  "interpretation": "Post-tuning regression result on the frozen technical-attributes-v9 dataset. It does not replace the independent 96.43% technical baseline or 87.50% category baseline."
+}
