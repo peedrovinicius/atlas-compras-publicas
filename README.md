@@ -76,6 +76,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v6 | 48 | 90 | 93,33% |
 | atributos técnicos v7 | 48 | 83 | 91,57% |
 | atributos técnicos v8 | 48 | 83 | 90,36% |
+| atributos técnicos v9 | 48 | 84 | 96,43% |
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
 
@@ -92,6 +93,8 @@ O v6 usa oito novas contratações e reforça negativos de contexto ligados a re
 O v7 usa outras oito contratações inéditas após a v1.24. A baseline independente ficou em 91,57% de micro accuracy, com 43/48 categorias corretas, 1 falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.26, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 O v8 usa oito novas contratações e trechos fiéis das descrições públicas. A baseline independente ficou em 90,36% de micro accuracy, com 43/48 categorias corretas, 5 falsos positivos técnicos, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.28, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
+
+O v9 usa outras oito contratações inéditas e preserva descrições comerciais curtas, pontuação interna e composição subordinada. A baseline independente ficou em 96,43% de micro accuracy, com 42/48 categorias corretas, 1 falso positivo técnico, 2 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.29.
 
 Documentação completa:
 
@@ -116,6 +119,7 @@ Documentação completa:
 - [Regressão técnica v7 pós-tuning v1.26](docs/benchmark-technical-attributes-v7-post-tuning.md)
 - [Benchmark de atributos técnicos v8](docs/benchmark-technical-attributes-v8.md)
 - [Regressão técnica v8 pós-tuning v1.28](docs/benchmark-technical-attributes-v8-post-tuning.md)
+- [Benchmark de atributos técnicos v9](docs/benchmark-technical-attributes-v9.md)
 
 ## Exemplo de normalização
 
@@ -208,7 +212,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar novo holdout técnico independente após o tuning da v1.28
+- corrigir as lacunas do benchmark técnico v9 sem alterar sua baseline
+- criar novo holdout técnico após o próximo ciclo de regras
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
