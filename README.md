@@ -72,6 +72,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v2 | 41 | 77 | 93,51% |
 | atributos técnicos v3 | 45 | 86 | 94,19% |
 | atributos técnicos v4 | 45 | 87 | 88,51% |
+| atributos técnicos v5 | 48 | 92 | 86,96% |
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
 
@@ -80,6 +81,8 @@ O v2 usa oito contratações inéditas. Após o tuning da v1.16, o mesmo conjunt
 O v3 usa mais oito contratações inéditas. Após o tuning da v1.18, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, mas as baselines independentes permanecem 94,19% e 93,33%.
 
 O v4 adiciona contexto negativo, abreviações comerciais e grafias não padronizadas. A baseline independente ficou em 88,51%, com 42/45 categorias corretas e um falso positivo contextual. Após o tuning da v1.20, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, sem substituir a baseline independente.
+
+O v5 amplia os negativos contextuais e alternativas explícitas. A baseline independente ficou em 86,96%, com 39/48 categorias corretas, 2 falsos positivos técnicos e 10 falsos negativos.
 
 Documentação completa:
 
@@ -96,6 +99,7 @@ Documentação completa:
 - [Regressão técnica v3 pós-tuning v1.18](docs/benchmark-technical-attributes-v3-post-tuning.md)
 - [Benchmark de atributos técnicos v4](docs/benchmark-technical-attributes-v4.md)
 - [Regressão técnica v4 pós-tuning v1.20](docs/benchmark-technical-attributes-v4-post-tuning.md)
+- [Benchmark de atributos técnicos v5](docs/benchmark-technical-attributes-v5.md)
 
 ## Exemplo de normalização
 
@@ -188,8 +192,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar benchmark técnico v5 com casos contextuais inéditos
-- ampliar validação negativa antes de novas regras
+- corrigir relações contextuais do benchmark técnico v5 sem alterar a baseline
+- criar validação independente após o próximo ciclo de contexto
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
