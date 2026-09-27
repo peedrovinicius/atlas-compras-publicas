@@ -467,3 +467,19 @@ Esse valor é regressão pós-tuning e não substitui as baselines independentes
 A baseline está preservada em `technical-attributes-v12-baseline.json`.
 
 Os erros do v12 não são corrigidos na v1.35.
+
+
+### Resultado pós-tuning v1.37
+
+Após corrigir as lacunas observadas no v12, o mesmo conjunto congelado atingiu:
+
+- 48/48 categorias corretas;
+- 77/77 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+O resultado está salvo em `technical-attributes-v12-post-v1.37.json`.
+
+Esse valor é regressão pós-tuning e não substitui as baselines independentes de 72,92% para categoria e 87,01% para atributos.
