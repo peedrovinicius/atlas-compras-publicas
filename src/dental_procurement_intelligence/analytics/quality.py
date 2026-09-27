@@ -201,19 +201,33 @@ def unrecognized_items(
     database_path: str | Path,
     *,
     limit: int = 50,
+    offset: int = 0,
 ) -> list[dict[str, Any]]:
     if limit < 1:
         raise ValueError("limit deve ser pelo menos 1")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
 
     build_quality_views(database_path)
 
     with duckdb.connect(str(database_path), read_only=True) as connection:
         cursor = connection.execute(
-            "SELECT * FROM unrecognized_items LIMIT ?",
-            [limit],
+            "SELECT * FROM unrecognized_items LIMIT ? OFFSET ?",
+            [limit, offset],
         )
         columns = [column[0] for column in cursor.description]
         return [
             dict(zip(columns, row, strict=True))
             for row in cursor.fetchall()
         ]
+
+
+def unrecognized_count(database_path: str | Path) -> int:
+    build_quality_views(database_path)
+
+    with duckdb.connect(str(database_path), read_only=True) as connection:
+        row = connection.execute(
+            "SELECT COUNT(*) FROM unrecognized_items"
+        ).fetchone()
+
+    return int(row[0])
