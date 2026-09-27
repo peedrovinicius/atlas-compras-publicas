@@ -1,0 +1,114 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v9.jsonl",
+  "dataset_version": "technical-attributes-v9",
+  "frozen_dataset_commit": "1f03ffbb9eacabdd6076c7b5b378fa05910ea78c",
+  "dataset_git_blob_sha": "b7e4e9786a61b2afc8f81c5ab214b486e28e3da1",
+  "parser_commit": "1f128388600fb29760f66695b138eadd70eda56a",
+  "parser_git_blob_sha": "1243112b3edc4cd24932b1c1af41bf81ea69eea4",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.28.0",
+  "measurement_method": "deterministic_mirror_of_v1.28_parser_validated_against_v8_post_tuning",
+  "source_description_mode": "source_faithful_excerpt",
+  "sample_count": 48,
+  "category_correct": 42,
+  "category_accuracy": 0.875,
+  "evaluated_attribute_count": 84,
+  "correct_attribute_count": 81,
+  "micro_accuracy": 0.9643,
+  "false_positive_count": 1,
+  "false_negative_count": 2,
+  "mismatch_count": 0,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 7,
+      "correct_count": 7,
+      "accuracy": 1.0,
+      "positive_support": 3,
+      "positive_correct": 3,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 28,
+      "correct_count": 27,
+      "accuracy": 0.9643,
+      "positive_support": 11,
+      "positive_correct": 11,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 1,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 10,
+      "correct_count": 10,
+      "accuracy": 1.0,
+      "positive_support": 4,
+      "positive_correct": 4,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 4,
+      "correct_count": 4,
+      "accuracy": 1.0,
+      "positive_support": 2,
+      "positive_correct": 2,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 3,
+      "correct_count": 3,
+      "accuracy": 1.0,
+      "positive_support": 0,
+      "positive_correct": 0,
+      "positive_accuracy": null,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 16,
+      "correct_count": 16,
+      "accuracy": 1.0,
+      "positive_support": 16,
+      "positive_correct": 16,
+      "positive_accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 16,
+      "correct_count": 14,
+      "accuracy": 0.875,
+      "positive_support": 9,
+      "positive_correct": 7,
+      "positive_accuracy": 0.7778,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    }
+  },
+  "attribute_errors": [
+    {"id":"ta9-bar-012","attribute":"anesthetic_vasoconstrictor","expected":"phenylephrine","predicted":null},
+    {"id":"ta9-rec-003","attribute":"anesthetic_vasoconstrictor","expected":"none","predicted":null},
+    {"id":"ta9-ufe-004","attribute":"curing_mode","expected":null,"predicted":"dual_cure"}
+  ],
+  "category_errors": [
+    {"id":"ta9-col-1001","expected":"composite_resin","predicted":"unknown"},
+    {"id":"ta9-col-1003","expected":"glass_ionomer","predicted":"unknown"},
+    {"id":"ta9-col-1014","expected":"radiographic_developer","predicted":"unknown"},
+    {"id":"ta9-cbm-007","expected":"unknown","predicted":"zinc_oxide"},
+    {"id":"ta9-ufe-004","expected":"unknown","predicted":"dental_adhesive"},
+    {"id":"ta9-ufe-009","expected":"unknown","predicted":"zinc_oxide"}
+  ],
+  "interpretation": "Independent technical-attribute v9 baseline frozen before tuning. The deterministic mirror was validated against the v8 post-tuning regression at 48/48 categories and 83/83 fields before measuring this dataset."
+}
