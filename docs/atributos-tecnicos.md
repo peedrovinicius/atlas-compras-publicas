@@ -431,3 +431,23 @@ O v9 adiciona descrições comerciais curtas, hífens internos, composição sub
 As lacunas do v9 não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v9.md`.
+
+
+## Resultado pós-tuning v1.30
+
+As lacunas observadas no benchmark técnico v9 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 84/84 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+As correções ficaram restritas a grafia de fenilefrina, negação explícita de vasoconstritor, descrições comerciais curtas de Z250, hífen interno em ionômero, revelador dental curto e contexto subordinado de óxido de zinco e adesivo resinoso em cimentos.
+
+As referências independentes continuam sendo 87,50% para categoria e 96,43% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v9-post-tuning.md`.
