@@ -39,6 +39,8 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RESINA NANOHIBRIDA",
             "RESINA NANO-HIBRIDA",
             "RESINAS FOTOPOLIMERIZAVEIS",
+            "RESINA FOTOPOLIMERIZAVEL",
+            "RESINA FOTOPOLIMERIZAVEIS",
             "RESINA BULK FILL",
         ),
     ),
@@ -247,7 +249,12 @@ _ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
     (
         "etch_and_rinse",
-        ("CONDICIONAMENTO TOTAL", "TOTAL ETCH", "ETCH AND RINSE"),
+        (
+            "CONDICIONAMENTO TOTAL",
+            "CONDICIONAMENTO ACIDO TOTAL",
+            "TOTAL ETCH",
+            "ETCH AND RINSE",
+        ),
     ),
 )
 
@@ -282,7 +289,7 @@ _ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 _VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("epinephrine", ("EPINEFRINA", "ADRENALINA")),
+    ("epinephrine", ("EPINEFRINA", "APINEFRINA", "ADRENALINA")),
     ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
     ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
     ("phenylephrine", ("FENILEFRINA", "PHENYLEPHRINE")),
@@ -412,6 +419,18 @@ def _first_attribute_match(
     return None
 
 
+def _adhesive_curing_mode(text: str) -> str | None:
+    if re.search(r"\bADESIVO\s+FOTO\b", text):
+        return "light_cure"
+
+    context = re.sub(
+        r"\bRESINA\s+FOTOPOLIMERIZAVEIS?\b",
+        "RESINA",
+        text,
+    )
+    return _first_attribute_match(context, _CURING_MODE_RULES)
+
+
 def _technical_attributes(
     text: str,
     category: ProductCategory,
@@ -430,7 +449,7 @@ def _technical_attributes(
 
     elif category == ProductCategory.ADHESIVE:
         adhesive_strategy = _first_attribute_match(text, _ADHESIVE_STRATEGY_RULES)
-        curing_mode = _first_attribute_match(text, _CURING_MODE_RULES)
+        curing_mode = _adhesive_curing_mode(text)
 
     elif category == ProductCategory.GLASS_IONOMER:
         ionomer_use = _first_attribute_match(text, _IONOMER_USE_RULES)
