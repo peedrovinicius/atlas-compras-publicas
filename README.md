@@ -85,7 +85,7 @@ O v4 adiciona contexto negativo, abreviações comerciais e grafias não padroni
 
 O v5 amplia os negativos contextuais e alternativas explícitas. A baseline independente ficou em 86,96%, com 39/48 categorias corretas, 2 falsos positivos técnicos e 10 falsos negativos. Após o tuning da v1.22, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
-O v6 usa oito novas contratações e reforça negativos de contexto ligados a resina. A baseline independente ficou em 93,33%, com 44/48 categorias corretas e nenhum falso positivo técnico.
+O v6 usa oito novas contratações e reforça negativos de contexto ligados a resina. A baseline independente ficou em 93,33%, com 44/48 categorias corretas e nenhum falso positivo técnico. Após o tuning da v1.24, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 Documentação completa:
 
@@ -105,6 +105,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v5](docs/benchmark-technical-attributes-v5.md)
 - [Regressão técnica v5 pós-tuning v1.22](docs/benchmark-technical-attributes-v5-post-tuning.md)
 - [Benchmark de atributos técnicos v6](docs/benchmark-technical-attributes-v6.md)
+- [Regressão técnica v6 pós-tuning v1.24](docs/benchmark-technical-attributes-v6-post-tuning.md)
 
 ## Exemplo de normalização
 
@@ -197,8 +198,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- corrigir as seis lacunas do benchmark técnico v6 sem alterar sua baseline
-- criar novo holdout técnico depois do próximo ciclo de regras
+- criar novo holdout técnico independente após o tuning da v1.24
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
