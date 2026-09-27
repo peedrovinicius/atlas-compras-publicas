@@ -445,3 +445,72 @@ def test_technical_attribute_work_does_not_tune_v5_category_failures() -> None:
 
     for description in descriptions:
         assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_tuning_recognizes_registered_baseline_variants() -> None:
+    ionomer = parse_product(
+        "IONOMERO DE VIDRO AUTOPOLIMERIZAVEL RESTAURACAO KIT"
+    )
+    fluoride_acidulated = parse_product(
+        "FLUOR GEL ACIDULADO 1,23% FRASCO 200ML"
+    )
+    fluoride_neutral = parse_product(
+        "FLUOR GEL NEUTRO 2% FRASCO 200ML"
+    )
+    adhesive = parse_product(
+        "ADESIVO DENTINARIO UNIVERSAL FOTOPOLIMERIZADO FRASCO 5ML"
+    )
+    no_vaso = parse_product(
+        "ANESTESICO MEPIVACAINA SEM VASO 3%"
+    )
+    phenylephrine = parse_product(
+        "ANESTESICO LOCAL ARTICAINA + FENILEFRINA"
+    )
+    prilocaine = parse_product(
+        "ANESTESICO ODONTOLOGICO PRILOCAINA 3% COM FELIPRESSINA"
+    )
+
+    assert ionomer.technical_attributes.ionomer_use == "restorative"
+    assert (
+        fluoride_acidulated.technical_attributes.fluoride_formulation
+        == "acidulated"
+    )
+    assert (
+        fluoride_neutral.technical_attributes.fluoride_formulation
+        == "neutral"
+    )
+    assert adhesive.technical_attributes.adhesive_strategy == "universal"
+    assert adhesive.technical_attributes.curing_mode == "light_cure"
+    assert (
+        no_vaso.technical_attributes.anesthetic_vasoconstrictor
+        == "none"
+    )
+    assert (
+        phenylephrine.technical_attributes.anesthetic_vasoconstrictor
+        == "phenylephrine"
+    )
+    assert (
+        prilocaine.technical_attributes.anesthetic_active_ingredient
+        == "prilocaine"
+    )
+
+
+def test_broader_technical_terms_do_not_invent_missing_attributes() -> None:
+    adhesive = parse_product(
+        "ADESIVO MONOCOMPONENTE FOTOPOLIMERIZAVEL FRASCO 6ML"
+    )
+    fluoride = parse_product("FLUOR EM GEL FRASCO 200ML")
+    ionomer = parse_product("IONOMERO DE VIDRO FRASCO 10G")
+    anesthetic = parse_product("MEPIVACAINA 3% TUBETE 1.8ML")
+
+    assert adhesive.technical_attributes.adhesive_strategy is None
+    assert fluoride.technical_attributes.fluoride_formulation is None
+    assert ionomer.technical_attributes.ionomer_use is None
+    assert anesthetic.technical_attributes.anesthetic_vasoconstrictor is None
+
+
+def test_prilocaine_attribute_does_not_expand_category_taxonomy() -> None:
+    product = parse_product("PRILOCAINA 3% SOLUCAO INJETAVEL")
+
+    assert product.category == ProductCategory.UNKNOWN
+    assert product.technical_attributes.anesthetic_active_ingredient is None
