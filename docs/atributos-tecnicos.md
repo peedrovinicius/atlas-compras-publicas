@@ -177,3 +177,21 @@ Resultado inicial:
 As lacunas do v3 ainda não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v3.md`.
+
+
+## Resultado pós-tuning v1.18
+
+As lacunas observadas no benchmark técnico v3 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 45/45 categorias corretas;
+- 86/86 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+As referências independentes continuam sendo 93,33% para categoria e 94,19% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v3-post-tuning.md`.
