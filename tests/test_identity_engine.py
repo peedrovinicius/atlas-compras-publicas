@@ -514,3 +514,65 @@ def test_prilocaine_attribute_does_not_expand_category_taxonomy() -> None:
 
     assert product.category == ProductCategory.UNKNOWN
     assert product.technical_attributes.anesthetic_active_ingredient is None
+
+
+def test_technical_v2_tuning_recognizes_registered_variants() -> None:
+    chemically_activated = parse_product(
+        "IONOMERO DE VIDRO QUIMICAMENTE ATIVADO PARA RESTAURACAO"
+    )
+    chemically_activated_second = parse_product(
+        "IONOMERO DE VIDRO RESTAURADOR TIPO II QUIMICAMENTE ATIVADO"
+    )
+    acidulato = parse_product(
+        "FLUOR EM GEL ACIDULATO TUTTI FRUTTI"
+    )
+    abbreviated_no_vaso = parse_product(
+        "ANESTESICO MEPIVACAINA S/VASO 3%"
+    )
+    plural_luting = parse_product(
+        "IONOMERO DE VIDRO REFORCADO PARA CIMENTACOES"
+    )
+
+    assert (
+        chemically_activated.technical_attributes.curing_mode
+        == "self_cure"
+    )
+    assert (
+        chemically_activated_second.technical_attributes.curing_mode
+        == "self_cure"
+    )
+    assert (
+        acidulato.technical_attributes.fluoride_formulation
+        == "acidulated"
+    )
+    assert (
+        abbreviated_no_vaso.technical_attributes.anesthetic_vasoconstrictor
+        == "none"
+    )
+    assert plural_luting.technical_attributes.ionomer_use == "luting"
+
+
+def test_technical_v2_tuning_does_not_expand_unrelated_contexts() -> None:
+    resin = parse_product(
+        "RESINA COMPOSTA A2 QUIMICAMENTE ATIVADO SERINGA 4G"
+    )
+    fluoride = parse_product("FLUOR EM GEL FRASCO 200ML")
+    ionomer = parse_product("IONOMERO DE VIDRO FRASCO 10G")
+    anesthetic = parse_product("MEPIVACAINA 3% TUBETE 1.8ML")
+
+    assert resin.category == ProductCategory.COMPOSITE_RESIN
+    assert resin.technical_attributes.curing_mode == "self_cure"
+    assert fluoride.technical_attributes.fluoride_formulation is None
+    assert ionomer.technical_attributes.ionomer_use is None
+    assert anesthetic.technical_attributes.anesthetic_vasoconstrictor is None
+
+
+def test_technical_v2_tuning_keeps_taxonomy_holdout_unchanged() -> None:
+    descriptions = (
+        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+        "PASTA PROFIATICA",
+        "FLUORETO DE SODIO 2% GEL NEUTRO",
+    )
+
+    for description in descriptions:
+        assert parse_product(description).category == ProductCategory.UNKNOWN
