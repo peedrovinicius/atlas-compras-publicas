@@ -1114,3 +1114,73 @@ def test_technical_v10_tuning_preserves_existing_positive_contexts() -> None:
     assert eugenol.category == ProductCategory.EUGENOL
     assert composite_resin.category == ProductCategory.COMPOSITE_RESIN
     assert fluoride_solution.category == ProductCategory.UNKNOWN
+
+
+def test_technical_v11_tuning_recognizes_bounded_variants() -> None:
+    civ = parse_product("CIV RESTAURACOES CLASSE III E V")
+    short_resin = parse_product("RESINA A1")
+    fluoride_gel = parse_product("FLUORETO DE SODIO EM GEL")
+    developer_film = parse_product("REVELADOR DE PELICULAS C/500 ML")
+    fixer_film = parse_product(
+        "FIXADOR, PARA PELICULA RADIOGRAFICA ODONTOLOGICO"
+    )
+    epinefrin = parse_product(
+        "ANESTESICO LIDOCAINA 2% COM EPINEFRIN 1:100.000"
+    )
+    ionomer_comma = parse_product(
+        "IONOMERO, VIDRO, FOTOPOLIMERIZAVEL PARA RESTAURACAO"
+    )
+    calcium_resinous_cement = parse_product(
+        "CIMENTO ENDODONTICO RESINOSO A BASE HIDROXIDO DE CALCIO "
+        "E OXIDO DE BISMUTO AGLUTINADOS POR RESINA EPOXICA KIT"
+    )
+    temporary_restorative = parse_product(
+        "RESTAURADOR TEMPORARIO A BASE DE OXIDO DE ZINCO E EUGENOL"
+    )
+    universal_resin = parse_product(
+        "RESINA UNIVERSAL FOTOPOLIMERIZAVEL MICROHIBRIDA COR A2"
+    )
+
+    assert civ.category == ProductCategory.GLASS_IONOMER
+    assert civ.technical_attributes.ionomer_use == "restorative"
+
+    assert short_resin.category == ProductCategory.COMPOSITE_RESIN
+
+    assert fluoride_gel.category == ProductCategory.FLUORIDE_GEL
+
+    assert developer_film.category == ProductCategory.RADIOGRAPHIC_DEVELOPER
+    assert fixer_film.category == ProductCategory.RADIOGRAPHIC_FIXER
+
+    assert epinefrin.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        epinefrin.technical_attributes.anesthetic_vasoconstrictor
+        == "epinephrine"
+    )
+
+    assert ionomer_comma.category == ProductCategory.GLASS_IONOMER
+    assert ionomer_comma.technical_attributes.ionomer_use == "restorative"
+    assert ionomer_comma.technical_attributes.curing_mode == "light_cure"
+
+    assert calcium_resinous_cement.category == ProductCategory.CALCIUM_HYDROXIDE
+
+    assert temporary_restorative.category == ProductCategory.UNKNOWN
+
+    assert universal_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert universal_resin.technical_attributes.resin_technology == "microhybrid"
+    assert universal_resin.technical_attributes.curing_mode == "light_cure"
+
+
+def test_technical_v11_tuning_preserves_existing_boundaries() -> None:
+    generic_resin = parse_product("RESINA ACRILICA USO ODONTOLOGICO")
+    generic_film = parse_product("PELICULA RADIOGRAFICA ODONTOLOGICA")
+    zinc_oxide = parse_product("OXIDO DE ZINCO PO ODONTOLOGICO")
+    eugenol = parse_product("EUGENOL LIQUIDO ODONTOLOGICO")
+    mixed_kit = parse_product(
+        "KIT RESINA COMPOSTA ADESIVO DENTAL E IONOMERO DE VIDRO"
+    )
+
+    assert generic_resin.category == ProductCategory.UNKNOWN
+    assert generic_film.category == ProductCategory.UNKNOWN
+    assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
+    assert eugenol.category == ProductCategory.EUGENOL
+    assert mixed_kit.category == ProductCategory.UNKNOWN

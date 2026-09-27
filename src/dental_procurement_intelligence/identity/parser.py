@@ -47,6 +47,8 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RESINA BULK FILL",
             "RESINA FILTEK Z250",
             "RESINA - Z250",
+            "RESINA A1",
+            "RESINA UNIVERSAL",
         ),
     ),
     (
@@ -67,8 +69,10 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "IONOMEROS DE VIDRO",
             "CIMENTO IONOMERO",
             "CIV RESTAURADOR",
+            "CIV RESTAURACOES",
             "LONOMERO DE VIDRO",
             "IONOMERO - DE VIDRO",
+            "IONOMERO, VIDRO",
         ),
     ),
     (
@@ -90,6 +94,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "FLUOR NEUTRO",
             "FLUOR ACIDULADO",
             "FLUOR TOPICO GEL",
+            "FLUORETO DE SODIO EM GEL",
         ),
     ),
     (
@@ -115,6 +120,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "FIXADOR RADIOLOGICO",
             "FIXADOR ODONTOLOGICO",
             "FIXADOR KODAK",
+            "FIXADOR, PARA PELICULA RADIOGRAFICA",
         ),
     ),
     (
@@ -124,6 +130,10 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "REVELADOR RADIOLOGICO",
             "REVELADOR ODONTOLOGICO",
             "REVELADOR - DENTAL",
+            "REVELADOR DE PELICULAS",
+            "REVELADOR, PARA PELICULA RADIOGRAFICA",
+            "REVELADOR PARA FILME RADIOGRAFICO",
+            "REVELADOR PARA FILME RADIOGRAFICOS",
             "REVELADORREVELADOR",
         ),
     ),
@@ -335,7 +345,7 @@ _ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 _VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("epinephrine", ("EPINEFRINA", "APINEFRINA", "ADRENALINA")),
+    ("epinephrine", ("EPINEFRINA", "EPINEFRIN", "APINEFRINA", "ADRENALINA")),
     ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
     ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
     ("phenylephrine", ("FENILEFRINA", "FELILEFRINA", "PHENYLEPHRINE")),
@@ -405,6 +415,9 @@ def _zinc_oxide_context_excluded(text: str) -> bool:
     if _term_present(text, "CIMENTO ODONTOLOGICO") or _term_present(text, "CIMENTO"):
         return True
 
+    if _term_present(text, "RESTAURADOR TEMPORARIO"):
+        return True
+
     return (
         _term_present(text, "COMPOSICAO BASE")
         and _term_present(text, "FOSFATO CALCIO")
@@ -416,6 +429,7 @@ def _eugenol_context_excluded(text: str) -> bool:
         (
             _term_present(text, "CIMENTO ODONTOLOGICO")
             or _term_present(text, "CIMENTO")
+            or _term_present(text, "RESTAURADOR TEMPORARIO")
         )
         and _term_present(text, "EUGENOL")
     )
@@ -444,6 +458,9 @@ def _alginate_context_excluded(text: str) -> bool:
 
 
 def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
+    if _term_present(text, "A BASE HIDROXIDO DE CALCIO"):
+        return ProductCategory.CALCIUM_HYDROXIDE, ("A BASE HIDROXIDO DE CALCIO",)
+
     if _is_mixed_kit(text):
         return ProductCategory.UNKNOWN, ("MIXED_KIT",)
 
