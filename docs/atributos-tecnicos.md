@@ -409,3 +409,25 @@ As correções ficaram restritas a benzocaína como identidade anestésica, abre
 As referências independentes continuam sendo 89,58% para categoria e 90,36% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v8-post-tuning.md`.
+
+
+## Benchmark técnico v9
+
+Um nono conjunto independente foi congelado após o tuning da v1.28.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 84 campos técnicos avaliados;
+- 81 campos corretos;
+- micro accuracy de 96,43%;
+- 42/48 categorias corretas;
+- 1 falso positivo;
+- 2 falsos negativos;
+- nenhum mismatch.
+
+O v9 adiciona descrições comerciais curtas, hífens internos, composição subordinada, grafia imperfeita de vasoconstritor, negação explícita de vasoconstritor e cimentos fora da taxonomia que contêm termos conhecidos.
+
+As lacunas do v9 não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v9.md`.
