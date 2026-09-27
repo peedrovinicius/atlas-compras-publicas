@@ -17,10 +17,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+api = [
+  "fastapi>=0.116,<1",
+  "uvicorn>=0.35,<1",
+]
 dev = [
   "pytest>=8.3,<10",
   "respx>=0.22,<1",
   "ruff>=0.9,<1",
+  "fastapi>=0.116,<1",
 ]
 
 [project.scripts]
