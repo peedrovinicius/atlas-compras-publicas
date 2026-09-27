@@ -158,3 +158,19 @@ A baseline está preservada em `technical-attributes-v4-baseline.json`.
 dpi evaluate-technical-attributes \
   --dataset data/evaluation/technical-attributes-v4.jsonl
 ~~~
+
+
+### Resultado pós-tuning v1.20
+
+Após corrigir as lacunas técnicas e o falso positivo contextual observados no v4, o mesmo conjunto congelado atingiu:
+
+- 45/45 categorias corretas;
+- 87/87 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+O resultado está salvo em `technical-attributes-v4-post-v1.20.json`.
+
+Esse valor é regressão pós-tuning e não substitui as baselines independentes de 93,33% para categoria e 88,51% para atributos.
