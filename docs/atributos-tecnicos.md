@@ -237,3 +237,25 @@ A principal mudança foi contextual: `fotopolimerizável` ligado explicitamente 
 As referências independentes continuam sendo 93,33% para categoria e 88,51% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v4-post-tuning.md`.
+
+
+## Benchmark técnico v5
+
+Um quinto conjunto independente foi congelado após o tuning contextual da v1.20.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 92 campos técnicos avaliados;
+- 80 campos corretos;
+- micro accuracy de 86,96%;
+- 39/48 categorias corretas;
+- 10 falsos negativos;
+- 2 falsos positivos;
+- nenhum mismatch.
+
+O v5 introduz novos casos em que o produto principal e produtos citados aparecem na mesma descrição, além de alternativas técnicas ligadas por `ou`.
+
+As lacunas ainda não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v5.md`.
