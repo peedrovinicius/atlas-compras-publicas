@@ -118,6 +118,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
         ProductCategory.RADIOGRAPHIC_DEVELOPER,
         (
             "REVELADOR RADIOGRAFICO",
+            "REVELADOR RADIOLOGICO",
             "REVELADOR ODONTOLOGICO",
             "REVELADORREVELADOR",
         ),
@@ -192,6 +193,7 @@ _COMPOSITE_CONTEXT_EXCLUSIONS = (
 _ADHESIVE_CONTEXT_EXCLUSIONS = (
     re.compile(r"\bAPLICADOR(?:ES)?\s+DE\s+ADESIVO\b"),
     re.compile(r"\bADESIVO\s+PARA\s+MOLDEIRAS?\b"),
+    re.compile(r"\bSELANTE\b.*\bADESIVO\b"),
 )
 
 _GLASS_IONOMER_CONTEXT_EXCLUSIONS = (
@@ -210,6 +212,7 @@ _ANESTHETIC_ACTIVE_INGREDIENTS = (
     "ARTICAINA",
     "ARTICAINE",
     "MEPIVACAINA",
+    "BENZOCAINA",
 )
 
 _MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
@@ -243,6 +246,7 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "FOTOPOLIMERIZADA",
             "FOTOPOLIMERIZALVEL",
             "FOTOPOLIMERIXAVE",
+            "FOTOPOL",
             "FOTOATIVADO",
             "FOTOATIVADA",
             "LIGHT CURE",
@@ -382,6 +386,14 @@ def _glass_ionomer_context_excluded(text: str) -> bool:
     )
 
 
+def _zinc_eugenol_cement_excluded(text: str) -> bool:
+    return (
+        _term_present(text, "CIMENTO ODONTOLOGICO")
+        and _term_present(text, "OXIDO DE ZINCO")
+        and _term_present(text, "EUGENOL")
+    )
+
+
 def _looks_like_flowable_resin(text: str) -> bool:
     if not _has_any(text, _RESIN_HEAD_TERMS):
         return False
@@ -468,6 +480,11 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
             and _glass_ionomer_context_excluded(text)
         ):
             continue
+        if (
+            category in (ProductCategory.ZINC_OXIDE, ProductCategory.EUGENOL)
+            and _zinc_eugenol_cement_excluded(text)
+        ):
+            continue
         if category == ProductCategory.ALGINATE and _alginate_context_excluded(text):
             continue
         return category, matches
@@ -499,10 +516,43 @@ def _single_attribute_match(
     return None
 
 
+def _resin_technology(text: str) -> str | None:
+    ambiguous_nanoparticle = (
+        re.search(
+            r"\b(?:NANOHIBRIDA|NANO-HIBRIDA)\s+OU\s+NANOPARTICULADA\b",
+            text,
+        )
+        or re.search(
+            r"\bNANOPARTICULADA\s+OU\s+(?:NANOHIBRIDA|NANO-HIBRIDA)\b",
+            text,
+        )
+    )
+    if ambiguous_nanoparticle:
+        return None
+    return _single_attribute_match(text, _RESIN_TECHNOLOGY_RULES)
+
+
 def _resin_curing_mode(text: str) -> str | None:
     if re.search(r"\bRESINA(?:S)?\s+FOTO\b", text):
         return "light_cure"
     return _first_attribute_match(text, _CURING_MODE_RULES)
+
+
+def _adhesive_strategy(text: str) -> str | None:
+    context = text
+    if _term_present(text, "MARCA DE REFERENCIA"):
+        context = text.split("MARCA DE REFERENCIA", maxsplit=1)[0]
+    return _first_attribute_match(context, _ADHESIVE_STRATEGY_RULES)
+
+
+def _fluoride_formulation(text: str) -> str | None:
+    if (
+        _term_present(text, "OU")
+        and _term_present(text, "NEUTRO")
+        and _term_present(text, "ACIDULADO")
+    ):
+        return None
+    return _first_attribute_match(text, _FLUORIDE_FORMULATION_RULES)
 
 
 def _adhesive_curing_mode(text: str) -> str | None:
@@ -533,11 +583,11 @@ def _technical_attributes(
     anesthetic_vasoconstrictor = None
 
     if category in (ProductCategory.COMPOSITE_RESIN, ProductCategory.FLOWABLE_RESIN):
-        resin_technology = _single_attribute_match(text, _RESIN_TECHNOLOGY_RULES)
+        resin_technology = _resin_technology(text)
         curing_mode = _resin_curing_mode(text)
 
     elif category == ProductCategory.ADHESIVE:
-        adhesive_strategy = _first_attribute_match(text, _ADHESIVE_STRATEGY_RULES)
+        adhesive_strategy = _adhesive_strategy(text)
         curing_mode = _adhesive_curing_mode(text)
 
     elif category == ProductCategory.GLASS_IONOMER:
@@ -545,10 +595,7 @@ def _technical_attributes(
         curing_mode = _first_attribute_match(text, _CURING_MODE_RULES)
 
     elif category == ProductCategory.FLUORIDE_GEL:
-        fluoride_formulation = _first_attribute_match(
-            text,
-            _FLUORIDE_FORMULATION_RULES,
-        )
+        fluoride_formulation = _fluoride_formulation(text)
 
     elif category == ProductCategory.LOCAL_ANESTHETIC:
         anesthetic_active_ingredient = _first_attribute_match(
