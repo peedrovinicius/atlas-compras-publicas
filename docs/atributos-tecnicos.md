@@ -365,3 +365,27 @@ As correções ficaram restritas a benzocaína, adesivo para moldeira, `decapage
 As referências independentes continuam sendo 89,58% para categoria e 91,57% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v7-post-tuning.md`.
+
+
+## Benchmark técnico v8
+
+Um oitavo conjunto independente foi congelado após o tuning da v1.26.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 83 campos técnicos avaliados;
+- 75 campos corretos;
+- micro accuracy de 90,36%;
+- 43/48 categorias corretas;
+- 5 falsos positivos;
+- 3 falsos negativos;
+- nenhum mismatch.
+
+O v8 adiciona abreviação comercial, alternativas explícitas, nomes de marca no corpo da descrição, contexto subordinado de adesivo e materiais cuja composição contém termos de outra categoria.
+
+As descrições são trechos curtos e fiéis às fontes públicas, sem preço, quantidade ou texto editorial da página.
+
+As lacunas do v8 não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v8.md`.
