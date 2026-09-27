@@ -871,3 +871,61 @@ def test_technical_v6_tuning_preserves_previous_holdout_boundaries() -> None:
     assert old_fluoride.category == ProductCategory.UNKNOWN
     assert resin.category == ProductCategory.COMPOSITE_RESIN
     assert resin.technical_attributes.curing_mode is None
+
+
+def test_technical_v7_tuning_recognizes_bounded_variants() -> None:
+    benzocaine = parse_product("ANESTESICO TOPICO GEL BENZOCAINA 20%")
+    mold_adhesive = parse_product(
+        "ADESIVO PARA MOLDEIRAS USO UNIVERSAL ASPECTO FISICO LIQUIDO"
+    )
+    total_etch = parse_product(
+        "ADESIVO FOTOPOLIMERIZAVEL PRIMER DECAPAGEM TOTAL"
+    )
+    typo_ionomer = parse_product("LONOMERO DE VIDRO PO E LIQUIDO")
+    developer = parse_product(
+        "REVELADORREVELADOR INDICADO PARA REVELACAO DA IMAGEM DO FILME"
+    )
+    liner = parse_product(
+        "CIMENTO DE IONOMERO DE VIDRO TIPO FORRACAO AUTOPOLIMERIZAVEL"
+    )
+    restorative = parse_product(
+        "CIMENTO DE IONOMERO DE VIDRO PARA NUCLEOS E RESTAURACOES"
+    )
+    sealant = parse_product(
+        "SELANTE PARA SUPERFICIES DE RESTAURACOES DE IONOMERO DE VIDRO"
+    )
+    z250 = parse_product("RESINA FILTEK Z250 XT A1")
+
+    assert benzocaine.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        benzocaine.technical_attributes.anesthetic_active_ingredient
+        == "benzocaine"
+    )
+    assert mold_adhesive.category == ProductCategory.UNKNOWN
+    assert total_etch.category == ProductCategory.ADHESIVE
+    assert total_etch.technical_attributes.adhesive_strategy == "etch_and_rinse"
+    assert typo_ionomer.category == ProductCategory.GLASS_IONOMER
+    assert developer.category == ProductCategory.RADIOGRAPHIC_DEVELOPER
+    assert liner.category == ProductCategory.GLASS_IONOMER
+    assert liner.technical_attributes.ionomer_use == "liner_base"
+    assert restorative.category == ProductCategory.GLASS_IONOMER
+    assert restorative.technical_attributes.ionomer_use == "restorative"
+    assert sealant.category == ProductCategory.UNKNOWN
+    assert z250.category == ProductCategory.COMPOSITE_RESIN
+
+
+def test_technical_v7_tuning_keeps_new_rules_bounded() -> None:
+    benzocaine_only = parse_product("BENZOCAINA 20% GEL")
+    generic_developer = parse_product("REVELADOR DE PLACA BACTERIANA")
+    universal_adhesive = parse_product("ADESIVO DENTAL UNIVERSAL")
+    bulk_flow = parse_product("RESINA FILTEK BULK FILL FLOW A2")
+
+    assert benzocaine_only.category == ProductCategory.UNKNOWN
+    assert generic_developer.category == ProductCategory.UNKNOWN
+    assert universal_adhesive.category == ProductCategory.ADHESIVE
+    assert (
+        universal_adhesive.technical_attributes.adhesive_strategy
+        == "universal"
+    )
+    assert bulk_flow.category == ProductCategory.FLOWABLE_RESIN
+    assert bulk_flow.technical_attributes.resin_technology == "bulk_fill"
