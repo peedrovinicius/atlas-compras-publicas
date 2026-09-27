@@ -397,3 +397,37 @@ def test_frozen_technical_v12_preserves_independent_baseline() -> None:
     assert baseline["false_positive_count"] == 0
     assert baseline["false_negative_count"] == 10
     assert baseline["mismatch_count"] == 0
+
+
+def test_protected_technical_regressions_v7_to_v11() -> None:
+    expected_fields = {
+        7: 83,
+        8: 83,
+        9: 84,
+        10: 84,
+        11: 80,
+    }
+
+    for version, field_count in expected_fields.items():
+        dataset = Path(
+            f"data/evaluation/technical-attributes-v{version}.jsonl"
+        )
+        report = evaluate_technical_attributes(dataset)
+
+        assert report.sample_count == 48
+        assert report.category_accuracy == 1.0
+        assert report.evaluated_attribute_count == field_count
+        assert report.correct_attribute_count == field_count
+        assert report.micro_accuracy == 1.0
+        assert sum(
+            item.false_positive_count
+            for item in report.per_attribute.values()
+        ) == 0
+        assert sum(
+            item.false_negative_count
+            for item in report.per_attribute.values()
+        ) == 0
+        assert sum(
+            item.mismatch_count
+            for item in report.per_attribute.values()
+        ) == 0
