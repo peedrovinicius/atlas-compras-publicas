@@ -1,0 +1,42 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v10.jsonl",
+  "dataset_version": "technical-attributes-v10",
+  "frozen_dataset_commit": "543fcab93af68ad1a1ed925d8d6d3ba2b20b6e5a",
+  "dataset_git_blob_sha": "38bdd6b4dfbd5322029e18113ba2ad6d048dab97",
+  "parser_commit": "d27cbbc707d65d22b950bd65dce0c55d9755baba",
+  "parser_git_blob_sha": "1d12b6db4c599ce008049ec255e18472638f207f",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.30.0",
+  "measurement_method": "deterministic_mirror_of_v1.30_parser_validated_against_v9_post_tuning",
+  "source_description_mode": "source_faithful_excerpt",
+  "sample_count": 48,
+  "category_correct": 45,
+  "category_accuracy": 0.9375,
+  "evaluated_attribute_count": 84,
+  "correct_attribute_count": 80,
+  "micro_accuracy": 0.9524,
+  "false_positive_count": 1,
+  "false_negative_count": 3,
+  "mismatch_count": 0,
+  "per_attribute": {
+    "resin_technology": {"evaluated_count":6,"correct_count":6,"accuracy":1.0,"positive_support":1,"positive_correct":1,"positive_accuracy":1.0,"false_positive_count":0,"false_negative_count":0,"mismatch_count":0},
+    "curing_mode": {"evaluated_count":29,"correct_count":28,"accuracy":0.9655,"positive_support":18,"positive_correct":17,"positive_accuracy":0.9444,"false_positive_count":0,"false_negative_count":1,"mismatch_count":0},
+    "adhesive_strategy": {"evaluated_count":6,"correct_count":6,"accuracy":1.0,"positive_support":2,"positive_correct":2,"positive_accuracy":1.0,"false_positive_count":0,"false_negative_count":0,"mismatch_count":0},
+    "ionomer_use": {"evaluated_count":8,"correct_count":7,"accuracy":0.875,"positive_support":8,"positive_correct":7,"positive_accuracy":0.875,"false_positive_count":0,"false_negative_count":1,"mismatch_count":0},
+    "fluoride_formulation": {"evaluated_count":3,"correct_count":2,"accuracy":0.6667,"positive_support":1,"positive_correct":0,"positive_accuracy":0.0,"false_positive_count":0,"false_negative_count":1,"mismatch_count":0},
+    "anesthetic_active_ingredient": {"evaluated_count":16,"correct_count":16,"accuracy":1.0,"positive_support":16,"positive_correct":16,"positive_accuracy":1.0,"false_positive_count":0,"false_negative_count":0,"mismatch_count":0},
+    "anesthetic_vasoconstrictor": {"evaluated_count":16,"correct_count":15,"accuracy":0.9375,"positive_support":9,"positive_correct":9,"positive_accuracy":1.0,"false_positive_count":1,"false_negative_count":0,"mismatch_count":0}
+  },
+  "attribute_errors": [
+    {"id":"ta10-cmi-042","attribute":"curing_mode","expected":"light_cure","predicted":null},
+    {"id":"ta10-sum-115","attribute":"fluoride_formulation","expected":"acidulated","predicted":null},
+    {"id":"ta10-min-329","attribute":"ionomer_use","expected":"restorative","predicted":null},
+    {"id":"ta10-fbe-180","attribute":"anesthetic_vasoconstrictor","expected":null,"predicted":"epinephrine"}
+  ],
+  "category_errors": [
+    {"id":"ta10-cmi-043","expected":"unknown","predicted":"zinc_oxide"},
+    {"id":"ta10-sum-115","expected":"fluoride_gel","predicted":"unknown"},
+    {"id":"ta10-min-329","expected":"glass_ionomer","predicted":"composite_resin"}
+  ],
+  "interpretation": "Independent technical-attribute v10 baseline frozen before tuning. The deterministic mirror was validated against the v9 post-tuning regression at 48/48 categories and 84/84 fields before measuring this dataset."
+}
