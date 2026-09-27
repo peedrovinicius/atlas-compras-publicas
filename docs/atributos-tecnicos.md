@@ -217,3 +217,23 @@ O falso positivo ocorreu quando `fotopolimerizável` qualificava a resina citada
 As lacunas do v4 ainda não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v4.md`.
+
+
+## Resultado pós-tuning v1.20
+
+As lacunas observadas no benchmark técnico v4 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 45/45 categorias corretas;
+- 87/87 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+A principal mudança foi contextual: `fotopolimerizável` ligado explicitamente à resina não é mais usado automaticamente como evidência do modo de cura do adesivo.
+
+As referências independentes continuam sendo 93,33% para categoria e 88,51% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v4-post-tuning.md`.
