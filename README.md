@@ -76,7 +76,7 @@ O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente origi
 
 O v2 usa oito contratações inéditas. Após o tuning da v1.16, o mesmo conjunto atingiu 100%, mas a baseline independente permanece 93,51%.
 
-O v3 usa mais oito contratações inéditas e permanece sem tuning nesta release. A baseline independente ficou em 94,19%, com 42/45 categorias corretas.
+O v3 usa mais oito contratações inéditas. Após o tuning da v1.18, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, mas as baselines independentes permanecem 94,19% e 93,33%.
 
 Documentação completa:
 
@@ -90,6 +90,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v2](docs/benchmark-technical-attributes-v2.md)
 - [Regressão técnica v2 pós-tuning v1.16](docs/benchmark-technical-attributes-v2-post-tuning.md)
 - [Benchmark de atributos técnicos v3](docs/benchmark-technical-attributes-v3.md)
+- [Regressão técnica v3 pós-tuning v1.18](docs/benchmark-technical-attributes-v3-post-tuning.md)
 
 ## Exemplo de normalização
 
@@ -182,8 +183,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- analisar as cinco lacunas técnicas e três lacunas de categoria do v3
-- corrigir o v3 sem alterar sua baseline independente
+- criar benchmark técnico v4 com fontes inéditas
+- medir generalização após os ciclos v1.14, v1.16 e v1.18
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
