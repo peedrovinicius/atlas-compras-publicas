@@ -201,6 +201,22 @@ Gerar sinais estatísticos:
 dpi detect-anomalies --database data/analytics.duckdb
 ~~~
 
+## API e dashboard
+
+A camada analítica pode ser exposta por API HTTP ou por um dashboard HTML estático,
+ambos alimentados pelo mesmo DuckDB.
+
+~~~bash
+pip install -e ".[api]"
+dpi serve-api --database data/analytics.duckdb
+dpi build-dashboard --database data/analytics.duckdb --output docs/dashboard.html
+~~~
+
+- [Documentação da API e dashboard](docs/api-dashboard.md)
+
+Nenhum valor é fixado no dashboard. O snapshot é gerado a partir da base analítica
+informada no comando.
+
 ## Estrutura
 
 ~~~text
@@ -226,6 +242,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 - [Revisão do motor de regras](docs/architecture-rules-review.md)
 - [Refatoração declarativa do motor de regras v1.36](docs/rule-engine-refactor-v1.36.md)
 - [Arquitetura multidomínio](docs/multidomain-architecture.md)
+- [API e dashboard analítico](docs/api-dashboard.md)
 - [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
@@ -237,7 +254,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Próximos passos
 
 - criar taxonomia e benchmark independente para o domínio de medicamentos
-- disponibilizar API e dashboard analítico
+- adicionar filtros e paginação à API
+- publicar snapshot real do dashboard quando houver base analítica consolidada
 
 ## Fonte dos dados
 
