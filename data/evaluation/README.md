@@ -85,3 +85,12 @@ A baseline está preservada em `technical-attributes-v2-baseline.json`.
 dpi evaluate-technical-attributes \
   --dataset data/evaluation/technical-attributes-v2.jsonl
 ~~~
+
+
+### Resultado pós-tuning v1.16
+
+Após corrigir as cinco lacunas observadas no v2, o mesmo conjunto congelado atingiu 77/77 campos corretos.
+
+O resultado está salvo em `technical-attributes-v2-post-v1.16.json`.
+
+Esse valor é regressão pós-tuning e não substitui a baseline independente de 93,51%.
