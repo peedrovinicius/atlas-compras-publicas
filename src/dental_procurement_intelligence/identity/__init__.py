@@ -1,3 +1,11 @@
+from .domains import (
+    DomainDescriptor,
+    DomainStatus,
+    IdentityDomain,
+    active_domains,
+    available_domains,
+    get_domain,
+)
 from .engine import IdentityDecision, IdentityResult, ProductIdentityEngine
 from .models import (
     CanonicalProduct,
@@ -15,6 +23,12 @@ from .physical import (
 )
 
 __all__ = [
+    "DomainDescriptor",
+    "DomainStatus",
+    "IdentityDomain",
+    "active_domains",
+    "available_domains",
+    "get_domain",
     "CanonicalProduct",
     "IdentityDecision",
     "IdentityResult",
