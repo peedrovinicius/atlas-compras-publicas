@@ -201,6 +201,24 @@ Gerar sinais estatísticos:
 dpi detect-anomalies --database data/analytics.duckdb
 ~~~
 
+## Domínio de medicamentos
+
+A arquitetura multidomínio já possui uma taxonomia inicial de medicamentos,
+mas ela ainda não está ativa em produção.
+
+O primeiro holdout independente contém 48 exemplos e 192 campos.
+A baseline ficou em **87,50%** de micro accuracy, com melhor desempenho
+em forma farmacêutica e via do que em ingrediente ativo.
+
+~~~bash
+dpi evaluate-medications --dataset data/evaluation/medications-v1.jsonl
+dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
+~~~
+
+- [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
+
+O domínio permanece em `benchmark_required` até um ciclo posterior de tuning.
+
 ## API e dashboard
 
 A camada analítica pode ser exposta por API HTTP ou por um dashboard HTML estático,
@@ -243,6 +261,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 - [Refatoração declarativa do motor de regras v1.36](docs/rule-engine-refactor-v1.36.md)
 - [Arquitetura multidomínio](docs/multidomain-architecture.md)
 - [API e dashboard analítico](docs/api-dashboard.md)
+- [Benchmark de medicamentos v1](docs/benchmark-medications-v1.md)
 - [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
@@ -253,7 +272,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar taxonomia e benchmark independente para o domínio de medicamentos
+- fazer tuning controlado do benchmark de medicamentos sem alterar sua baseline
 - adicionar filtros e paginação à API
 - publicar snapshot real do dashboard quando houver base analítica consolidada
 
