@@ -103,6 +103,18 @@ FastAPI e Uvicorn ficam no extra opcional `api`.
 
 A geração estática do dashboard usa somente dependências já presentes no pacote base.
 
+## Snapshot publicado
+
+Enquanto ainda não existe um DuckDB consolidado versionado, o repositório publica
+um snapshot metodológico real em:
+
+- `docs/dashboard-quality-snapshot.html`;
+- `docs/assets/dashboard-quality-snapshot.svg`;
+- `docs/dashboard-quality-snapshot.json`.
+
+Ele usa exclusivamente baselines congeladas do próprio projeto e não preenche
+painéis de preços com dados fictícios.
+
 ## Próximas melhorias
 
 - endpoint de contratação/item;
