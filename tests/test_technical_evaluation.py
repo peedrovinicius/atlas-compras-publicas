@@ -266,3 +266,20 @@ def test_frozen_technical_v8_is_perfect_after_tuning() -> None:
     assert sum(
         item.mismatch_count for item in report.per_attribute.values()
     ) == 0
+
+
+def test_frozen_technical_v9_preserves_independent_baseline() -> None:
+    baseline_path = Path(
+        "data/evaluation/technical-attributes-v9-baseline.json"
+    )
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+
+    assert baseline["sample_count"] == 48
+    assert baseline["category_correct"] == 42
+    assert baseline["category_accuracy"] == 0.875
+    assert baseline["evaluated_attribute_count"] == 84
+    assert baseline["correct_attribute_count"] == 81
+    assert baseline["micro_accuracy"] == 0.9643
+    assert baseline["false_positive_count"] == 1
+    assert baseline["false_negative_count"] == 2
+    assert baseline["mismatch_count"] == 0
