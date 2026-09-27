@@ -1,0 +1,52 @@
+{
+  "dataset": "data/evaluation/medications-v1.jsonl",
+  "dataset_version": "medications-v1",
+  "frozen_dataset_commit": "51cfc998adafcad3885786fa0c0d5a14468e7ce8",
+  "dataset_git_blob_sha": "2428e3d39a11ef11ef35bb1e87619e7c7596c27d",
+  "parser_commit": "c97424b8c791f50702262d5ca004bfc1bd6d8c7d",
+  "parser_git_blob_sha": "b2d303783083f63c7f5a2a722073e4d55cb888b8",
+  "parser_version": "1.40.0",
+  "measurement_method": "deterministic_mirror_of_frozen_medication_parser",
+  "sample_count": 48,
+  "evaluated_field_count": 192,
+  "correct_field_count": 168,
+  "micro_accuracy": 0.875,
+  "false_positive_count": 1,
+  "false_negative_count": 2,
+  "mismatch_count": 21,
+  "per_field": {
+    "active_ingredient": {
+      "evaluated_count": 48,
+      "correct_count": 31,
+      "accuracy": 0.6458,
+      "false_positive_count": 1,
+      "false_negative_count": 0,
+      "mismatch_count": 16
+    },
+    "strength": {
+      "evaluated_count": 48,
+      "correct_count": 43,
+      "accuracy": 0.8958,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 3
+    },
+    "dosage_form": {
+      "evaluated_count": 48,
+      "correct_count": 47,
+      "accuracy": 0.9792,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 1
+    },
+    "route": {
+      "evaluated_count": 48,
+      "correct_count": 47,
+      "accuracy": 0.9792,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 1
+    }
+  },
+  "interpretation": "Independent baseline for the medications domain. The domain remains benchmark_required because active-ingredient extraction requires further tuning. No benchmark errors were used to change the parser in this release."
+}
