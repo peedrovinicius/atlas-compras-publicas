@@ -235,6 +235,9 @@ dpi build-dashboard --database data/analytics.duckdb --output docs/dashboard.htm
 Nenhum valor é fixado no dashboard. O snapshot é gerado a partir da base analítica
 informada no comando.
 
+A API v1 oferece paginação por `limit`/`offset` e filtros por categoria,
+macroregião, ano e escopo, conforme a coleção.
+
 ## Estrutura
 
 ~~~text
@@ -273,7 +276,6 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Próximos passos
 
 - fazer tuning controlado do benchmark de medicamentos sem alterar sua baseline
-- adicionar filtros e paginação à API
 - publicar snapshot real do dashboard quando houver base analítica consolidada
 
 ## Fonte dos dados
