@@ -89,6 +89,7 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "GEL DE FLUORETO DE SODIO",
             "FLUOR NEUTRO",
             "FLUOR ACIDULADO",
+            "FLUOR TOPICO GEL",
         ),
     ),
     (
@@ -191,6 +192,7 @@ _COMPOSITE_CONTEXT_EXCLUSIONS = (
     re.compile(r"\b(?:KIT|PONTAS?)\b.*\b(?:ACABAMENTO|POLIMENTO)\b.*\bRESINA\b"),
     re.compile(r"\b(?:ACABAMENTO|POLIMENTO)\b.*\bDE\s+RESINA\b"),
     re.compile(r"\bSELANTE\b.*\bRESINA\b"),
+    re.compile(r"\bIONOMERO(?:\s+-)?\s+DE\s+VIDRO\b.*\bRESINA\b"),
 )
 
 _ADHESIVE_CONTEXT_EXCLUSIONS = (
@@ -254,6 +256,8 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "FOTOATIVADO",
             "FOTOATIVADA",
             "LIGHT CURE",
+            "FOTOATIVAO",
+            "CURA PELA LUZ",
         ),
     ),
     (
@@ -398,7 +402,7 @@ def _zinc_oxide_context_excluded(text: str) -> bool:
     if not has_zinc_oxide:
         return False
 
-    if _term_present(text, "CIMENTO ODONTOLOGICO"):
+    if _term_present(text, "CIMENTO ODONTOLOGICO") or _term_present(text, "CIMENTO"):
         return True
 
     return (
@@ -409,7 +413,10 @@ def _zinc_oxide_context_excluded(text: str) -> bool:
 
 def _eugenol_context_excluded(text: str) -> bool:
     return (
-        _term_present(text, "CIMENTO ODONTOLOGICO")
+        (
+            _term_present(text, "CIMENTO ODONTOLOGICO")
+            or _term_present(text, "CIMENTO")
+        )
         and _term_present(text, "EUGENOL")
     )
 
@@ -541,6 +548,17 @@ def _single_attribute_match(
     return None
 
 
+def _anesthetic_vasoconstrictor(text: str) -> str | None:
+    if re.search(
+        r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR|VASOCONTRITOR|VASOCONSTRICTOR)\b"
+        r"|\bS\s*/\s*VASO(?:CONSTR(?:ITOR)?)?\b)",
+        text,
+    ):
+        return "none"
+
+    return _single_attribute_match(text, _VASOCONSTRICTOR_RULES)
+
+
 def _resin_technology(text: str) -> str | None:
     ambiguous_nanoparticle = (
         re.search(
@@ -627,17 +645,7 @@ def _technical_attributes(
             text,
             _ANESTHETIC_INGREDIENT_RULES,
         )
-        if re.search(
-            r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR|VASOCONTRITOR|VASOCONSTRICTOR)\b"
-            r"|\bS\s*/\s*VASO(?:CONSTR(?:ITOR)?)?\b)",
-            text,
-        ):
-            anesthetic_vasoconstrictor = "none"
-        else:
-            anesthetic_vasoconstrictor = _first_attribute_match(
-                text,
-                _VASOCONSTRICTOR_RULES,
-            )
+        anesthetic_vasoconstrictor = _anesthetic_vasoconstrictor(text)
 
     return TechnicalAttributes(
         resin_technology=resin_technology,
