@@ -1,3 +1,3 @@
 """Atlas de Compras Públicas."""
 
-__version__ = "1.30.0"
+__version__ = "1.31.0"
