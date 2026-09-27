@@ -9,149 +9,30 @@ from dental_procurement_intelligence.identity.models import (
     QuantityDimension,
     TechnicalAttributes,
 )
+from dental_procurement_intelligence.identity.rules import (
+    DENTAL_CATEGORY_SPECS,
+    compile_category_rules,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
+    ADHESIVE_HINTS as _ADHESIVE_HINTS,
+    ADHESIVE_STRATEGY_RULES as _ADHESIVE_STRATEGY_RULES,
+    ANESTHETIC_ACTIVE_INGREDIENTS as _ANESTHETIC_ACTIVE_INGREDIENTS,
+    ANESTHETIC_INGREDIENT_RULES as _ANESTHETIC_INGREDIENT_RULES,
+    CURING_MODE_RULES as _CURING_MODE_RULES,
+    FLUID_RESIN_TERMS as _FLUID_RESIN_TERMS,
+    FLUORIDE_FORMULATION_RULES as _FLUORIDE_FORMULATION_RULES,
+    IONOMER_USE_RULES as _IONOMER_USE_RULES,
+    MIXED_KIT_FAMILY_TERMS as _MIXED_KIT_FAMILY_TERMS,
+    RESIN_HEAD_TERMS as _RESIN_HEAD_TERMS,
+    RESIN_TECHNOLOGY_RULES as _RESIN_TECHNOLOGY_RULES,
+    VASOCONSTRICTOR_RULES as _VASOCONSTRICTOR_RULES,
+)
 from dental_procurement_intelligence.normalization import (
     extract_measurements,
     normalize_description,
 )
 
-_CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
-    (
-        ProductCategory.FLOWABLE_RESIN,
-        (
-            "RESINA FLOW",
-            "RES FLOW",
-            "FLOWABLE",
-            "RESINA FLUIDA",
-            "RESINAS FLUIDAS",
-            "RESINA COMPOSTA FLUIDA",
-            "RESINA NATURAL FLOW",
-        ),
-    ),
-    (
-        ProductCategory.COMPOSITE_RESIN,
-        (
-            "RESINA COMPOSTA",
-            "RES COMP",
-            "RES FOTOP",
-            "RESINA RESTAURADORA",
-            "RESINA MICROHIBRIDA",
-            "RESINA MICRO-HIBRIDA",
-            "RESINA NANOHIBRIDA",
-            "RESINA NANO-HIBRIDA",
-            "RESINAS FOTOPOLIMERIZAVEIS",
-            "RESINA FOTOPOLIMERIZAVEL",
-            "RESINA FOTOPOLIMERIZAVEIS",
-            "RESINA ODONTOLOGICA",
-            "RESINA FORMA NANOHIBRIDA",
-            "RESINA FOTO",
-            "RESINA BULK FILL",
-            "RESINA FILTEK Z250",
-            "RESINA - Z250",
-            "RESINA A1",
-            "RESINA UNIVERSAL",
-        ),
-    ),
-    (
-        ProductCategory.ADHESIVE,
-        (
-            "ADESIVO DENTAL",
-            "SISTEMA ADESIVO",
-            "ADESIVO ODONTOLOGICO",
-            "ADESIVO FOTOPOLIMERIZAVEL",
-            "ADESIVO UNIVERSAL",
-            "ADESIVOS",
-        ),
-    ),
-    (
-        ProductCategory.GLASS_IONOMER,
-        (
-            "IONOMERO DE VIDRO",
-            "IONOMEROS DE VIDRO",
-            "CIMENTO IONOMERO",
-            "CIV RESTAURADOR",
-            "CIV RESTAURACOES",
-            "LONOMERO DE VIDRO",
-            "IONOMERO - DE VIDRO",
-            "IONOMERO, VIDRO",
-        ),
-    ),
-    (
-        ProductCategory.PHOSPHORIC_ACID,
-        ("ACIDO FOSFORICO", "CONDICIONADOR ACIDO", "ACIDO CONDICIONADOR"),
-    ),
-    (
-        ProductCategory.ALGINATE,
-        ("ALGINATO", "MATERIAL DE MOLDAGEM ALGINATO"),
-    ),
-    (
-        ProductCategory.FLUORIDE_GEL,
-        (
-            "FLUOR GEL",
-            "FLUOR EM GEL",
-            "FLUOR ACIDO GEL",
-            "GEL FLUORETADO",
-            "GEL DE FLUORETO DE SODIO",
-            "FLUOR NEUTRO",
-            "FLUOR ACIDULADO",
-            "FLUOR TOPICO GEL",
-            "FLUORETO DE SODIO EM GEL",
-        ),
-    ),
-    (
-        ProductCategory.PROPHYLAXIS_PASTE,
-        ("PASTA PROFILATICA", "PASTA DE PROFILAXIA"),
-    ),
-    (
-        ProductCategory.CALCIUM_HYDROXIDE,
-        ("HIDROXIDO DE CALCIO", "CIMENTO HIDROXIDO DE CALCIO"),
-    ),
-    (
-        ProductCategory.ZINC_OXIDE,
-        ("OXIDO DE ZINCO", "OXIDO ZINCO"),
-    ),
-    (
-        ProductCategory.EUGENOL,
-        ("EUGENOL",),
-    ),
-    (
-        ProductCategory.RADIOGRAPHIC_FIXER,
-        (
-            "FIXADOR RADIOGRAFICO",
-            "FIXADOR RADIOLOGICO",
-            "FIXADOR ODONTOLOGICO",
-            "FIXADOR KODAK",
-            "FIXADOR, PARA PELICULA RADIOGRAFICA",
-        ),
-    ),
-    (
-        ProductCategory.RADIOGRAPHIC_DEVELOPER,
-        (
-            "REVELADOR RADIOGRAFICO",
-            "REVELADOR RADIOLOGICO",
-            "REVELADOR ODONTOLOGICO",
-            "REVELADOR - DENTAL",
-            "REVELADOR DE PELICULAS",
-            "REVELADOR, PARA PELICULA RADIOGRAFICA",
-            "REVELADOR PARA FILME RADIOGRAFICO",
-            "REVELADOR PARA FILME RADIOGRAFICOS",
-            "REVELADORREVELADOR",
-        ),
-    ),
-    (
-        ProductCategory.LOCAL_ANESTHETIC,
-        (
-            "ANESTESICO ODONTOLOGICO",
-            "ANESTESICO LOCAL",
-            "ANESTESICO TOPICO",
-            "ANESTESICO ARTICAINE",
-            "ANESTESICO",
-            "LIDOCAINA",
-            "ARTICAINA",
-            "ARTICAINE",
-            "MEPIVACAINA",
-        ),
-    ),
-)
+_CATEGORY_RULES = compile_category_rules(DENTAL_CATEGORY_SPECS)
 
 _PRESENTATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("syringe", ("SERINGA",)),
@@ -215,146 +96,6 @@ _ADHESIVE_CONTEXT_EXCLUSIONS = (
 _GLASS_IONOMER_CONTEXT_EXCLUSIONS = (
     re.compile(r"\bSELANTE\b.*\bIONOMERO\s+DE\s+VIDRO\b"),
 )
-
-_ADHESIVE_HINTS = (
-    "ADESIVO",
-    "ADESIVOS",
-    "PRIMER",
-    "BOND",
-)
-
-_ANESTHETIC_ACTIVE_INGREDIENTS = (
-    "LIDOCAINA",
-    "ARTICAINA",
-    "ARTICAINE",
-    "MEPIVACAINA",
-    "BENZOCAINA",
-)
-
-_MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
-    ("RESINA", "RESINAS"),
-    ("ADESIVO", "ADESIVOS"),
-    ("IONOMERO", "IONOMEROS"),
-    ("ALGINATO", "ALGINATOS"),
-    ("EUGENOL",),
-    ("HIDROXIDO DE CALCIO",),
-)
-
-
-_RESIN_TECHNOLOGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("bulk_fill", ("BULK FILL", "BULKFILL")),
-    ("nanohybrid", ("NANOHIBRIDA", "NANO-HIBRIDA", "NANOHYBRID")),
-    (
-        "microhybrid",
-        ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICROHIDRIDA", "MICROHYBRID"),
-    ),
-)
-
-_CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("dual_cure", ("CURA DUAL", "DUAL CURE")),
-    (
-        "light_cure",
-        (
-            "FOTOPOLIMERIZAVEL",
-            "FOTOPOLIMERIZAVEIS",
-            "FOTOPOLIMERIZACAO",
-            "FOTOPOLIMERIZADO",
-            "FOTOPOLIMERIZADA",
-            "FOTOPOLIMERIZALVEL",
-            "FOTOPOLIMERIXAVE",
-            "FOTOPOL",
-            "FOTOATIVADO",
-            "FOTOATIVADA",
-            "LIGHT CURE",
-            "FOTOATIVAO",
-            "CURA PELA LUZ",
-        ),
-    ),
-    (
-        "self_cure",
-        (
-            "AUTOPOLIMERIZAVEL",
-            "AUTOPOLIMERIZACAO",
-            "QUIMICAMENTE ATIVADO",
-            "QUIMICAMENTE ATIVADA",
-            "SELF CURE",
-        ),
-    ),
-)
-
-_ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    (
-        "universal",
-        (
-            "ADESIVO UNIVERSAL",
-            "SISTEMA ADESIVO UNIVERSAL",
-            "UNIVERSAL",
-        ),
-    ),
-    (
-        "self_etch",
-        ("AUTOCONDICIONANTE", "AUTO CONDICIONANTE", "SELF ETCH"),
-    ),
-    (
-        "etch_and_rinse",
-        (
-            "CONDICIONAMENTO TOTAL",
-            "CONDICIONAMENTO ACIDO TOTAL",
-            "TOTAL ETCH",
-            "ETCH AND RINSE",
-            "DECAPAGEM TOTAL",
-        ),
-    ),
-)
-
-_IONOMER_USE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    (
-        "restorative",
-        ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO", "RESTAURACOES"),
-    ),
-    (
-        "luting",
-        ("CIMENTACAO", "CIMENTACOES", "CIMENTANTE", "FIXACAO"),
-    ),
-    (
-        "liner_base",
-        ("FORRAMENTO", "FORRACAO", "FORRADOR", "BASE CAVITARIA"),
-    ),
-)
-
-_FLUORIDE_FORMULATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("neutral", ("GEL NEUTRO", "FLUOR NEUTRO", "NEUTRO")),
-    (
-        "acidulated",
-        (
-            "GEL ACIDULADO",
-            "FLUOR ACIDULADO",
-            "FLUOR ACIDO",
-            "ACIDULADO",
-            "ACIDULATO",
-        ),
-    ),
-)
-
-_ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("lidocaine", ("LIDOCAINA",)),
-    ("articaine", ("ARTICAINA", "ARTICAINE")),
-    ("mepivacaine", ("MEPIVACAINA",)),
-    ("prilocaine", ("PRILOCAINA",)),
-    ("benzocaine", ("BENZOCAINA",)),
-)
-
-_VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("epinephrine", ("EPINEFRINA", "EPINEFRIN", "APINEFRINA", "ADRENALINA")),
-    ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
-    ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
-    ("phenylephrine", ("FENILEFRINA", "FELILEFRINA", "PHENYLEPHRINE")),
-)
-
-
-_RESIN_HEAD_TERMS = ("RESINA", "RESINAS")
-_FLUID_RESIN_TERMS = ("FLUIDA", "FLUIDAS", "FLOW", "FLOWABLE")
-
 
 def _term_present(text: str, term: str) -> bool:
     pattern = rf"(?<![A-Z0-9]){re.escape(term)}(?![A-Z0-9])"
