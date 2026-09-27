@@ -1,0 +1,221 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v5.jsonl",
+  "dataset_version": "technical-attributes-v5",
+  "frozen_dataset_commit": "87391052c78f73271cb4e0f23905690e44e5f112",
+  "dataset_git_blob_sha": "85a04ae9181167a5776a8a624e566bed2b29ef53",
+  "parser_commit": "9aadd6979f7ecef4b64f4bdfc10576bc68e8f6f0",
+  "parser_git_blob_sha": "bbe0678a36d5766510fb946dbcc0eec367f9833a",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.20.0",
+  "measurement_method": "deterministic_mirror_of_v1.20_parser",
+  "sample_count": 48,
+  "category_correct": 39,
+  "category_accuracy": 0.8125,
+  "evaluated_attribute_count": 92,
+  "correct_attribute_count": 80,
+  "micro_accuracy": 0.8696,
+  "false_positive_count": 2,
+  "false_negative_count": 10,
+  "mismatch_count": 0,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 18,
+      "correct_count": 15,
+      "accuracy": 0.8333,
+      "positive_support": 5,
+      "positive_correct": 3,
+      "positive_accuracy": 0.6,
+      "false_positive_count": 1,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 34,
+      "correct_count": 27,
+      "accuracy": 0.7941,
+      "positive_support": 19,
+      "positive_correct": 13,
+      "positive_accuracy": 0.6842,
+      "false_positive_count": 1,
+      "false_negative_count": 6,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 9,
+      "correct_count": 9,
+      "accuracy": 1,
+      "positive_support": 4,
+      "positive_correct": 4,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 7,
+      "correct_count": 7,
+      "accuracy": 1,
+      "positive_support": 4,
+      "positive_correct": 4,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 4,
+      "correct_count": 2,
+      "accuracy": 0.5,
+      "positive_support": 3,
+      "positive_correct": 1,
+      "positive_accuracy": 0.3333,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 10,
+      "correct_count": 10,
+      "accuracy": 1,
+      "positive_support": 10,
+      "positive_correct": 10,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 10,
+      "correct_count": 10,
+      "accuracy": 1,
+      "positive_support": 9,
+      "positive_correct": 9,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    }
+  },
+  "attribute_errors": [
+    {
+      "id": "ta5-vo-001",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta5-vo-021",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta5-ju-218",
+      "attribute": "curing_mode",
+      "expected": null,
+      "predicted": "light_cure"
+    },
+    {
+      "id": "ta5-ca-121",
+      "attribute": "resin_technology",
+      "expected": "microhybrid",
+      "predicted": null
+    },
+    {
+      "id": "ta5-sm-099",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta5-sm-105",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta5-co-017",
+      "attribute": "resin_technology",
+      "expected": "nanohybrid",
+      "predicted": null
+    },
+    {
+      "id": "ta5-co-037",
+      "attribute": "fluoride_formulation",
+      "expected": "neutral",
+      "predicted": null
+    },
+    {
+      "id": "ta5-co-038",
+      "attribute": "fluoride_formulation",
+      "expected": "acidulated",
+      "predicted": null
+    },
+    {
+      "id": "ta5-po-082",
+      "attribute": "resin_technology",
+      "expected": null,
+      "predicted": "nanohybrid"
+    },
+    {
+      "id": "ta5-ri-422",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta5-ri-424",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    }
+  ],
+  "category_errors": [
+    {
+      "id": "ta5-vo-018",
+      "expected": "glass_ionomer",
+      "predicted": "dental_adhesive"
+    },
+    {
+      "id": "ta5-ju-218",
+      "expected": "unknown",
+      "predicted": "composite_resin"
+    },
+    {
+      "id": "ta5-sm-008",
+      "expected": "unknown",
+      "predicted": "dental_adhesive"
+    },
+    {
+      "id": "ta5-sm-099",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta5-sm-105",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta5-co-017",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta5-co-037",
+      "expected": "fluoride_gel",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta5-co-038",
+      "expected": "fluoride_gel",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta5-ri-422",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    }
+  ],
+  "interpretation": "Independent technical-attribute v5 baseline frozen before tuning. The set adds contextual negatives, misspellings, commercial abbreviations, and explicit alternative technologies. Technical v1-v4 and taxonomy holdout v5 remain separate."
+}
