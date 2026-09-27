@@ -547,3 +547,19 @@ Resultado inicial independente:
 - 0 mismatches.
 
 Detalhes: `docs/benchmark-technical-attributes-v12.md`.
+
+
+## Resultado pós-tuning v1.37
+
+As lacunas observadas no benchmark técnico v12 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 77/77 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+Detalhes: `docs/benchmark-technical-attributes-v12-post-tuning.md`.
