@@ -345,3 +345,23 @@ O v7 introduz novas formas adversariais de contexto, produtos comerciais com des
 As lacunas do v7 não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v7.md`.
+
+
+## Resultado pós-tuning v1.26
+
+As lacunas observadas no benchmark técnico v7 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 83/83 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+As correções ficaram restritas a benzocaína, adesivo para moldeira, `decapagem total`, variações de uso de ionômero, o erro gráfico `LONÔMERO`, o token duplicado `REVELADORREVELADOR`, contexto de selante e a forma comercial `FILTEK Z250`.
+
+As referências independentes continuam sendo 89,58% para categoria e 91,57% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v7-post-tuning.md`.
