@@ -58,29 +58,67 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
         return execute(analytics_overview, database_path)
 
     @app.get("/api/v1/categories")
-    def categories() -> list[dict[str, Any]]:
-        return execute(analytics_categories, database_path)
+    def categories(
+        category: str | None = None,
+        limit: int = Query(default=50, ge=1, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
+        return execute(
+            analytics_categories,
+            database_path,
+            category=category,
+            limit=limit,
+            offset=offset,
+        )
 
     @app.get("/api/v1/quality")
     def quality() -> dict[str, Any]:
         return execute(analytics_quality, database_path)
 
     @app.get("/api/v1/awards")
-    def awards() -> list[dict[str, Any]]:
-        return execute(analytics_awards, database_path)
+    def awards(
+        category: str | None = None,
+        macroregion: str | None = None,
+        year: int | None = None,
+        limit: int = Query(default=50, ge=1, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
+        return execute(
+            analytics_awards,
+            database_path,
+            category=category,
+            macroregion=macroregion,
+            year=year,
+            limit=limit,
+            offset=offset,
+        )
 
     @app.get("/api/v1/anomalies")
-    def anomalies() -> list[dict[str, Any]]:
-        return execute(analytics_anomalies, database_path)
+    def anomalies(
+        category: str | None = None,
+        scope: str | None = None,
+        limit: int = Query(default=50, ge=1, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
+        return execute(
+            analytics_anomalies,
+            database_path,
+            category=category,
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
 
     @app.get("/api/v1/unrecognized")
     def unrecognized(
         limit: int = Query(default=50, ge=1, le=500),
-    ) -> list[dict[str, Any]]:
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
         return execute(
             analytics_unrecognized,
             database_path,
             limit=limit,
+            offset=offset,
         )
 
     return app
