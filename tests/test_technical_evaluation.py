@@ -245,3 +245,24 @@ def test_frozen_technical_v8_preserves_independent_baseline() -> None:
     assert baseline["false_positive_count"] == 5
     assert baseline["false_negative_count"] == 3
     assert baseline["mismatch_count"] == 0
+
+
+def test_frozen_technical_v8_is_perfect_after_tuning() -> None:
+    dataset = Path("data/evaluation/technical-attributes-v8.jsonl")
+
+    report = evaluate_technical_attributes(dataset)
+
+    assert report.sample_count == 48
+    assert report.category_accuracy == 1.0
+    assert report.evaluated_attribute_count == 83
+    assert report.correct_attribute_count == 83
+    assert report.micro_accuracy == 1.0
+    assert sum(
+        item.false_positive_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.false_negative_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.mismatch_count for item in report.per_attribute.values()
+    ) == 0
