@@ -541,7 +541,7 @@ def _resin_curing_mode(text: str) -> str | None:
 def _adhesive_strategy(text: str) -> str | None:
     context = text
     if _term_present(text, "MARCA DE REFERENCIA"):
-        context = text.split("MARCA DE REFERENCIA", maxsplit=1)[0]
+        context = text.split("MARCA DE REFERENCIA", 1)[0]
     return _first_attribute_match(context, _ADHESIVE_STRATEGY_RULES)
 
 
