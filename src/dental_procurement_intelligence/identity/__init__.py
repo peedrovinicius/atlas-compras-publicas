@@ -1,3 +1,9 @@
+from .medications import (
+    MedicationDosageForm,
+    MedicationIdentity,
+    MedicationRoute,
+    parse_medication,
+)
 from .domains import (
     DomainDescriptor,
     DomainStatus,
@@ -29,6 +35,10 @@ __all__ = [
     "active_domains",
     "available_domains",
     "get_domain",
+    "MedicationDosageForm",
+    "MedicationIdentity",
+    "MedicationRoute",
+    "parse_medication",
     "CanonicalProduct",
     "IdentityDecision",
     "IdentityResult",

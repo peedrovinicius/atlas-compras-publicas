@@ -208,6 +208,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     technical_errors.add_argument("--limit", type=int, default=50)
 
+    medications_evaluate = subparsers.add_parser(
+        "evaluate-medications",
+        help="Avalia a taxonomia de medicamentos contra dataset versionado",
+    )
+    medications_evaluate.add_argument(
+        "--dataset",
+        default="data/evaluation/medications-v1.jsonl",
+    )
+
+    medications_errors = subparsers.add_parser(
+        "medication-errors",
+        help="Lista divergências do benchmark de medicamentos",
+    )
+    medications_errors.add_argument(
+        "--dataset",
+        default="data/evaluation/medications-v1.jsonl",
+    )
+    medications_errors.add_argument("--limit", type=int, default=50)
+
     errors = subparsers.add_parser(
         "evaluation-errors",
         help="Lista divergências entre rótulo manual e categoria prevista",
@@ -327,6 +346,22 @@ def main(argv: Sequence[str] | None = None) -> int:
                 technical_attribute_errors(args.dataset)[: args.limit]
             )
         )
+        return 0
+
+    if args.command == "evaluate-medications":
+        from dental_procurement_intelligence.evaluation import (
+            evaluate_medications,
+        )
+
+        print(_serialize(asdict(evaluate_medications(args.dataset))))
+        return 0
+
+    if args.command == "medication-errors":
+        from dental_procurement_intelligence.evaluation import medication_errors
+
+        if args.limit < 1:
+            raise ValueError("--limit deve ser pelo menos 1")
+        print(_serialize(medication_errors(args.dataset)[: args.limit]))
         return 0
 
     if args.command == "evaluation-errors":

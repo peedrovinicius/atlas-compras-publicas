@@ -27,3 +27,17 @@ __all__ = [
     "evaluation_errors",
     "load_evaluation_dataset",
 ]
+
+from .medications import (
+    MedicationEvaluationReport,
+    MedicationFieldMetrics,
+    evaluate_medications,
+    medication_errors,
+)
+
+__all__ += [
+    "MedicationEvaluationReport",
+    "MedicationFieldMetrics",
+    "evaluate_medications",
+    "medication_errors",
+]
