@@ -451,3 +451,25 @@ As correções ficaram restritas a grafia de fenilefrina, negação explícita d
 As referências independentes continuam sendo 87,50% para categoria e 96,43% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v9-post-tuning.md`.
+
+
+## Benchmark técnico v10
+
+Um décimo conjunto independente foi congelado após o tuning da v1.30.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 84 campos técnicos avaliados;
+- 80 campos corretos;
+- micro accuracy de 95,24%;
+- 45/48 categorias corretas;
+- 1 falso positivo;
+- 3 falsos negativos;
+- nenhum mismatch.
+
+O v10 adiciona cura pela luz descrita em linguagem livre, produto fluoretado fora das formas canônicas, ionômero reforçado por resina, cimento obturador com óxido de zinco e eugenol e conflito explícito entre dois vasoconstritores.
+
+As lacunas do v10 não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v10.md`.
