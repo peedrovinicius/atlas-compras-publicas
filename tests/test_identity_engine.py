@@ -920,7 +920,11 @@ def test_technical_v7_tuning_keeps_new_rules_bounded() -> None:
     universal_adhesive = parse_product("ADESIVO DENTAL UNIVERSAL")
     bulk_flow = parse_product("RESINA FILTEK BULK FILL FLOW A2")
 
-    assert benzocaine_only.category == ProductCategory.UNKNOWN
+    assert benzocaine_only.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        benzocaine_only.technical_attributes.anesthetic_active_ingredient
+        == "benzocaine"
+    )
     assert generic_developer.category == ProductCategory.UNKNOWN
     assert universal_adhesive.category == ProductCategory.ADHESIVE
     assert (
@@ -929,3 +933,61 @@ def test_technical_v7_tuning_keeps_new_rules_bounded() -> None:
     )
     assert bulk_flow.category == ProductCategory.FLOWABLE_RESIN
     assert bulk_flow.technical_attributes.resin_technology == "bulk_fill"
+
+
+def test_technical_v8_tuning_recognizes_bounded_variants() -> None:
+    benzocaine = parse_product("BENZOCAINA CONCENTRACAO 20% USO GEL TOPICO")
+    abbreviated_adhesive = parse_product(
+        "SISTEMA ADESIVO DENTAL FOTOPOL."
+    )
+    ambiguous_resin = parse_product(
+        "RESINA FOTOPOLIMERIZAVEL NANOHIBRIDA OU NANOPARTICULADA"
+    )
+    sealant = parse_product(
+        "SELANTE FOTOPOLIMERIZAVEL ADESIVO PROTETOR "
+        "DE CIMENTO DE IONOMERO DE VIDRO"
+    )
+    brand_reference = parse_product(
+        "ADESIVO ODONTOLOGICO FOTOPOLIMERIZAVEL MONOCOMPONENTE "
+        "MARCA DE REFERENCIA SINGLE BOND UNIVERSAL 3M"
+    )
+    ambiguous_fluoride = parse_product(
+        "FLUOR GEL TOPICO NEUTRO 2% OU ACIDULADO 1,23%"
+    )
+    zinc_eugenol_cement = parse_product(
+        "CIMENTO ODONTOLOGICO TIPO PERMANENTE COMPOSICAO "
+        "OXIDO DE ZINCO E EUGENOL"
+    )
+    developer = parse_product(
+        "REVELADOR RADIOLOGICO SOLUCAO AQUOSA PRONTA PARA USO"
+    )
+
+    assert benzocaine.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        benzocaine.technical_attributes.anesthetic_active_ingredient
+        == "benzocaine"
+    )
+    assert abbreviated_adhesive.category == ProductCategory.ADHESIVE
+    assert abbreviated_adhesive.technical_attributes.curing_mode == "light_cure"
+    assert ambiguous_resin.category == ProductCategory.COMPOSITE_RESIN
+    assert ambiguous_resin.technical_attributes.resin_technology is None
+    assert sealant.category == ProductCategory.UNKNOWN
+    assert brand_reference.category == ProductCategory.ADHESIVE
+    assert brand_reference.technical_attributes.adhesive_strategy is None
+    assert ambiguous_fluoride.category == ProductCategory.FLUORIDE_GEL
+    assert ambiguous_fluoride.technical_attributes.fluoride_formulation is None
+    assert zinc_eugenol_cement.category == ProductCategory.UNKNOWN
+    assert developer.category == ProductCategory.RADIOGRAPHIC_DEVELOPER
+
+
+def test_technical_v8_tuning_preserves_existing_positive_contexts() -> None:
+    universal = parse_product("ADESIVO ODONTOLOGICO SINGLE BOND UNIVERSAL 5 ML")
+    zinc_oxide = parse_product("OXIDO DE ZINCO PO ODONTOLOGICO")
+    eugenol = parse_product("EUGENOL LIQUIDO ODONTOLOGICO")
+    generic_developer = parse_product("REVELADOR DE PLACA BACTERIANA")
+
+    assert universal.category == ProductCategory.ADHESIVE
+    assert universal.technical_attributes.adhesive_strategy == "universal"
+    assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
+    assert eugenol.category == ProductCategory.EUGENOL
+    assert generic_developer.category == ProductCategory.UNKNOWN
