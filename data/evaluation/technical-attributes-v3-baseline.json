@@ -1,0 +1,145 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v3.jsonl",
+  "dataset_version": "technical-attributes-v3",
+  "frozen_dataset_commit": "c5b05b8470c0a33413d917bf7cefaa6a1490f92f",
+  "dataset_git_blob_sha": "1a21ee7591aaf70d77dafe03ac58d4cb131c66d7",
+  "parser_commit": "a78c39100456900d381f61bc053692aba67cb830",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.16.0",
+  "measurement_method": "deterministic_mirror_of_v1.16_parser",
+  "sample_count": 45,
+  "category_correct": 42,
+  "category_accuracy": 0.9333,
+  "evaluated_attribute_count": 86,
+  "correct_attribute_count": 81,
+  "micro_accuracy": 0.9419,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 13,
+      "correct_count": 12,
+      "accuracy": 0.9231,
+      "positive_support": 8,
+      "positive_correct": 7,
+      "positive_accuracy": 0.875,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 31,
+      "correct_count": 29,
+      "accuracy": 0.9355,
+      "positive_support": 24,
+      "positive_correct": 22,
+      "positive_accuracy": 0.9167,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 9,
+      "correct_count": 9,
+      "accuracy": 1,
+      "positive_support": 3,
+      "positive_correct": 3,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 9,
+      "correct_count": 9,
+      "accuracy": 1,
+      "positive_support": 6,
+      "positive_correct": 6,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 4,
+      "correct_count": 4,
+      "accuracy": 1,
+      "positive_support": 2,
+      "positive_correct": 2,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 10,
+      "correct_count": 10,
+      "accuracy": 1,
+      "positive_support": 10,
+      "positive_correct": 10,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 10,
+      "correct_count": 8,
+      "accuracy": 0.8,
+      "positive_support": 10,
+      "positive_correct": 8,
+      "positive_accuracy": 0.8,
+      "false_positive_count": 0,
+      "false_negative_count": 2,
+      "mismatch_count": 0
+    }
+  },
+  "attribute_errors": [
+    {
+      "id": "ta3-mt-004",
+      "attribute": "anesthetic_vasoconstrictor",
+      "expected": "none",
+      "predicted": null
+    },
+    {
+      "id": "ta3-it-005",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta3-it-007",
+      "attribute": "curing_mode",
+      "expected": "light_cure",
+      "predicted": null
+    },
+    {
+      "id": "ta3-sa-150",
+      "attribute": "resin_technology",
+      "expected": "bulk_fill",
+      "predicted": null
+    },
+    {
+      "id": "ta3-cr-014",
+      "attribute": "anesthetic_vasoconstrictor",
+      "expected": "none",
+      "predicted": null
+    }
+  ],
+  "category_errors": [
+    {
+      "id": "ta3-it-007",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta3-sa-150",
+      "expected": "composite_resin",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta3-ar-040",
+      "expected": "fluoride_gel",
+      "predicted": "unknown"
+    }
+  ],
+  "interpretation": "Independent technical-attribute v3 baseline frozen before any tuning from these errors. Technical v1, v2, and taxonomy holdout v5 remain separate."
+}
