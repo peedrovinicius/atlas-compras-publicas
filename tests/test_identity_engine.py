@@ -991,3 +991,62 @@ def test_technical_v8_tuning_preserves_existing_positive_contexts() -> None:
     assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
     assert eugenol.category == ProductCategory.EUGENOL
     assert generic_developer.category == ProductCategory.UNKNOWN
+
+
+def test_technical_v9_tuning_recognizes_bounded_variants() -> None:
+    phenylephrine_typo = parse_product(
+        "ANESTESICO LIDOCAINA COM FELILEFRINA"
+    )
+    without_vasoconstrictor = parse_product(
+        "MEPIVACAINA 3% SEM VASOCONSTRICTOR"
+    )
+    short_z250 = parse_product("RESINA - Z250 XT 4G")
+    hyphen_ionomer = parse_product("IONOMERO - DE VIDRO")
+    short_developer = parse_product("REVELADOR - DENTAL")
+    zinc_component = parse_product(
+        "COMPOSICAO BASE FOSFATO CALCIO OXIDO ZINCO SULFATO BARIO"
+    )
+    resinous_cement = parse_product(
+        "CIMENTO ODONTOLOGICO TIPO ADESIVO RESINOSO ATIVACAO DUAL"
+    )
+    temporary_zinc_cement = parse_product(
+        "CIMENTO ODONTOLOGICO TIPO TEMPORARIO COMPOSICAO OXIDO DE ZINCO"
+    )
+
+    assert phenylephrine_typo.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        phenylephrine_typo.technical_attributes.anesthetic_vasoconstrictor
+        == "phenylephrine"
+    )
+    assert without_vasoconstrictor.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        without_vasoconstrictor.technical_attributes.anesthetic_vasoconstrictor
+        == "none"
+    )
+    assert short_z250.category == ProductCategory.COMPOSITE_RESIN
+    assert hyphen_ionomer.category == ProductCategory.GLASS_IONOMER
+    assert short_developer.category == ProductCategory.RADIOGRAPHIC_DEVELOPER
+    assert zinc_component.category == ProductCategory.UNKNOWN
+    assert resinous_cement.category == ProductCategory.UNKNOWN
+    assert temporary_zinc_cement.category == ProductCategory.UNKNOWN
+
+
+def test_technical_v9_tuning_preserves_existing_positive_contexts() -> None:
+    zinc_oxide = parse_product("OXIDO ZINCO PO FRASCO 50G")
+    eugenol = parse_product("EUGENOL FRASCO 20ML")
+    zinc_eugenol_cement = parse_product(
+        "CIMENTO ODONTOLOGICO TIPO PERMANENTE COMPOSICAO "
+        "OXIDO DE ZINCO E EUGENOL"
+    )
+    resinous_adhesive = parse_product(
+        "ADESIVO RESINOSO FOTOPOLIMERIZAVEL"
+    )
+    generic_developer = parse_product("REVELADOR DE PLACA BACTERIANA")
+    filtek_z250 = parse_product("RESINA FILTEK Z250 XT A1")
+
+    assert zinc_oxide.category == ProductCategory.ZINC_OXIDE
+    assert eugenol.category == ProductCategory.EUGENOL
+    assert zinc_eugenol_cement.category == ProductCategory.UNKNOWN
+    assert resinous_adhesive.category == ProductCategory.ADHESIVE
+    assert generic_developer.category == ProductCategory.UNKNOWN
+    assert filtek_z250.category == ProductCategory.COMPOSITE_RESIN
