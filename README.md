@@ -223,6 +223,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 - [Arquitetura](docs/architecture.md)
 - [Revisão do motor de regras](docs/architecture-rules-review.md)
+- [Refatoração declarativa do motor de regras v1.36](docs/rule-engine-refactor-v1.36.md)
 - [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
@@ -233,8 +234,6 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- refatorar o motor de regras de forma comportamentalmente neutra, conforme a revisão arquitetural
-- validar a refatoração contra os holdouts congelados e regressões protegidas
 - corrigir as lacunas do benchmark técnico v12 sem alterar sua baseline
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
