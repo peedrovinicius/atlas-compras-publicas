@@ -1,0 +1,39 @@
+from dental_procurement_intelligence.identity.domains import (
+    DomainStatus,
+    IdentityDomain,
+    active_domains,
+    available_domains,
+    get_domain,
+)
+from dental_procurement_intelligence.identity.rules.medications import (
+    MEDICATIONS_DOMAIN,
+    MEDICATION_CATEGORY_SPECS,
+)
+
+
+def test_multidomain_registry_exposes_dental_and_medications() -> None:
+    domains = available_domains()
+
+    assert [domain.domain for domain in domains] == [
+        IdentityDomain.DENTAL,
+        IdentityDomain.MEDICATIONS,
+    ]
+
+
+def test_dental_is_active_and_medications_require_benchmark() -> None:
+    dental = get_domain(IdentityDomain.DENTAL)
+    medications = get_domain(IdentityDomain.MEDICATIONS)
+
+    assert dental.status == DomainStatus.ACTIVE
+    assert dental.benchmark_required is False
+
+    assert medications.status == DomainStatus.BENCHMARK_REQUIRED
+    assert medications.benchmark_required is True
+    assert MEDICATIONS_DOMAIN.status == DomainStatus.BENCHMARK_REQUIRED
+    assert MEDICATION_CATEGORY_SPECS == ()
+
+
+def test_only_validated_domains_are_active() -> None:
+    assert [domain.domain for domain in active_domains()] == [
+        IdentityDomain.DENTAL
+    ]
