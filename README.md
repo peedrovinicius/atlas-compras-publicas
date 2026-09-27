@@ -98,9 +98,7 @@ O v8 usa oito novas contratações e trechos fiéis das descrições públicas. 
 
 O v9 usa outras oito contratações inéditas e preserva descrições comerciais curtas, pontuação interna e composição subordinada. A baseline independente ficou em 96,43% de micro accuracy, com 42/48 categorias corretas, 1 falso positivo técnico, 2 falsos negativos e nenhum mismatch. Após o tuning da v1.30, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
-O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.31.
-
-O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.31.
+O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.32, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 Documentação completa:
 
@@ -128,6 +126,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v9](docs/benchmark-technical-attributes-v9.md)
 - [Regressão técnica v9 pós-tuning v1.30](docs/benchmark-technical-attributes-v9-post-tuning.md)
 - [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
+- [Regressão técnica v10 pós-tuning v1.32](docs/benchmark-technical-attributes-v10-post-tuning.md)
 - [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
 
 ## Exemplo de normalização
@@ -221,8 +220,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- corrigir as lacunas do benchmark técnico v10 sem alterar sua baseline
-- criar novo holdout técnico após o próximo ciclo de regras
+- criar novo holdout técnico independente após o tuning da v1.32
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
