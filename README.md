@@ -70,10 +70,13 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | --- | ---: | ---: | ---: |
 | atributos técnicos v1 | 33 | 61 | 85,25% |
 | atributos técnicos v2 | 41 | 77 | 93,51% |
+| atributos técnicos v3 | 45 | 86 | 94,19% |
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
 
 O v2 usa oito contratações inéditas. Após o tuning da v1.16, o mesmo conjunto atingiu 100%, mas a baseline independente permanece 93,51%.
+
+O v3 usa mais oito contratações inéditas e permanece sem tuning nesta release. A baseline independente ficou em 94,19%, com 42/45 categorias corretas.
 
 Documentação completa:
 
@@ -86,6 +89,7 @@ Documentação completa:
 - [Regressão técnica pós-tuning v1.14](docs/benchmark-technical-attributes-v1-post-tuning.md)
 - [Benchmark de atributos técnicos v2](docs/benchmark-technical-attributes-v2.md)
 - [Regressão técnica v2 pós-tuning v1.16](docs/benchmark-technical-attributes-v2-post-tuning.md)
+- [Benchmark de atributos técnicos v3](docs/benchmark-technical-attributes-v3.md)
 
 ## Exemplo de normalização
 
@@ -178,8 +182,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar benchmark técnico v3 com fontes inéditas
-- ampliar atributos sem reutilizar v1 ou v2 para tuning
+- analisar as cinco lacunas técnicas e três lacunas de categoria do v3
+- corrigir o v3 sem alterar sua baseline independente
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
