@@ -31,8 +31,8 @@ A tecnologia da resina participa diretamente da decisão do Product Identity Eng
 
 ### Anestésico local
 
-- princípio ativo: `lidocaine`, `articaine`, `mepivacaine`;
-- vasoconstritor: `epinephrine`, `felypressin`, `norepinephrine` ou `none` quando a ausência é explícita.
+- princípio ativo: `lidocaine`, `articaine`, `mepivacaine`, `prilocaine`;
+- vasoconstritor: `epinephrine`, `felypressin`, `norepinephrine`, `phenylephrine` ou `none` quando a ausência é explícita.
 
 O princípio ativo é obrigatório para que dois anestésicos possam chegar a `match`.
 
@@ -120,3 +120,22 @@ No mesmo conjunto congelado:
 Esse resultado é regressão pós-tuning e não substitui a baseline independente de 85,25%.
 
 Detalhes: `docs/benchmark-technical-attributes-v1-post-tuning.md`.
+
+
+## Benchmark técnico v2
+
+Após o tuning do v1, um segundo conjunto independente foi congelado com novas fontes.
+
+Resultado inicial:
+
+- 41 exemplos;
+- 77 campos técnicos avaliados;
+- 72 campos corretos;
+- micro accuracy de 93,51%;
+- 5 falsos negativos;
+- nenhum falso positivo;
+- nenhum mismatch.
+
+As cinco lacunas ainda não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v2.md`.
