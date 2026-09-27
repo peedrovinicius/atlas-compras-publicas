@@ -178,31 +178,53 @@ def test_frozen_technical_v6_is_perfect_after_tuning() -> None:
     report = evaluate_technical_attributes(dataset)
 
     assert report.sample_count == 48
-    assert report.category_correct == 48
     assert report.category_accuracy == 1.0
     assert report.evaluated_attribute_count == 90
     assert report.correct_attribute_count == 90
     assert report.micro_accuracy == 1.0
-    assert report.false_positive_count == 0
-    assert report.false_negative_count == 0
-    assert report.mismatch_count == 0
+    assert sum(
+        item.false_positive_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.false_negative_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.mismatch_count for item in report.per_attribute.values()
+    ) == 0
 
 
 def test_frozen_technical_v7_preserves_independent_baseline() -> None:
+    baseline_path = Path(
+        "data/evaluation/technical-attributes-v7-baseline.json"
+    )
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+
+    assert baseline["sample_count"] == 48
+    assert baseline["category_accuracy"] == 0.8958
+    assert baseline["evaluated_attribute_count"] == 83
+    assert baseline["correct_attribute_count"] == 76
+    assert baseline["micro_accuracy"] == 0.9157
+    assert baseline["false_positive_count"] == 1
+    assert baseline["false_negative_count"] == 6
+    assert baseline["mismatch_count"] == 0
+
+
+def test_frozen_technical_v7_is_perfect_after_tuning() -> None:
     dataset = Path("data/evaluation/technical-attributes-v7.jsonl")
 
     report = evaluate_technical_attributes(dataset)
 
     assert report.sample_count == 48
-    assert report.category_accuracy == 0.8958
+    assert report.category_accuracy == 1.0
     assert report.evaluated_attribute_count == 83
-    assert report.correct_attribute_count == 76
-    assert report.micro_accuracy == 0.9157
-
-    assert report.per_attribute["adhesive_strategy"].false_positive_count == 1
-    assert report.per_attribute["adhesive_strategy"].false_negative_count == 1
-    assert report.per_attribute["ionomer_use"].false_negative_count == 2
-    assert (
-        report.per_attribute["anesthetic_active_ingredient"].false_negative_count
-        == 3
-    )
+    assert report.correct_attribute_count == 83
+    assert report.micro_accuracy == 1.0
+    assert sum(
+        item.false_positive_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.false_negative_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.mismatch_count for item in report.per_attribute.values()
+    ) == 0
