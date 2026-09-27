@@ -392,3 +392,19 @@ dpi evaluate-technical-attributes \
 ~~~
 
 Os erros do v10 não são corrigidos na v1.31. Qualquer tuning posterior deve manter esta baseline imutável e registrar o novo resultado separadamente.
+
+
+### Resultado pós-tuning v1.32
+
+Após corrigir as lacunas observadas no v10, o mesmo conjunto congelado atingiu:
+
+- 48/48 categorias corretas;
+- 84/84 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+O resultado está salvo em `technical-attributes-v10-post-v1.32.json`.
+
+Esse valor é regressão pós-tuning e não substitui as baselines independentes de 93,75% para categoria e 95,24% para atributos.

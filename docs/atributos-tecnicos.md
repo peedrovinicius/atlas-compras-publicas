@@ -473,3 +473,23 @@ O v10 adiciona cura pela luz descrita em linguagem livre, produto fluoretado for
 As lacunas do v10 não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v10.md`.
+
+
+## Resultado pós-tuning v1.32
+
+As lacunas observadas no benchmark técnico v10 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 84/84 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+As correções ficaram restritas a linguagem de cura pela luz, identidade de flúor tópico em gel, precedência de ionômero reforçado por resina, contexto de cimento com óxido de zinco e eugenol e conflito entre vasoconstritores canonicamente distintos.
+
+As referências independentes continuam sendo 93,75% para categoria e 95,24% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v10-post-tuning.md`.
