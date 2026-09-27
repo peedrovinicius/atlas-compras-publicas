@@ -157,3 +157,23 @@ No mesmo conjunto congelado:
 A referência independente continua sendo 93,51%.
 
 Detalhes: `docs/benchmark-technical-attributes-v2-post-tuning.md`.
+
+
+## Benchmark técnico v3
+
+Um terceiro conjunto independente foi congelado após o tuning do v2.
+
+Resultado inicial:
+
+- 45 exemplos;
+- 86 campos técnicos avaliados;
+- 81 campos corretos;
+- micro accuracy de 94,19%;
+- 42/45 categorias corretas;
+- 5 falsos negativos técnicos;
+- nenhum falso positivo;
+- nenhum mismatch.
+
+As lacunas do v3 ainda não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v3.md`.
