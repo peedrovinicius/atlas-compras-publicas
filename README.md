@@ -73,6 +73,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v3 | 45 | 86 | 94,19% |
 | atributos técnicos v4 | 45 | 87 | 88,51% |
 | atributos técnicos v5 | 48 | 92 | 86,96% |
+| atributos técnicos v6 | 48 | 90 | 93,33% |
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
 
@@ -83,6 +84,8 @@ O v3 usa mais oito contratações inéditas. Após o tuning da v1.18, o mesmo co
 O v4 adiciona contexto negativo, abreviações comerciais e grafias não padronizadas. A baseline independente ficou em 88,51%, com 42/45 categorias corretas e um falso positivo contextual. Após o tuning da v1.20, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, sem substituir a baseline independente.
 
 O v5 amplia os negativos contextuais e alternativas explícitas. A baseline independente ficou em 86,96%, com 39/48 categorias corretas, 2 falsos positivos técnicos e 10 falsos negativos. Após o tuning da v1.22, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
+
+O v6 usa oito novas contratações e reforça negativos de contexto ligados a resina. A baseline independente ficou em 93,33%, com 44/48 categorias corretas e nenhum falso positivo técnico.
 
 Documentação completa:
 
@@ -101,6 +104,7 @@ Documentação completa:
 - [Regressão técnica v4 pós-tuning v1.20](docs/benchmark-technical-attributes-v4-post-tuning.md)
 - [Benchmark de atributos técnicos v5](docs/benchmark-technical-attributes-v5.md)
 - [Regressão técnica v5 pós-tuning v1.22](docs/benchmark-technical-attributes-v5-post-tuning.md)
+- [Benchmark de atributos técnicos v6](docs/benchmark-technical-attributes-v6.md)
 
 ## Exemplo de normalização
 
@@ -193,8 +197,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar benchmark técnico v6 com fontes e negativos contextuais inéditos
-- ampliar validação independente antes de novas regras
+- corrigir as seis lacunas do benchmark técnico v6 sem alterar sua baseline
+- criar novo holdout técnico depois do próximo ciclo de regras
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
