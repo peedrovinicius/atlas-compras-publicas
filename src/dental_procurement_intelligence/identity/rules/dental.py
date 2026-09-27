@@ -41,6 +41,8 @@ DENTAL_CATEGORY_SPECS: tuple[CategoryRuleSpec, ...] = (
             "RESINA - Z250",
             "RESINA A1",
             "RESINA UNIVERSAL",
+            "RESINA Z 100",
+            "RESINA DENTAL",
         ),
         20,
         "technical-v11",
@@ -71,6 +73,8 @@ DENTAL_CATEGORY_SPECS: tuple[CategoryRuleSpec, ...] = (
             "LONOMERO DE VIDRO",
             "IONOMERO - DE VIDRO",
             "IONOMERO, VIDRO",
+            "IONOMERO VIDRO",
+            "IONOMERO RESTAURADOR",
         ),
         40,
         "technical-v11",
@@ -143,6 +147,10 @@ DENTAL_CATEGORY_SPECS: tuple[CategoryRuleSpec, ...] = (
             "FIXADOR ODONTOLOGICO",
             "FIXADOR KODAK",
             "FIXADOR, PARA PELICULA RADIOGRAFICA",
+            "FIXADOR RX",
+            "FIXADOR P/ RX",
+            "FIXADOR DE FILME RADIOGRAFICO",
+            "FIXADOR PARA RADIOGRAFIA",
         ),
         120,
         "technical-v11",
@@ -159,6 +167,10 @@ DENTAL_CATEGORY_SPECS: tuple[CategoryRuleSpec, ...] = (
             "REVELADOR, PARA PELICULA RADIOGRAFICA",
             "REVELADOR PARA FILME RADIOGRAFICO",
             "REVELADOR PARA FILME RADIOGRAFICOS",
+            "REVELADOR PARA RX",
+            "REVELADOR P/ RX",
+            "REVELADOR DE FILME RADIOGRAFICO",
+            "REVELADOR C/ 500 - KODAK",
             "REVELADORREVELADOR",
         ),
         130,
@@ -189,6 +201,7 @@ ANESTHETIC_ACTIVE_INGREDIENTS = (
     "ARTICAINA",
     "ARTICAINE",
     "MEPIVACAINA",
+    "MEPIVACANA",
     "BENZOCAINA",
 )
 MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
@@ -203,7 +216,7 @@ MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
 RESIN_TECHNOLOGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("bulk_fill", ("BULK FILL", "BULKFILL")),
     ("nanohybrid", ("NANOHIBRIDA", "NANO-HIBRIDA", "NANOHYBRID")),
-    ("microhybrid", ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICROHIDRIDA", "MICROHYBRID")),
+    ("microhybrid", ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICRO HIBRIDA", "MICROHIDRIDA", "MICROHYBRID")),
 )
 CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("dual_cure", ("CURA DUAL", "DUAL CURE")),
@@ -223,6 +236,8 @@ CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "LIGHT CURE",
             "FOTOATIVAO",
             "CURA PELA LUZ",
+            "FOTO IONOFAST",
+            "MICRO HIBRIDA, FOTO",
         ),
     ),
     (
@@ -238,7 +253,7 @@ CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("universal", ("ADESIVO UNIVERSAL", "SISTEMA ADESIVO UNIVERSAL", "UNIVERSAL")),
-    ("self_etch", ("AUTOCONDICIONANTE", "AUTO CONDICIONANTE", "SELF ETCH")),
+    ("self_etch", ("AUTOCONDICIONANTE", "AUTO CONDICIONANTE", "AUTO-CONDICIONANTE", "SELF ETCH")),
     (
         "etch_and_rinse",
         (
@@ -251,7 +266,7 @@ ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
 )
 IONOMER_USE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("restorative", ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO", "RESTAURACOES")),
+    ("restorative", ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO", "RESTAURACOES", "MAXXION-R")),
     ("luting", ("CIMENTACAO", "CIMENTACOES", "CIMENTANTE", "FIXACAO")),
     ("liner_base", ("FORRAMENTO", "FORRACAO", "FORRADOR", "BASE CAVITARIA")),
 )
@@ -262,7 +277,7 @@ FLUORIDE_FORMULATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("lidocaine", ("LIDOCAINA",)),
     ("articaine", ("ARTICAINA", "ARTICAINE")),
-    ("mepivacaine", ("MEPIVACAINA",)),
+    ("mepivacaine", ("MEPIVACAINA", "MEPIVACANA")),
     ("prilocaine", ("PRILOCAINA",)),
     ("benzocaine", ("BENZOCAINA",)),
 )
@@ -270,7 +285,7 @@ VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("epinephrine", ("EPINEFRINA", "EPINEFRIN", "APINEFRINA", "ADRENALINA")),
     ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
     ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
-    ("phenylephrine", ("FENILEFRINA", "FELILEFRINA", "PHENYLEPHRINE")),
+    ("phenylephrine", ("FENILEFRINA", "FELILEFRINA", "FENILEFINA", "PHENYLEPHRINE")),
 )
 RESIN_HEAD_TERMS = ("RESINA", "RESINAS")
 FLUID_RESIN_TERMS = ("FLUIDA", "FLUIDAS", "FLOW", "FLOWABLE")
