@@ -483,3 +483,29 @@ Após corrigir as lacunas observadas no v12, o mesmo conjunto congelado atingiu:
 O resultado está salvo em `technical-attributes-v12-post-v1.37.json`.
 
 Esse valor é regressão pós-tuning e não substitui as baselines independentes de 72,92% para categoria e 87,01% para atributos.
+
+
+## Medicamentos v1
+
+- 48 exemplos;
+- 8 contratações independentes;
+- 192 campos avaliados;
+- baseline independente de 87,50%;
+- 168/192 campos corretos na primeira medição.
+
+A baseline está preservada em `medications-v1-baseline.json`.
+
+### Resultado pós-tuning v1.44
+
+Após o tuning controlado:
+
+- 48/48 exemplos;
+- 192/192 campos corretos;
+- 100% de micro accuracy;
+- 0 falsos positivos;
+- 0 falsos negativos;
+- 0 mismatches.
+
+O resultado está salvo em `medications-v1-post-v1.44.json`.
+
+Esse resultado não substitui a baseline independente de 87,50%.
