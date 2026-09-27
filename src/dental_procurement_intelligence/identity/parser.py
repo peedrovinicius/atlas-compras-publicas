@@ -424,7 +424,7 @@ def _adhesive_curing_mode(text: str) -> str | None:
         return "light_cure"
 
     context = re.sub(
-        r"\bRESINA\s+FOTOPOLIMERIZAVEIS?\b",
+        r"\bRESINA\s+(?:FOTOPOLIMERIZAVEL|FOTOPOLIMERIZAVEIS)\b",
         "RESINA",
         text,
     )
