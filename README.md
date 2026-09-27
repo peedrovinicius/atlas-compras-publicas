@@ -225,6 +225,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 - [Arquitetura](docs/architecture.md)
 - [Revisão do motor de regras](docs/architecture-rules-review.md)
 - [Refatoração declarativa do motor de regras v1.36](docs/rule-engine-refactor-v1.36.md)
+- [Arquitetura multidomínio](docs/multidomain-architecture.md)
 - [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
@@ -235,7 +236,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- expandir a arquitetura para novos domínios
+- criar taxonomia e benchmark independente para o domínio de medicamentos
 - disponibilizar API e dashboard analítico
 
 ## Fonte dos dados
