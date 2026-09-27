@@ -29,7 +29,7 @@
       "v5": {
         "sample_count": 48,
         "evaluated_field_count": 92,
-        "micro_accuracy": 0.8695999999999999
+        "micro_accuracy": 0.8696
       },
       "v6": {
         "sample_count": 48,
@@ -54,7 +54,7 @@
       "v10": {
         "sample_count": 48,
         "evaluated_field_count": 84,
-        "micro_accuracy": 0.9523999999999999
+        "micro_accuracy": 0.9524
       },
       "v11": {
         "sample_count": 48,
@@ -64,7 +64,7 @@
       "v12": {
         "sample_count": 48,
         "evaluated_field_count": 77,
-        "micro_accuracy": 0.8701000000000001
+        "micro_accuracy": 0.8701
       }
     }
   },
