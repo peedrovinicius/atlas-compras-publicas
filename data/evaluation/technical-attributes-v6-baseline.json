@@ -1,0 +1,160 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v6.jsonl",
+  "dataset_version": "technical-attributes-v6",
+  "frozen_dataset_commit": "3209617e2dd3487f0af53d74bbb6795d008f8834",
+  "dataset_git_blob_sha": "337f7b13dbfa24e0b9ade64e03f2c717ed2c01f2",
+  "parser_commit": "5499829c404f69067539e8bd732a107c53245114",
+  "parser_git_blob_sha": "c155c76c4db18ef056693c349598a543cdfead26",
+  "evaluator_commit": "1b3e02858e3ccfe9ea8507b14fa13a6d141a3dcb",
+  "parser_version": "1.22.0",
+  "measurement_method": "deterministic_mirror_of_v1.22_parser",
+  "sample_count": 48,
+  "category_correct": 44,
+  "category_accuracy": 0.9167,
+  "evaluated_attribute_count": 90,
+  "correct_attribute_count": 84,
+  "micro_accuracy": 0.9333,
+  "false_positive_count": 0,
+  "false_negative_count": 6,
+  "mismatch_count": 0,
+  "per_attribute": {
+    "resin_technology": {
+      "evaluated_count": 23,
+      "correct_count": 23,
+      "accuracy": 1,
+      "positive_support": 6,
+      "positive_correct": 6,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "curing_mode": {
+      "evaluated_count": 32,
+      "correct_count": 31,
+      "accuracy": 0.9688,
+      "positive_support": 13,
+      "positive_correct": 12,
+      "positive_accuracy": 0.9231,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "adhesive_strategy": {
+      "evaluated_count": 3,
+      "correct_count": 3,
+      "accuracy": 1,
+      "positive_support": 1,
+      "positive_correct": 1,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "ionomer_use": {
+      "evaluated_count": 5,
+      "correct_count": 5,
+      "accuracy": 1,
+      "positive_support": 2,
+      "positive_correct": 2,
+      "positive_accuracy": 1,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "fluoride_formulation": {
+      "evaluated_count": 5,
+      "correct_count": 2,
+      "accuracy": 0.4,
+      "positive_support": 3,
+      "positive_correct": 0,
+      "positive_accuracy": 0,
+      "false_positive_count": 0,
+      "false_negative_count": 3,
+      "mismatch_count": 0
+    },
+    "anesthetic_active_ingredient": {
+      "evaluated_count": 11,
+      "correct_count": 10,
+      "accuracy": 0.9091,
+      "positive_support": 11,
+      "positive_correct": 10,
+      "positive_accuracy": 0.9091,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    },
+    "anesthetic_vasoconstrictor": {
+      "evaluated_count": 11,
+      "correct_count": 10,
+      "accuracy": 0.9091,
+      "positive_support": 7,
+      "positive_correct": 6,
+      "positive_accuracy": 0.8571,
+      "false_positive_count": 0,
+      "false_negative_count": 1,
+      "mismatch_count": 0
+    }
+  },
+  "attribute_errors": [
+    {
+      "id": "ta6-ufes-004",
+      "attribute": "anesthetic_active_ingredient",
+      "expected": "prilocaine",
+      "predicted": null
+    },
+    {
+      "id": "ta6-ufes-004",
+      "attribute": "anesthetic_vasoconstrictor",
+      "expected": "felypressin",
+      "predicted": null
+    },
+    {
+      "id": "ta6-ufes-064",
+      "attribute": "fluoride_formulation",
+      "expected": "acidulated",
+      "predicted": null
+    },
+    {
+      "id": "ta6-ufes-066",
+      "attribute": "fluoride_formulation",
+      "expected": "neutral",
+      "predicted": null
+    },
+    {
+      "id": "ta6-pg-092",
+      "attribute": "fluoride_formulation",
+      "expected": "neutral",
+      "predicted": null
+    },
+    {
+      "id": "ta6-ufpr-003",
+      "attribute": "curing_mode",
+      "expected": "dual_cure",
+      "predicted": null
+    }
+  ],
+  "category_errors": [
+    {
+      "id": "ta6-ufes-004",
+      "expected": "local_anesthetic",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta6-ufes-064",
+      "expected": "fluoride_gel",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta6-ufes-066",
+      "expected": "fluoride_gel",
+      "predicted": "unknown"
+    },
+    {
+      "id": "ta6-pg-092",
+      "expected": "fluoride_gel",
+      "predicted": "unknown"
+    }
+  ],
+  "interpretation": "Independent technical-attribute v6 baseline frozen before tuning. It adds new negative resin contexts, generic product descriptions, fluoride gel phrasing with Fluoreto de Sodio, prilocaine without the word anesthetic, and a dual-cure self-etch adhesive."
+}
