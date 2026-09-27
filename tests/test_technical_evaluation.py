@@ -170,3 +170,19 @@ def test_technical_attribute_dataset_requires_explicit_review_fields(
         raise AssertionError("Rótulo técnico ausente deveria falhar")
 
     assert "resin_technology" in message
+
+
+def test_frozen_technical_v6_is_perfect_after_tuning() -> None:
+    dataset = Path("data/evaluation/technical-attributes-v6.jsonl")
+
+    report = evaluate_technical_attributes(dataset)
+
+    assert report.sample_count == 48
+    assert report.category_correct == 48
+    assert report.category_accuracy == 1.0
+    assert report.evaluated_attribute_count == 90
+    assert report.correct_attribute_count == 90
+    assert report.micro_accuracy == 1.0
+    assert report.false_positive_count == 0
+    assert report.false_negative_count == 0
+    assert report.mismatch_count == 0

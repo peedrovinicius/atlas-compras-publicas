@@ -817,3 +817,57 @@ def test_technical_v5_category_rules_remain_bounded() -> None:
 
     for description in unrelated:
         assert parse_product(description).category == ProductCategory.UNKNOWN
+
+
+def test_technical_v6_tuning_recognizes_bounded_variants() -> None:
+    prilocaine = parse_product(
+        "PRILOCAINA COMPOSICAO ASSOCIADA COM FELIPRESSINA"
+    )
+    fluoride_acidulated = parse_product(
+        "FLUORETO DE SODIO CONCENTRACAO 2% "
+        "FORMA FARMACEUTICA GEL TIXOTROPICO "
+        "CARACTERISTICA ADICIONAL ACIDULADO"
+    )
+    fluoride_neutral = parse_product(
+        "FLUORETO DE SODIO CONCENTRACAO 2% "
+        "FORMA FARMACEUTICA GEL TIXOTROPICO "
+        "CARACTERISTICA ADICIONAL NEUTRO"
+    )
+    adhesive = parse_product(
+        "ADESIVO DENTAL TIPO ATIVACAO DUAL "
+        "COMPONENTES AUTOCONDICIONANTE"
+    )
+
+    assert prilocaine.category == ProductCategory.LOCAL_ANESTHETIC
+    assert (
+        prilocaine.technical_attributes.anesthetic_active_ingredient
+        == "prilocaine"
+    )
+    assert (
+        prilocaine.technical_attributes.anesthetic_vasoconstrictor
+        == "felypressin"
+    )
+    assert fluoride_acidulated.category == ProductCategory.FLUORIDE_GEL
+    assert (
+        fluoride_acidulated.technical_attributes.fluoride_formulation
+        == "acidulated"
+    )
+    assert fluoride_neutral.category == ProductCategory.FLUORIDE_GEL
+    assert (
+        fluoride_neutral.technical_attributes.fluoride_formulation
+        == "neutral"
+    )
+    assert adhesive.category == ProductCategory.ADHESIVE
+    assert adhesive.technical_attributes.adhesive_strategy == "self_etch"
+    assert adhesive.technical_attributes.curing_mode == "dual_cure"
+
+
+def test_technical_v6_tuning_preserves_previous_holdout_boundaries() -> None:
+    old_prilocaine = parse_product("PRILOCAINA 3% SOLUCAO INJETAVEL")
+    old_fluoride = parse_product("FLUORETO DE SODIO 2% GEL NEUTRO")
+    resin = parse_product("RESINA COMPOSTA ATIVACAO DUAL A2")
+
+    assert old_prilocaine.category == ProductCategory.UNKNOWN
+    assert old_fluoride.category == ProductCategory.UNKNOWN
+    assert resin.category == ProductCategory.COMPOSITE_RESIN
+    assert resin.technical_attributes.curing_mode is None

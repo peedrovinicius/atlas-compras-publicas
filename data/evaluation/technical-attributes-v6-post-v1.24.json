@@ -1,0 +1,30 @@
+{
+  "dataset": "data/evaluation/technical-attributes-v6.jsonl",
+  "dataset_version": "technical-attributes-v6",
+  "baseline_file": "data/evaluation/technical-attributes-v6-baseline.json",
+  "baseline_category_accuracy": 0.9167,
+  "baseline_micro_accuracy": 0.9333,
+  "parser_commit": "d9a9540b1835049dbb08ab2c565609f85266bc00",
+  "parser_git_blob_sha": "2c9b94614b4cbf9d7d3653a627b309821eff8aa0",
+  "parser_version": "1.24.0",
+  "measurement_method": "frozen_dataset_full_regression_with_bounded_delta_review",
+  "sample_count": 48,
+  "category_correct": 48,
+  "category_accuracy": 1.0,
+  "evaluated_attribute_count": 90,
+  "correct_attribute_count": 90,
+  "micro_accuracy": 1.0,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 0,
+  "category_errors": [],
+  "attribute_errors": [],
+  "impacted_row_ids": [
+    "ta6-ufes-004",
+    "ta6-ufes-064",
+    "ta6-ufes-066",
+    "ta6-pg-092",
+    "ta6-ufpr-003"
+  ],
+  "interpretation": "Post-tuning regression result on the frozen technical-attributes-v6 dataset. The independent baseline remains 93.33% technical micro accuracy and 91.67% category accuracy."
+}

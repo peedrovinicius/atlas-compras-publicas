@@ -383,6 +383,19 @@ def _classify_category(text: str) -> tuple[ProductCategory, tuple[str, ...]]:
     if _is_mixed_kit(text):
         return ProductCategory.UNKNOWN, ("MIXED_KIT",)
 
+    if (
+        _term_present(text, "PRILOCAINA")
+        and _term_present(text, "FELIPRESSINA")
+    ):
+        return ProductCategory.LOCAL_ANESTHETIC, ("PRILOCAINA", "FELIPRESSINA")
+
+    if (
+        _term_present(text, "FLUORETO DE SODIO")
+        and _term_present(text, "FORMA FARMACEUTICA")
+        and _term_present(text, "GEL")
+    ):
+        return ProductCategory.FLUORIDE_GEL, ("FLUORETO DE SODIO", "GEL")
+
     if _has_any(text, _ANESTHETIC_ACTIVE_INGREDIENTS):
         matches = tuple(
             term for term in _ANESTHETIC_ACTIVE_INGREDIENTS if _term_present(text, term)
@@ -463,6 +476,9 @@ def _resin_curing_mode(text: str) -> str | None:
 
 
 def _adhesive_curing_mode(text: str) -> str | None:
+    if _term_present(text, "ATIVACAO DUAL"):
+        return "dual_cure"
+
     if re.search(r"\bADESIVO\s+FOTO\b", text):
         return "light_cure"
 

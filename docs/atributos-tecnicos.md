@@ -301,3 +301,25 @@ As lacunas ficaram concentradas em três formas linguísticas: `Prilocaína` sem
 As lacunas do v6 ainda não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v6.md`.
+
+
+## Resultado pós-tuning v1.24
+
+As seis lacunas observadas no benchmark técnico v6 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 90/90 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+As novas regras são restritas aos contextos observados: prilocaína associada explicitamente à felipressina, fluoreto de sódio com forma farmacêutica em gel e ativação dual no contexto de adesivo.
+
+Os limites de holdouts anteriores continuam preservados e a suíte passa a exigir regressão integral do dataset v6.
+
+As referências independentes continuam sendo 91,67% para categoria e 93,33% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v6-post-tuning.md`.
