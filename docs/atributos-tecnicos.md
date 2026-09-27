@@ -259,3 +259,23 @@ O v5 introduz novos casos em que o produto principal e produtos citados aparecem
 As lacunas ainda não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v5.md`.
+
+
+## Resultado pós-tuning v1.22
+
+As lacunas observadas no benchmark técnico v5 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 92/92 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+A principal evolução foi contextual: o parser agora preserva melhor o produto principal, bloqueia referências subordinadas como aplicadores e selantes, e não escolhe uma tecnologia quando a descrição apresenta alternativas explícitas.
+
+As referências independentes continuam sendo 81,25% para categoria e 86,96% para atributos técnicos.
+
+Detalhes: `docs/benchmark-technical-attributes-v5-post-tuning.md`.
