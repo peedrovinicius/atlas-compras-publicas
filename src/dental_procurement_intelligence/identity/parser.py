@@ -38,6 +38,8 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
             "RESINA MICRO-HIBRIDA",
             "RESINA NANOHIBRIDA",
             "RESINA NANO-HIBRIDA",
+            "RESINAS FOTOPOLIMERIZAVEIS",
+            "RESINA BULK FILL",
         ),
     ),
     (
@@ -70,7 +72,13 @@ _CATEGORY_RULES: tuple[tuple[ProductCategory, tuple[str, ...]], ...] = (
     ),
     (
         ProductCategory.FLUORIDE_GEL,
-        ("FLUOR GEL", "FLUOR EM GEL", "FLUOR ACIDO GEL", "GEL FLUORETADO"),
+        (
+            "FLUOR GEL",
+            "FLUOR EM GEL",
+            "FLUOR ACIDO GEL",
+            "GEL FLUORETADO",
+            "GEL DE FLUORETO DE SODIO",
+        ),
     ),
     (
         ProductCategory.PROPHYLAXIS_PASTE,
@@ -206,6 +214,8 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "FOTOPOLIMERIZACAO",
             "FOTOPOLIMERIZADO",
             "FOTOPOLIMERIZADA",
+            "FOTOATIVADO",
+            "FOTOATIVADA",
             "LIGHT CURE",
         ),
     ),
@@ -437,8 +447,8 @@ def _technical_attributes(
             _ANESTHETIC_INGREDIENT_RULES,
         )
         if re.search(
-            r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR)\b"
-            r"|\bS\s*/\s*VASO\b)",
+            r"(?:\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR|VASOCONTRITOR)\b"
+            r"|\bS\s*/\s*VASO(?:CONSTR(?:ITOR)?)?\b)",
             text,
         ):
             anesthetic_vasoconstrictor = "none"
