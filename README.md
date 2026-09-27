@@ -136,7 +136,9 @@ Documentação completa:
 - [Benchmark de atributos técnicos v11](docs/benchmark-technical-attributes-v11.md)
 - [Regressão técnica v11 pós-tuning v1.34](docs/benchmark-technical-attributes-v11-post-tuning.md)
 - [Benchmark de atributos técnicos v12](docs/benchmark-technical-attributes-v12.md)
-- [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
+- [Consolidação dos benchmarks técnicos v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
+- [Revisão da arquitetura de regras e contextos](docs/architecture-rules-review.md)
+
 
 ## Exemplo de normalização
 
@@ -220,6 +222,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Documentação técnica
 
 - [Arquitetura](docs/architecture.md)
+- [Revisão do motor de regras](docs/architecture-rules-review.md)
+- [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
 - [Precisão monetária](docs/precisao-monetaria.md)
@@ -229,9 +233,9 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
+- refatorar o motor de regras de forma comportamentalmente neutra, conforme a revisão arquitetural
+- validar a refatoração contra os holdouts congelados e regressões protegidas
 - corrigir as lacunas do benchmark técnico v12 sem alterar sua baseline
-- consolidar os benchmarks técnicos v1–v11
-- revisar a arquitetura de regras e contextos
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
