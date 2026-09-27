@@ -78,6 +78,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v8 | 48 | 83 | 90,36% |
 | atributos técnicos v9 | 48 | 84 | 96,43% |
 | atributos técnicos v10 | 48 | 84 | 95,24% |
+| atributos técnicos v10 | 48 | 84 | 95,24% |
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
 
@@ -96,6 +97,8 @@ O v7 usa outras oito contratações inéditas após a v1.24. A baseline independ
 O v8 usa oito novas contratações e trechos fiéis das descrições públicas. A baseline independente ficou em 90,36% de micro accuracy, com 43/48 categorias corretas, 5 falsos positivos técnicos, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.28, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 O v9 usa outras oito contratações inéditas e preserva descrições comerciais curtas, pontuação interna e composição subordinada. A baseline independente ficou em 96,43% de micro accuracy, com 42/48 categorias corretas, 1 falso positivo técnico, 2 falsos negativos e nenhum mismatch. Após o tuning da v1.30, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
+
+O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.31.
 
 O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.31.
 
@@ -124,6 +127,7 @@ Documentação completa:
 - [Regressão técnica v8 pós-tuning v1.28](docs/benchmark-technical-attributes-v8-post-tuning.md)
 - [Benchmark de atributos técnicos v9](docs/benchmark-technical-attributes-v9.md)
 - [Regressão técnica v9 pós-tuning v1.30](docs/benchmark-technical-attributes-v9-post-tuning.md)
+- [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
 - [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
 
 ## Exemplo de normalização
