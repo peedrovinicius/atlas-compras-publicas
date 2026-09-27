@@ -91,7 +91,7 @@ O v6 usa oito novas contratações e reforça negativos de contexto ligados a re
 
 O v7 usa outras oito contratações inéditas após a v1.24. A baseline independente ficou em 91,57% de micro accuracy, com 43/48 categorias corretas, 1 falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.26, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
-O v8 usa oito novas contratações e trechos fiéis das descrições públicas. A baseline independente ficou em 90,36% de micro accuracy, com 43/48 categorias corretas, 5 falsos positivos técnicos, 3 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.27.
+O v8 usa oito novas contratações e trechos fiéis das descrições públicas. A baseline independente ficou em 90,36% de micro accuracy, com 43/48 categorias corretas, 5 falsos positivos técnicos, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.28, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 Documentação completa:
 
@@ -115,6 +115,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v7](docs/benchmark-technical-attributes-v7.md)
 - [Regressão técnica v7 pós-tuning v1.26](docs/benchmark-technical-attributes-v7-post-tuning.md)
 - [Benchmark de atributos técnicos v8](docs/benchmark-technical-attributes-v8.md)
+- [Regressão técnica v8 pós-tuning v1.28](docs/benchmark-technical-attributes-v8-post-tuning.md)
 
 ## Exemplo de normalização
 
@@ -207,8 +208,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- corrigir as lacunas do benchmark técnico v8 sem alterar sua baseline
-- criar novo holdout técnico após o próximo ciclo de regras
+- criar novo holdout técnico independente após o tuning da v1.28
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
