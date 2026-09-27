@@ -104,7 +104,7 @@ O v10 usa mais oito contratações inéditas e adiciona conflito explícito entr
 
 O v11 usa oito novas contratações com descrições ainda mais curtas e ruidosas, incluindo `CIV`, `RESINA A1`, revelador para película e pontuação interna na identidade do produto. A baseline independente ficou em 92,50% de micro accuracy, com 36/48 categorias corretas, nenhum falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.34, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
-O v12 usa oito novas contratações e amplia a adversarialidade com `RX`, `SV`, `Z100`, `AUTO-CONDICIONANTE`, `FENILEFINA` e descrições comerciais muito curtas. A baseline independente ficou em 87,01% de micro accuracy, com 35/48 categorias corretas, nenhum falso positivo técnico, 10 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.35.
+O v12 usa oito novas contratações e amplia a adversarialidade com `RX`, `SV`, `Z100`, `AUTO-CONDICIONANTE`, `FENILEFINA` e descrições comerciais muito curtas. A baseline independente ficou em 87,01% de micro accuracy, com 35/48 categorias corretas, nenhum falso positivo técnico, 10 falsos negativos e nenhum mismatch. Após o tuning da v1.37, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 Documentação completa:
 
@@ -136,6 +136,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v11](docs/benchmark-technical-attributes-v11.md)
 - [Regressão técnica v11 pós-tuning v1.34](docs/benchmark-technical-attributes-v11-post-tuning.md)
 - [Benchmark de atributos técnicos v12](docs/benchmark-technical-attributes-v12.md)
+- [Regressão técnica v12 pós-tuning v1.37](docs/benchmark-technical-attributes-v12-post-tuning.md)
 - [Consolidação dos benchmarks técnicos v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Revisão da arquitetura de regras e contextos](docs/architecture-rules-review.md)
 
@@ -234,7 +235,6 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- corrigir as lacunas do benchmark técnico v12 sem alterar sua baseline
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
