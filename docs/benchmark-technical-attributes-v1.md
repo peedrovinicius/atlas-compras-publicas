@@ -88,3 +88,10 @@ Para listar somente divergências:
 dpi technical-attribute-errors \
   --dataset data/evaluation/technical-attributes-v1.jsonl
 ~~~
+
+
+## Resultado posterior
+
+A v1.14 corrigiu as nove lacunas observadas e atingiu 61/61 no mesmo conjunto.
+
+Esse valor é registrado separadamente como regressão pós-tuning em `docs/benchmark-technical-attributes-v1-post-tuning.md` e não substitui a baseline independente de 85,25%.
