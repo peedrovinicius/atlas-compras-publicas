@@ -431,3 +431,24 @@ def test_protected_technical_regressions_v7_to_v11() -> None:
             item.mismatch_count
             for item in report.per_attribute.values()
         ) == 0
+
+
+def test_frozen_technical_v12_is_perfect_after_tuning() -> None:
+    dataset = Path("data/evaluation/technical-attributes-v12.jsonl")
+
+    report = evaluate_technical_attributes(dataset)
+
+    assert report.sample_count == 48
+    assert report.category_accuracy == 1.0
+    assert report.evaluated_attribute_count == 77
+    assert report.correct_attribute_count == 77
+    assert report.micro_accuracy == 1.0
+    assert sum(
+        item.false_positive_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.false_negative_count for item in report.per_attribute.values()
+    ) == 0
+    assert sum(
+        item.mismatch_count for item in report.per_attribute.values()
+    ) == 0
