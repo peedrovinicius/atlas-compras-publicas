@@ -168,6 +168,21 @@ def build_parser() -> argparse.ArgumentParser:
     unknown.add_argument("--database", default="data/analytics.duckdb")
     unknown.add_argument("--limit", type=int, default=50)
 
+    dashboard = subparsers.add_parser(
+        "build-dashboard",
+        help="Gera dashboard HTML a partir do DuckDB analítico",
+    )
+    dashboard.add_argument("--database", default="data/analytics.duckdb")
+    dashboard.add_argument("--output", default="docs/dashboard.html")
+
+    api = subparsers.add_parser(
+        "serve-api",
+        help="Inicia a API HTTP analítica do Atlas",
+    )
+    api.add_argument("--database", default="data/analytics.duckdb")
+    api.add_argument("--host", default="127.0.0.1")
+    api.add_argument("--port", type=int, default=8000)
+
     evaluate = subparsers.add_parser(
         "evaluate-taxonomy",
         help="Avalia a taxonomia contra um dataset manual versionado",
@@ -269,6 +284,30 @@ def main(argv: Sequence[str] | None = None) -> int:
                     limit=args.limit,
                 )
             )
+        )
+        return 0
+
+    if args.command == "build-dashboard":
+        from dental_procurement_intelligence.dashboard import build_dashboard
+
+        output = build_dashboard(args.database, args.output)
+        print(_serialize({"output": str(output)}))
+        return 0
+
+    if args.command == "serve-api":
+        try:
+            import uvicorn
+        except ImportError as exc:
+            raise RuntimeError(
+                'Instale o extra da API com: pip install -e ".[api]"'
+            ) from exc
+
+        from dental_procurement_intelligence.api.app import create_app
+
+        uvicorn.run(
+            create_app(args.database),
+            host=args.host,
+            port=args.port,
         )
         return 0
 
