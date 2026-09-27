@@ -531,3 +531,19 @@ No mesmo conjunto congelado:
 - nenhum mismatch.
 
 Detalhes: `docs/benchmark-technical-attributes-v11-post-tuning.md`.
+
+
+## Benchmark técnico v12
+
+Resultado inicial independente:
+
+- 48 exemplos;
+- 77 campos técnicos avaliados;
+- 67 campos corretos;
+- micro accuracy de 87,01%;
+- 35/48 categorias corretas;
+- 0 falsos positivos;
+- 10 falsos negativos;
+- 0 mismatches.
+
+Detalhes: `docs/benchmark-technical-attributes-v12.md`.

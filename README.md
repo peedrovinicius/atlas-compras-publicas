@@ -79,6 +79,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v9 | 48 | 84 | 96,43% |
 | atributos técnicos v10 | 48 | 84 | 95,24% |
 | atributos técnicos v11 | 48 | 80 | 92,50% |
+| atributos técnicos v12 | 48 | 77 | 87,01% |
 | atributos técnicos v10 | 48 | 84 | 95,24% |
 
 O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
@@ -102,6 +103,8 @@ O v9 usa outras oito contratações inéditas e preserva descrições comerciais
 O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.32, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
 
 O v11 usa oito novas contratações com descrições ainda mais curtas e ruidosas, incluindo `CIV`, `RESINA A1`, revelador para película e pontuação interna na identidade do produto. A baseline independente ficou em 92,50% de micro accuracy, com 36/48 categorias corretas, nenhum falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.34, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
+
+O v12 usa oito novas contratações e amplia a adversarialidade com `RX`, `SV`, `Z100`, `AUTO-CONDICIONANTE`, `FENILEFINA` e descrições comerciais muito curtas. A baseline independente ficou em 87,01% de micro accuracy, com 35/48 categorias corretas, nenhum falso positivo técnico, 10 falsos negativos e nenhum mismatch. As lacunas permanecem sem tuning na v1.35.
 
 Documentação completa:
 
@@ -132,6 +135,7 @@ Documentação completa:
 - [Regressão técnica v10 pós-tuning v1.32](docs/benchmark-technical-attributes-v10-post-tuning.md)
 - [Benchmark de atributos técnicos v11](docs/benchmark-technical-attributes-v11.md)
 - [Regressão técnica v11 pós-tuning v1.34](docs/benchmark-technical-attributes-v11-post-tuning.md)
+- [Benchmark de atributos técnicos v12](docs/benchmark-technical-attributes-v12.md)
 - [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
 
 ## Exemplo de normalização
@@ -225,7 +229,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar novo holdout técnico independente após o tuning da v1.34
+- corrigir as lacunas do benchmark técnico v12 sem alterar sua baseline
 - consolidar os benchmarks técnicos v1–v11
 - revisar a arquitetura de regras e contextos
 - expandir a arquitetura para novos domínios
