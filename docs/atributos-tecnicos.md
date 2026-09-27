@@ -279,3 +279,25 @@ A principal evolução foi contextual: o parser agora preserva melhor o produto 
 As referências independentes continuam sendo 81,25% para categoria e 86,96% para atributos técnicos.
 
 Detalhes: `docs/benchmark-technical-attributes-v5-post-tuning.md`.
+
+
+## Benchmark técnico v6
+
+Um sexto conjunto independente foi congelado após o tuning contextual do v5.
+
+Resultado inicial:
+
+- 48 exemplos;
+- 90 campos técnicos avaliados;
+- 84 campos corretos;
+- micro accuracy de 93,33%;
+- 44/48 categorias corretas;
+- 6 falsos negativos;
+- nenhum falso positivo;
+- nenhum mismatch.
+
+As lacunas ficaram concentradas em três formas linguísticas: `Prilocaína` sem a palavra anestésico, `Fluoreto De Sódio` seguido de forma farmacêutica em gel e `ativação dual`.
+
+As lacunas do v6 ainda não foram usadas para tuning nesta versão.
+
+Detalhes: `docs/benchmark-technical-attributes-v6.md`.
