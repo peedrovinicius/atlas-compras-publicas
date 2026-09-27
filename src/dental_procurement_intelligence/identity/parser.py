@@ -201,7 +201,13 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("dual_cure", ("CURA DUAL", "DUAL CURE")),
     (
         "light_cure",
-        ("FOTOPOLIMERIZAVEL", "FOTOPOLIMERIZACAO", "LIGHT CURE"),
+        (
+            "FOTOPOLIMERIZAVEL",
+            "FOTOPOLIMERIZACAO",
+            "FOTOPOLIMERIZADO",
+            "FOTOPOLIMERIZADA",
+            "LIGHT CURE",
+        ),
     ),
     (
         "self_cure",
@@ -210,7 +216,14 @@ _CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 _ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("universal", ("ADESIVO UNIVERSAL", "SISTEMA ADESIVO UNIVERSAL")),
+    (
+        "universal",
+        (
+            "ADESIVO UNIVERSAL",
+            "SISTEMA ADESIVO UNIVERSAL",
+            "UNIVERSAL",
+        ),
+    ),
     (
         "self_etch",
         ("AUTOCONDICIONANTE", "AUTO CONDICIONANTE", "SELF ETCH"),
@@ -222,16 +235,21 @@ _ADHESIVE_STRATEGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 _IONOMER_USE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("restorative", ("RESTAURADOR", "RESTAURATIVO")),
+    ("restorative", ("RESTAURADOR", "RESTAURATIVO", "RESTAURACAO")),
     ("luting", ("CIMENTACAO", "CIMENTANTE", "FIXACAO")),
     ("liner_base", ("FORRAMENTO", "FORRADOR", "BASE CAVITARIA")),
 )
 
 _FLUORIDE_FORMULATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("neutral", ("GEL NEUTRO", "FLUOR NEUTRO")),
+    ("neutral", ("GEL NEUTRO", "FLUOR NEUTRO", "NEUTRO")),
     (
         "acidulated",
-        ("GEL ACIDULADO", "FLUOR ACIDULADO", "FLUOR ACIDO"),
+        (
+            "GEL ACIDULADO",
+            "FLUOR ACIDULADO",
+            "FLUOR ACIDO",
+            "ACIDULADO",
+        ),
     ),
 )
 
@@ -239,12 +257,14 @@ _ANESTHETIC_INGREDIENT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("lidocaine", ("LIDOCAINA",)),
     ("articaine", ("ARTICAINA", "ARTICAINE")),
     ("mepivacaine", ("MEPIVACAINA",)),
+    ("prilocaine", ("PRILOCAINA",)),
 )
 
 _VASOCONSTRICTOR_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("epinephrine", ("EPINEFRINA", "ADRENALINA")),
     ("felypressin", ("FELIPRESSINA", "FELYPRESSIN")),
     ("norepinephrine", ("NOREPINEFRINA", "NORADRENALINA")),
+    ("phenylephrine", ("FENILEFRINA", "PHENYLEPHRINE")),
 )
 
 
@@ -406,7 +426,10 @@ def _technical_attributes(
             text,
             _ANESTHETIC_INGREDIENT_RULES,
         )
-        if re.search(r"\bSEM\s+VASOCONSTRITOR\b", text):
+        if re.search(
+            r"\bSEM\s+(?:VASO(?:CONSTRITOR)?|VASO-CONSTRITOR)\b",
+            text,
+        ):
             anesthetic_vasoconstrictor = "none"
         else:
             anesthetic_vasoconstrictor = _first_attribute_match(
