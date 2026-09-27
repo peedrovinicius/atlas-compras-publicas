@@ -79,7 +79,7 @@ O v2 usa oito contratações inéditas. Após o tuning da v1.16, o mesmo conjunt
 
 O v3 usa mais oito contratações inéditas. Após o tuning da v1.18, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, mas as baselines independentes permanecem 94,19% e 93,33%.
 
-O v4 adiciona contexto negativo, abreviações comerciais e grafias não padronizadas. A baseline independente ficou em 88,51%, com 42/45 categorias corretas e um falso positivo contextual.
+O v4 adiciona contexto negativo, abreviações comerciais e grafias não padronizadas. A baseline independente ficou em 88,51%, com 42/45 categorias corretas e um falso positivo contextual. Após o tuning da v1.20, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, sem substituir a baseline independente.
 
 Documentação completa:
 
@@ -95,6 +95,7 @@ Documentação completa:
 - [Benchmark de atributos técnicos v3](docs/benchmark-technical-attributes-v3.md)
 - [Regressão técnica v3 pós-tuning v1.18](docs/benchmark-technical-attributes-v3-post-tuning.md)
 - [Benchmark de atributos técnicos v4](docs/benchmark-technical-attributes-v4.md)
+- [Regressão técnica v4 pós-tuning v1.20](docs/benchmark-technical-attributes-v4-post-tuning.md)
 
 ## Exemplo de normalização
 
@@ -187,8 +188,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- analisar as lacunas técnicas e contextuais do v4
-- corrigir o v4 sem alterar sua baseline independente
+- criar benchmark técnico v5 com casos contextuais inéditos
+- ampliar validação negativa antes de novas regras
 - expandir a arquitetura para novos domínios
 - disponibilizar API e dashboard analítico
 
