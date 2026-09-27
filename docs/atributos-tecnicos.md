@@ -515,3 +515,19 @@ O v11 adiciona descrições muito curtas, abreviação `CIV`, resina descrita ap
 As lacunas do v11 não foram usadas para tuning nesta versão.
 
 Detalhes: `docs/benchmark-technical-attributes-v11.md`.
+
+
+## Resultado pós-tuning v1.34
+
+As lacunas observadas no benchmark técnico v11 foram corrigidas sem alterar a baseline independente.
+
+No mesmo conjunto congelado:
+
+- 48/48 categorias corretas;
+- 80/80 campos técnicos corretos;
+- 100% de micro accuracy;
+- nenhum falso positivo;
+- nenhum falso negativo;
+- nenhum mismatch.
+
+Detalhes: `docs/benchmark-technical-attributes-v11-post-tuning.md`.
