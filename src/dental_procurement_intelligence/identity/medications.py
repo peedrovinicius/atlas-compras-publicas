@@ -121,6 +121,7 @@ def _clean_active_ingredient(text: str) -> str | None:
         first,
     )
     first = re.sub(r"\s+", " ", first).strip(" ,-")
+    first = re.sub(r"\s*\+\s*", " + ", first)
 
     if re.search(r"\b(?:FRASCO/AMPOLA|FRASCO|AMPOLA)\b", first):
         first = re.split(
