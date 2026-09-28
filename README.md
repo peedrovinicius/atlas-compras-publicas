@@ -154,7 +154,9 @@ A experiência pública possui duas áreas.
 - comparação por região e UF;
 - fornecedores e órgãos compradores;
 - sinais estatísticos com aviso metodológico explícito;
-- cartões de evidência com contexto da compra, status da normalização, hashes de origem e link para o PNCP.
+- cartões de evidência com contexto da compra, status da normalização, hashes de origem e link para o PNCP;
+- filtros por período, região, UF, fornecedor e órgão/unidade, aplicados de forma consistente em toda a análise;
+- paginação da pesquisa de produtos, preservando o total de grupos compatíveis.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
