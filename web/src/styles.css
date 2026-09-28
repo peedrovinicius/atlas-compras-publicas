@@ -3289,3 +3289,32 @@ select:focus-visible {
     padding: 9px 10px;
   }
 }
+
+
+/* v1.68 search relevance */
+.analytics-match-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.analytics-match-reasons > span {
+  padding: 3px 6px;
+  border: 1px solid #dce5fa;
+  border-radius: 999px;
+  background: #f6f8ff;
+  color: #4863a8;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+@media (max-width: 600px) {
+  .analytics-match-reasons {
+    gap: 4px;
+  }
+
+  .analytics-match-reasons > span {
+    padding: 3px 5px;
+  }
+}
