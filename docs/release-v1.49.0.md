@@ -66,13 +66,14 @@ A suíte deve validar:
 
 ## Estado do CI
 
-A auditoria disparou um novo run do GitHub Actions depois de ampliar os paths do workflow. O run falhou antes de retornar steps ou logs úteis pela API.
+Após a abertura pública do repositório, o GitHub Actions passou a executar o workflow completo. A execução `36417308455` concluiu com sucesso:
 
-Portanto, esta release fica tecnicamente documentada e preparada, mas o CI ainda precisa de uma das verificações abaixo:
+- instalação concluída;
+- `ruff check .` aprovado;
+- `pytest -q` aprovado;
+- **173 testes aprovados em 2,56 s**.
 
-- conferência visual na aba Actions do GitHub;
-- execução local de `ruff check .` e `pytest -q`;
-- nova execução do Actions quando o runner estiver disponível.
+Durante a normalização foram corrigidas interfaces de captura do cliente PNCP, reconhecimento de apresentações plurais, um falso `package_count` em tonalidade `A3,5` e testes históricos que ainda refletiam fronteiras anteriores da taxonomia.
 
 ## Estado da auditoria
 
