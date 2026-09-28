@@ -239,6 +239,7 @@ dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 - [Medicamentos v1 pós-tuning v1.44](docs/benchmark-medications-v1-post-tuning.md)
 - [Benchmark independente de medicamentos v2](docs/benchmark-medications-v2.md)
 - [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
+- [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
 
 O domínio permanece em `benchmark_required` até um novo holdout independente pós-tuning.
 
@@ -312,7 +313,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- criar um novo holdout independente de medicamentos após o tuning da v1.46
+- analisar as divergências do holdout independente de medicamentos v3 sem alterar sua baseline
 - consolidar uma base DuckDB real para os painéis de preços e homologações
 
 ## Fonte dos dados
