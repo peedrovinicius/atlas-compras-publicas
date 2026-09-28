@@ -5,12 +5,16 @@ from dataclasses import asdict
 from typing import Any
 
 from dental_procurement_intelligence.analytics import (
+    DEMO_CNPJ,
+    DEMO_SEQUENCE,
+    DEMO_YEAR,
     DuckDBWarehouse,
     anomaly_summary,
     award_summary,
     build_analytics,
     build_award_dataset,
     build_awards,
+    build_demo_data,
     build_price_signals,
     quality_by_category,
     quality_summary,
@@ -126,6 +130,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--database",
         default="data/analytics.duckdb",
     )
+
+    demo_data = subparsers.add_parser(
+        "build-demo-data",
+        help="Reconstrói a amostra analítica reproduzível usada na demonstração",
+    )
+    demo_data.add_argument("--cnpj", default=DEMO_CNPJ)
+    demo_data.add_argument("--year", type=int, default=DEMO_YEAR)
+    demo_data.add_argument("--sequence", type=int, default=DEMO_SEQUENCE)
+    demo_data.add_argument("--output-root", default="data/demo")
 
     signals = subparsers.add_parser(
         "detect-anomalies",
@@ -263,6 +276,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.parquet,
             args.database,
         )
+        print(_serialize(asdict(result)))
+        return 0
+
+    if args.command == "build-demo-data":
+        with PNCPClient() as client:
+            result = build_demo_data(
+                client,
+                args.output_root,
+                cnpj=args.cnpj,
+                year=args.year,
+                sequence=args.sequence,
+            )
         print(_serialize(asdict(result)))
         return 0
 
