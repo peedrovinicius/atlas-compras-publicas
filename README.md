@@ -84,7 +84,7 @@ Documentos principais:
 
 - [Benchmark técnico v12](docs/benchmark-technical-attributes-v12.md)
 - [Regressão técnica v12 pós-tuning v1.37](docs/benchmark-technical-attributes-v12-post-tuning.md)
-- [Consolidação técnica v1-v11](docs/benchmark-technical-consolidated-v1-v11.md)
+- [Consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
 - [Revisão da arquitetura de regras e contextos](docs/architecture-rules-review.md)
 
 ## Medicamentos
