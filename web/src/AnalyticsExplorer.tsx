@@ -1159,16 +1159,21 @@ export default function AnalyticsExplorer() {
                     Atualizado {date(summary.latest_update)}
                   </span>
                 )}
-                <button type="button" onClick={() => void copyShareLink()}>
-                  {shareFeedback ?? "Copiar link"}
-                </button>
-                <button
-                  type="button"
-                  disabled={exporting}
-                  onClick={() => void exportCsv()}
-                >
-                  {exporting ? "Exportando..." : "Exportar CSV"}
-                </button>
+                <details className="analytics-actions-menu">
+                  <summary>Ações</summary>
+                  <div>
+                    <button type="button" onClick={() => void copyShareLink()}>
+                      {shareFeedback ?? "Copiar link"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={exporting}
+                      onClick={() => void exportCsv()}
+                    >
+                      {exporting ? "Exportando..." : "Exportar CSV"}
+                    </button>
+                  </div>
+                </details>
               </div>
             </div>
 
@@ -1305,21 +1310,27 @@ export default function AnalyticsExplorer() {
                 ) : (
                   <>
                     <HistoryChart points={bundle.history.points} />
-                    <div className="analytics-table-wrap">
-                    <table>
-                      <thead><tr><th>Mês</th><th>Mediana</th><th>Faixa central</th><th>Observações</th></tr></thead>
-                      <tbody>
-                        {bundle.history.points.map((point) => (
-                          <tr key={point.month}>
-                            <td>{date(point.month)}</td>
-                            <td>{money(point.median_price)}</td>
-                            <td>{money(point.percentile_25)} a {money(point.percentile_75)}</td>
-                            <td>{number(point.observations)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    </div>
+                    <details className="analytics-data-disclosure">
+                      <summary>
+                        <span>Ver tabela detalhada</span>
+                        <small>{number(bundle.history.points.length)} períodos</small>
+                      </summary>
+                      <div className="analytics-table-wrap">
+                        <table>
+                          <thead><tr><th>Mês</th><th>Mediana</th><th>Faixa central</th><th>Observações</th></tr></thead>
+                          <tbody>
+                            {bundle.history.points.map((point) => (
+                              <tr key={point.month}>
+                                <td>{date(point.month)}</td>
+                                <td>{money(point.median_price)}</td>
+                                <td>{money(point.percentile_25)} a {money(point.percentile_75)}</td>
+                                <td>{number(point.observations)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
                   </>
                 )}
               </article>
@@ -1370,29 +1381,38 @@ export default function AnalyticsExplorer() {
                 {bundle.signals.items.length === 0 ? (
                   <p className="analytics-empty">Nenhum sinal estatístico publicado para este produto.</p>
                 ) : (
-                  <div className="analytics-table-wrap">
-                    <table>
-                      <thead><tr><th>Data</th><th>Preço</th><th>Mediana</th><th>Método</th><th>UF</th><th>Fonte</th></tr></thead>
-                      <tbody>
-                        {bundle.signals.items.map((signal) => (
-                          <tr key={signal.award_key}>
-                            <td>{date(signal.analysis_date)}</td>
-                            <td>{money(signal.awarded_price_per_base_unit)}</td>
-                            <td>{money(signal.median_price)}</td>
-                            <td>{signal.detection_method ?? "Não informado"}</td>
-                            <td>{signal.state_code ?? "Não informada"}</td>
-                            <td>{signal.pncp_url ? <a href={signal.pncp_url} target="_blank" rel="noreferrer">PNCP</a> : "Sem link"}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <details className="analytics-data-disclosure">
+                    <summary>
+                      <span>Ver sinais detectados</span>
+                      <small>{number(bundle.signals.items.length)} registros</small>
+                    </summary>
+                    <div className="analytics-table-wrap">
+                      <table>
+                        <thead><tr><th>Data</th><th>Preço</th><th>Mediana</th><th>Método</th><th>UF</th><th>Fonte</th></tr></thead>
+                        <tbody>
+                          {bundle.signals.items.map((signal) => (
+                            <tr key={signal.award_key}>
+                              <td>{date(signal.analysis_date)}</td>
+                              <td>{money(signal.awarded_price_per_base_unit)}</td>
+                              <td>{money(signal.median_price)}</td>
+                              <td>{signal.detection_method ?? "Não informado"}</td>
+                              <td>{signal.state_code ?? "Não informada"}</td>
+                              <td>{signal.pncp_url ? <a href={signal.pncp_url} target="_blank" rel="noreferrer">PNCP</a> : "Sem link"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
                 )}
               </article>
 
               <article className="analytics-card analytics-card-wide" hidden={detailView !== "evidence"}>
                 <span className="section-kicker">Rastreabilidade</span>
                 <h3>Registros que sustentam a análise</h3>
+                <p className="analytics-note">
+                  Mostrando {number(bundle.records.items.length)} de {number(bundle.records.total)} registros neste recorte.
+                </p>
                 <div className="analytics-records">
                   {bundle.records.items.map((record) => (
                     <details className="evidence-card" key={record.award_key}>
