@@ -2,7 +2,7 @@
 
 ## Resumo
 
-A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, pós-tuning pontual, snapshot atualizado e documentação consolidada.
+A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, pós-tuning pontual, snapshot atualizado, documentação consolidada e auditoria inicial registrada.
 
 ## Entregas principais
 
@@ -12,18 +12,23 @@ A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, p�
 - Correção pontual do parser para dois padrões residuais:
   - `geléia` como forma farmacêutica tópica;
   - prefixos numéricos compostos antes do princípio ativo.
-- Snapshot de qualidade atualizado para medicamentos v1–v4.
+- Snapshot de qualidade atualizado para medicamentos v1-v4.
 - Testes de baseline, pós-tuning e snapshot atualizados.
-- README alinhado com a consolidação de medicamentos v1–v4.
+- README alinhado com a consolidação de medicamentos v1-v4 e com o pós-tuning v1.49.
+- Workflow de CI ampliado para cobrir README e snapshot visual.
+- Auditoria inicial registrada em `docs/audit-v1.49.0.md`.
 
 ## Arquivos novos
 
 - `data/evaluation/medications-v4-post-v1.49.json`
 - `docs/benchmark-medications-v4-post-tuning.md`
 - `docs/release-v1.49.0.md`
+- `docs/audit-v1.49.0.md`
 
 ## Arquivos atualizados
 
+- `.github/workflows/ci.yml`
+- `README.md`
 - `src/dental_procurement_intelligence/identity/medications.py`
 - `tests/test_medication_evaluation.py`
 - `tests/test_release_integrity.py`
@@ -41,7 +46,7 @@ A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, p�
 | --- | ---: | ---: | --- |
 | Baseline independente v4 | 189/192 | 98,44% | preservada |
 | Pós-tuning v1.49 | 192/192 | 100,00% | regressão separada |
-| Consolidado independente v1–v4 | 683/768 | 88,93% | snapshot |
+| Consolidado independente v1-v4 | 683/768 | 88,93% | snapshot |
 
 ## Decisão metodológica
 
@@ -53,6 +58,16 @@ A suíte deve validar:
 
 - consistência de versão entre `pyproject.toml`, `__version__` e `User-Agent`;
 - integridade dos artefatos congelados antigos;
-- snapshot técnico e de medicamentos v1–v4;
+- snapshot técnico e de medicamentos v1-v4;
 - baseline independente v4 preservada;
 - regressão pós-tuning v4 com 192/192 campos corretos.
+
+## Estado do CI
+
+A auditoria disparou um novo run do GitHub Actions depois de ampliar os paths do workflow. O run falhou antes de retornar steps ou logs úteis pela API.
+
+Portanto, esta release fica tecnicamente documentada e preparada, mas o CI ainda precisa de uma das verificações abaixo:
+
+- conferência visual na aba Actions do GitHub;
+- execução local de `ruff check .` e `pytest -q`;
+- nova execução do Actions quando o runner estiver disponível.
