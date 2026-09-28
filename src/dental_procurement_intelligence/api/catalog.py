@@ -40,6 +40,31 @@ def parser_category_label(category_id: str) -> str:
     return category_id.replace("_", " ").strip().title()
 
 
+_PRESENTATION_SEARCH_ALIASES = {
+    "syringe": ("seringa", "seringas"),
+    "bottle": ("frasco", "frascos"),
+    "tube": ("tubo", "tubos"),
+    "jar": ("pote", "potes"),
+    "cartridge": ("tubete", "tubetes", "carpule", "carpules"),
+    "ampoule": ("ampola", "ampolas"),
+    "kit": ("kit", "kits"),
+    "package": ("pacote", "pacotes", "embalagem", "embalagens"),
+    "bag": ("saco", "sacos"),
+}
+
+_PRESENTATION_LABELS = {
+    "syringe": "Seringa",
+    "bottle": "Frasco",
+    "tube": "Tubo",
+    "jar": "Pote",
+    "cartridge": "Tubete",
+    "ampoule": "Ampola",
+    "kit": "Kit",
+    "package": "Pacote",
+    "bag": "Saco",
+}
+
+
 _CATEGORY_SEARCH_ALIASES = {
     ProductCategory.COMPOSITE_RESIN: (
         "resina composta",
@@ -121,6 +146,24 @@ def normalize_product_search_text(value: str) -> str:
         if not unicodedata.combining(character)
     )
     return " ".join(without_accents.casefold().split())
+
+
+def resolve_product_presentation_token(token: str) -> str | None:
+    normalized = normalize_product_search_text(token)
+    for presentation, aliases in _PRESENTATION_SEARCH_ALIASES.items():
+        if normalized in {
+            normalize_product_search_text(alias)
+            for alias in aliases
+        }:
+            return presentation
+    return None
+
+
+def product_presentation_label(presentation: str) -> str:
+    return _PRESENTATION_LABELS.get(
+        presentation,
+        presentation.replace("_", " ").strip().title(),
+    )
 
 
 def resolve_product_search_query(
