@@ -130,6 +130,8 @@ class PNCPClient:
         item_number: int,
     ) -> list[PNCPItemResult]:
         raw = self.get_item_results_raw(cnpj, year, sequence, item_number)
+        if not raw.content.strip():
+            return []
         payload = json.loads(raw.content)
         if isinstance(payload, dict):
             payload = payload.get("listaResultados")
