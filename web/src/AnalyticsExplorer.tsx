@@ -10,7 +10,7 @@ import type {
   ProductSort,
 } from "./types";
 
-const DEFAULT_QUERY = "resina";
+const DEFAULT_QUERY = "";
 const PAGE_SIZE = 10;
 const RECENT_SEARCHES_KEY = "atlas:recent-searches";
 const RECENT_SEARCHES_LIMIT = 6;
@@ -280,6 +280,9 @@ export default function AnalyticsExplorer() {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
   const [facets, setFacets] = useState<ProductSearchFacets>({});
+  const [hasSearched, setHasSearched] = useState(
+    initialState.query.trim().length >= 2 || Boolean(initialState.productId),
+  );
   const [recentSearches, setRecentSearches] = useState<string[]>(readRecentSearches);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(initialState.offset);
@@ -308,6 +311,7 @@ export default function AnalyticsExplorer() {
       return;
     }
 
+    setHasSearched(true);
     setSearching(true);
     setError(null);
     setBundle(null);
@@ -583,24 +587,26 @@ export default function AnalyticsExplorer() {
       .then((response) => setDiscovery(response.items))
       .catch(() => undefined);
 
-    void (async () => {
-      await runSearch(
-        initialState.query,
-        initialState.filters,
-        initialState.offset,
-        initialState.sort,
-      );
-      if (initialState.productId) {
-        await loadProduct(
-          initialState.productId,
-          initialState.filters,
-          false,
+    if (initialState.query.trim().length >= 2) {
+      void (async () => {
+        await runSearch(
           initialState.query,
-          initialState.sort,
+          initialState.filters,
           initialState.offset,
+          initialState.sort,
         );
-      }
-    })();
+        if (initialState.productId) {
+          await loadProduct(
+            initialState.productId,
+            initialState.filters,
+            false,
+            initialState.query,
+            initialState.sort,
+            initialState.offset,
+          );
+        }
+      })();
+    }
   }, []);
 
   const summary = bundle?.summary;
@@ -907,6 +913,7 @@ export default function AnalyticsExplorer() {
         {error && <p className="analytics-error">{error}</p>}
       </section>
 
+      {hasSearched && (
       <section ref={resultsRef} className="analytics-results">
         <div className="results-header">
           <div>
@@ -1077,6 +1084,7 @@ export default function AnalyticsExplorer() {
           </div>
         )}
       </section>
+      )}
 
       <section ref={detailRef} className="analytics-detail">
         {loading && (
