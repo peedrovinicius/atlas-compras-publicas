@@ -8,7 +8,7 @@ Transforma descrições do PNCP em produtos estruturados e comparáveis, preserv
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-[Demo ao vivo](https://atlas-compras-publicas.onrender.com) · [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs) · [Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md)
+[Demo ao vivo](https://atlas-compras-publicas-web.onrender.com) · [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs) · [Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md)
 
 </div>
 
@@ -143,9 +143,9 @@ O DuckDB é usado para consolidar itens, homologações e grupos comparáveis. H
 
 ## Demo pública
 
-A demo publicada executa a normalização real do Atlas diretamente pela API:
+A demo publicada usa React + TypeScript no frontend e executa a normalização real pela API FastAPI:
 
-- [Abrir demo](https://atlas-compras-publicas.onrender.com)
+- [Abrir demo](https://atlas-compras-publicas-web.onrender.com)
 - [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs)
 - [Health check](https://atlas-compras-publicas.onrender.com/health)
 
@@ -176,6 +176,9 @@ O último comando usa uma contratação já referenciada no dataset congelado v5
 | Parquet | Persistência colunar interoperável |
 | Pydantic | Validação tipada das estruturas do PNCP |
 | httpx | Cliente HTTP para a API do PNCP |
+| FastAPI | API pública e contratos HTTP |
+| React + TypeScript | Interface web da demo pública |
+| Vite | Build e desenvolvimento do frontend |
 | pytest | Regressão e proteção das regras |
 | Ruff | Lint e consistência de código |
 
@@ -210,6 +213,8 @@ src/dental_procurement_intelligence/
   analytics/        lakehouse, homologações e sinais
   cli.py            interface de linha de comando
 
+web/                 frontend React + TypeScript
+sql/                 consultas analíticas versionadas
 data/evaluation/     datasets e baselines congeladas
 docs/                arquitetura, metodologia e histórico técnico
 tests/               testes automatizados
