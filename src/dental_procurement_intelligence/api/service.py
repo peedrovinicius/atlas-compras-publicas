@@ -425,3 +425,70 @@ def analytics_product_summary(
         ),
         "price_stats": price_stats,
     }
+
+
+
+def analytics_product_history(
+    database_path: str | Path,
+    *,
+    product_id: str,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        exists = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not exists:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        cursor = connection.execute(
+            f"""
+            SELECT
+                DATE_TRUNC('month', analysis_date) AS month,
+                COUNT(*) AS observations,
+                COUNT(DISTINCT procurement_key) AS procurement_count,
+                COUNT(DISTINCT state_code) AS state_count,
+                MEDIAN(awarded_price_per_base_unit) AS median_price,
+                AVG(awarded_price_per_base_unit) AS average_price,
+                QUANTILE_CONT(
+                    awarded_price_per_base_unit,
+                    0.25
+                ) AS percentile_25,
+                QUANTILE_CONT(
+                    awarded_price_per_base_unit,
+                    0.75
+                ) AS percentile_75,
+                MIN(awarded_price_per_base_unit) AS min_price,
+                MAX(awarded_price_per_base_unit) AS max_price
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND price_normalization_status = 'defensible'
+              AND awarded_price_per_base_unit IS NOT NULL
+              AND awarded_price_per_base_unit > 0
+              AND analysis_date IS NOT NULL
+            GROUP BY 1
+            ORDER BY month
+            """,
+            [product_id],
+        )
+        columns = [column[0] for column in cursor.description]
+        rows = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+    return {
+        "product_id": product_id,
+        "points": rows,
+        "total_observations": sum(row["observations"] for row in rows),
+    }
