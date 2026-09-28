@@ -1,3 +1,15 @@
+from .medications import (
+    MedicationEvaluationReport,
+    MedicationFieldMetrics,
+    evaluate_medications,
+    medication_errors,
+)
+from .runner import (
+    EvaluationReport,
+    evaluate_dataset,
+    evaluation_errors,
+    load_evaluation_dataset,
+)
 from .technical import (
     TECHNICAL_ATTRIBUTE_FIELDS,
     TechnicalAttributeExample,
@@ -6,12 +18,6 @@ from .technical import (
     evaluate_technical_attributes,
     load_technical_attribute_dataset,
     technical_attribute_errors,
-)
-from .runner import (
-    EvaluationReport,
-    evaluate_dataset,
-    evaluation_errors,
-    load_evaluation_dataset,
 )
 
 __all__ = [
@@ -26,16 +32,6 @@ __all__ = [
     "evaluate_dataset",
     "evaluation_errors",
     "load_evaluation_dataset",
-]
-
-from .medications import (
-    MedicationEvaluationReport,
-    MedicationFieldMetrics,
-    evaluate_medications,
-    medication_errors,
-)
-
-__all__ += [
     "MedicationEvaluationReport",
     "MedicationFieldMetrics",
     "evaluate_medications",
