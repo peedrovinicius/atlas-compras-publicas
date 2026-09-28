@@ -1,9 +1,3 @@
-from .medications import (
-    MedicationDosageForm,
-    MedicationIdentity,
-    MedicationRoute,
-    parse_medication,
-)
 from .domains import (
     DomainDescriptor,
     DomainStatus,
@@ -13,6 +7,12 @@ from .domains import (
     get_domain,
 )
 from .engine import IdentityDecision, IdentityResult, ProductIdentityEngine
+from .medications import (
+    MedicationDosageForm,
+    MedicationIdentity,
+    MedicationRoute,
+    parse_medication,
+)
 from .models import (
     CanonicalProduct,
     NormalizationQuality,
