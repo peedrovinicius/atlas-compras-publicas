@@ -1,5 +1,5 @@
-from collections import defaultdict, deque
 import os
+from collections import defaultdict, deque
 from pathlib import Path
 from threading import Lock
 from time import monotonic
