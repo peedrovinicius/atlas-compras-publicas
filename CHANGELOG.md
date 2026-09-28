@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.59.0
+
+- análise de produto dividida em Visão geral, Mercado e Evidências;
+- Visão geral concentra métricas, distribuição e histórico;
+- Mercado concentra geografia, fornecedores e órgãos compradores;
+- Evidências concentra sinais estatísticos e registros rastreáveis;
+- navegação interna compacta e sticky em desktop;
+- botão Voltar aos resultados reduz a rolagem manual após abrir um produto;
+- seleção de novo produto retorna automaticamente para Visão geral;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.59.0.
+
 ## 1.58.0
 
 - reforma visual ampla da interface pública;
