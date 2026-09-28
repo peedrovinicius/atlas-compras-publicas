@@ -237,3 +237,41 @@ def test_meta_reports_configured_database(tmp_path, monkeypatch) -> None:
         "database_name": "atlas-demo.duckdb",
         "frontend_url": "https://atlas-compras-publicas-web.onrender.com",
     }
+
+
+
+def test_records_csv_returns_downloadable_utf8_file(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setattr(
+        "dental_procurement_intelligence.api.app.analytics_product_records_export",
+        lambda *args, **kwargs: [
+            {
+                "award_key": "award-1",
+                "procurement_key": "pncp:15126437000305:2026:212",
+                "analysis_date": "2026-06-10",
+                "original_description": "RESINA COMPOSTA A2",
+                "supplier_name": "Fornecedor Alfa",
+                "organization_name": "Órgão Alfa",
+                "state_code": "PR",
+                "awarded_price_per_base_unit": "10.00",
+                "pncp_url": "https://pncp.gov.br/app/editais/15126437000305/2026/212",
+            }
+        ],
+    )
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.get(
+        f"/api/v1/products/{'a' * 32}/records.csv",
+        params={"state_code": "PR"},
+    )
+
+    assert response.status_code == 200
+    assert response.content.startswith(b"\xef\xbb\xbf")
+    assert "text/csv" in response.headers["content-type"]
+    assert "attachment;" in response.headers["content-disposition"]
+    assert "award_key" in response.text
+    assert "Fornecedor Alfa" in response.text
