@@ -1,4 +1,5 @@
 import unicodedata
+from difflib import SequenceMatcher
 
 from dental_procurement_intelligence.identity.models import ProductCategory
 
@@ -124,7 +125,9 @@ def resolve_product_search_query(
     if not normalized:
         return None, [], None
 
-    best_match: tuple[ProductCategory, str] | None = None
+    query_tokens = normalized.split()
+    exact_match: tuple[ProductCategory, str] | None = None
+
     for category, aliases in _CATEGORY_SEARCH_ALIASES.items():
         for alias in aliases:
             normalized_alias = _normalize_search_text(alias)
@@ -133,18 +136,55 @@ def resolve_product_search_query(
             if (
                 padded_alias in padded_query
                 and (
-                    best_match is None
-                    or len(normalized_alias) > len(best_match[1])
+                    exact_match is None
+                    or len(normalized_alias) > len(exact_match[1])
                 )
             ):
-                best_match = (category, normalized_alias)
+                exact_match = (category, normalized_alias)
 
-    if best_match is None:
-        return None, normalized.split(), None
+    if exact_match is not None:
+        category, alias = exact_match
+        residual = " ".join(
+            f" {normalized} ".replace(f" {alias} ", " ").split()
+        )
+        return category.value, residual.split(), _CATEGORY_LABELS[category]
 
-    category, alias = best_match
-    residual = " ".join(f" {normalized} ".replace(f" {alias} ", " ").split())
-    return category.value, residual.split(), _CATEGORY_LABELS[category]
+    fuzzy_match: tuple[ProductCategory, int, int, float] | None = None
+    for category, aliases in _CATEGORY_SEARCH_ALIASES.items():
+        for alias in aliases:
+            normalized_alias = _normalize_search_text(alias)
+            alias_tokens = normalized_alias.split()
+            size = len(alias_tokens)
+
+            if size == 0 or size > len(query_tokens):
+                continue
+
+            for start in range(len(query_tokens) - size + 1):
+                candidate_tokens = query_tokens[start : start + size]
+                candidate = " ".join(candidate_tokens)
+                ratio = SequenceMatcher(
+                    None,
+                    candidate,
+                    normalized_alias,
+                ).ratio()
+
+                if ratio < 0.88:
+                    continue
+
+                if fuzzy_match is None or ratio > fuzzy_match[3]:
+                    fuzzy_match = (
+                        category,
+                        start,
+                        start + size,
+                        ratio,
+                    )
+
+    if fuzzy_match is None:
+        return None, query_tokens, None
+
+    category, start, end, _ = fuzzy_match
+    residual_tokens = query_tokens[:start] + query_tokens[end:]
+    return category.value, residual_tokens, _CATEGORY_LABELS[category]
 
 
 def product_search_shortcuts() -> list[dict[str, str]]:
