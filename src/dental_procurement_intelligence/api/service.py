@@ -5,7 +5,6 @@ from typing import Any
 
 import duckdb
 
-from dental_procurement_intelligence.api.catalog import parser_category_label
 from dental_procurement_intelligence.analytics import (
     DuckDBWarehouse,
     anomaly_summary,
@@ -15,6 +14,7 @@ from dental_procurement_intelligence.analytics import (
     unrecognized_count,
     unrecognized_items,
 )
+from dental_procurement_intelligence.api.catalog import parser_category_label
 from dental_procurement_intelligence.identity import available_domains
 
 
