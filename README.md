@@ -180,17 +180,19 @@ O último comando usa uma contratação já referenciada no dataset congelado v5
 
 **Odontologia é a vertical principal.**
 
-O domínio atualmente chamado `medications` foi criado como experimento de generalização para testar a arquitetura fora da vertical odontológica. Ele não representa o foco principal do produto.
+O domínio `medications` permanece experimental e isolado da classificação odontológica principal. A auditoria da issue #30 confirmou que os 192 exemplos congelados em v1-v4 pertencem ao escopo farmacêutico.
 
-A taxonomia desse domínio está em revisão porque pode reunir medicamentos, materiais, dispositivos e outros produtos de saúde. A reorganização está registrada na [issue #30](https://github.com/peedrovinicius/atlas-compras-publicas/issues/30).
+Materiais, dispositivos e outros produtos de saúde não serão agrupados em `medications`: cada tipo deverá ter domínio, regras e benchmark próprios.
 
-As baselines históricas serão preservadas durante qualquer migração.
+As baselines históricas v1-v4 permanecem preservadas sem rename retroativo.
+
+[Ver fronteiras dos domínios de saúde](docs/architecture-health-domains.md)
 
 ## Limitações e próximos passos
 
 - não há painel público de preços e sinais neste momento;
 - a publicação desses painéis depende de uma base DuckDB analítica consolidada;
-- a taxonomia do domínio experimental de saúde ainda será reestruturada na issue #30;
+- medicamentos permanece experimental e separado de materiais e dispositivos, conforme a auditoria da issue #30;
 - o namespace Python `dental_procurement_intelligence` e o alias legado `dpi` são mantidos por compatibilidade; a CLI pública já pode ser chamada por `atlas`;
 - a proteção da branch `main` está registrada na issue #28;
 - metadados públicos e licença estão registrados na issue #29.
