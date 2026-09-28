@@ -164,6 +164,8 @@ A experiência pública possui duas áreas.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
+O endereço da análise preserva o recorte atual, permitindo compartilhar a mesma pesquisa, filtros, ordenação, página e produto selecionado. Os registros filtrados também podem ser exportados diretamente em CSV.
+
 Principais endpoints analíticos:
 
 ```text
