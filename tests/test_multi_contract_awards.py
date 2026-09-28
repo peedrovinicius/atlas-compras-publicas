@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import duckdb
@@ -103,7 +103,7 @@ def test_multi_contract_dataset_is_idempotent_and_preserves_other_contracts(
     tmp_path: Path,
 ) -> None:
     store = EvidenceStore(tmp_path / "raw")
-    first_time = datetime(2026, 9, 26, 20, 0, tzinfo=timezone.utc)
+    first_time = datetime(2026, 9, 26, 20, 0, tzinfo=UTC)
 
     first_path = _capture_bundle(
         store,
@@ -149,7 +149,7 @@ def test_multi_contract_dataset_is_idempotent_and_preserves_other_contracts(
     assert len({row[0] for row in rows}) == 2
     assert len({row[1] for row in rows}) == 2
 
-    later = datetime(2026, 9, 26, 21, 0, tzinfo=timezone.utc)
+    later = datetime(2026, 9, 26, 21, 0, tzinfo=UTC)
     updated_path = _capture_bundle(
         store,
         cnpj="01612541000133",
