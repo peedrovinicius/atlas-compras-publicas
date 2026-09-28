@@ -1334,3 +1334,58 @@ def test_product_discovery_lists_only_available_categories(
     ]
     assert result["items"][0]["label"] == "Resina composta"
     assert result["items"][0]["priced_observation_count"] == 1
+
+
+
+def test_generic_product_search_ignores_accents(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'RESINA PROTÉTICA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '111', 'CE', DATE '2026-05-10',
+                        'defensible', 10.0
+                    )
+            ) AS t(
+                procurement_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                state_code,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    result = service.analytics_product_search(
+        database,
+        query="protetica",
+    )
+
+    assert result["total"] == 1
+    assert result["items"][0]["shade"] == "A2"
+    assert result["interpreted_category"] is None
