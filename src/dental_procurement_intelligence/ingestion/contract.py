@@ -22,6 +22,8 @@ class ContractCaptureResult:
 
 
 def _count_results(content: bytes) -> int:
+    if not content.strip():
+        return 0
     payload = json.loads(content)
     records = payload.get("listaResultados") if isinstance(payload, dict) else payload
     if not isinstance(records, list):
