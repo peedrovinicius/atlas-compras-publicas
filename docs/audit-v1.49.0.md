@@ -21,6 +21,10 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | CI | falhou sem logs úteis |
 | Auditoria textual inicial | concluída |
 | Release notes sincronizadas | concluído |
+| Integridade dos holdouts v1-v4 | protegida por SHA |
+| Consolidação técnica v1-v12 | criada |
+| Links locais do README | 27 de 27 válidos |
+| Branch `release/v1.49.0` | sincronizada com a `main` auditada |
 
 ## Achados
 
@@ -119,7 +123,61 @@ Interpretação da auditoria:
 - o padrão é compatível com falha operacional antes da execução do runner, limite de minutos, fila, permissão, quota ou problema de infraestrutura do Actions;
 - a próxima verificação precisa ser feita visualmente na aba Actions ou por execução local de `ruff check .` e `pytest -q`.
 
-### 7. Auditoria textual inicial concluída
+### 7. Check-run possui annotations inacessíveis pelo conector
+
+A consulta direta ao check-run do GitHub Actions confirmou que o job `quality` registrou duas annotations.
+
+O endpoint das annotations não é exposto pelo conector usado nesta auditoria. Portanto, a existência das duas annotations foi confirmada, mas o conteúdo delas não pôde ser lido de forma segura por esta integração.
+
+No mesmo commit também existe uma check suite separada do Render. Ela não deve ser confundida com o check-run `quality` do GitHub Actions.
+
+### 8. Integridade dos holdouts de medicamentos ampliada
+
+O teste `tests/test_release_integrity.py` protegia por Git blob SHA apenas o dataset e a baseline de medicamentos v1.
+
+A auditoria ampliou a trava para incluir:
+
+- `medications-v2.jsonl`;
+- `medications-v2-baseline.json`;
+- `medications-v3.jsonl`;
+- `medications-v3-baseline.json`;
+- `medications-v4.jsonl`;
+- `medications-v4-baseline.json`.
+
+Assim, alterações acidentais nos quatro holdouts independentes passam a ser detectáveis pela suíte de integridade.
+
+### 9. Consolidação técnica atualizada para v1-v12
+
+O README já apresentava o snapshot técnico com v1-v12, mas apontava para a consolidação v1-v11.
+
+Foi criado:
+
+- `docs/benchmark-technical-consolidated-v1-v12.md`
+
+O novo consolidado registra:
+
+- 548 exemplos;
+- 984 campos técnicos;
+- 899 campos corretos;
+- 91,36% de micro accuracy ponderada;
+- 485 categorias corretas em 548 exemplos;
+- 88,50% de acurácia de categoria combinada.
+
+A consolidação v1-v11 foi preservada como corte histórico.
+
+### 10. Links locais do README validados
+
+Foram verificados os 27 destinos locais referenciados pelo README, incluindo documentos, snapshot HTML, snapshot JSON e SVG.
+
+Resultado: 27 de 27 destinos existem no repositório.
+
+### 11. Branch de release sincronizada
+
+A branch `release/v1.49.0` estava 20 commits atrás da `main` durante a auditoria.
+
+Ela foi atualizada por fast-forward para o estado auditado da `main`.
+
+### 12. Auditoria textual inicial concluída
 
 A revisão textual inicial não encontrou motivo para ampliar o README. A decisão editorial é manter a página principal enxuta e deixar o histórico técnico nos documentos especializados.
 
@@ -131,7 +189,7 @@ Pontos mantidos:
 - sem inserir promessa de estabilidade plena do domínio de medicamentos;
 - sem aumentar a lista de documentos na página principal.
 
-### 8. Release notes sincronizadas
+### 13. Release notes sincronizadas
 
 `docs/release-v1.49.0.md` foi sincronizado com a auditoria para registrar:
 
@@ -154,9 +212,15 @@ Pontos mantidos:
 - [x] Registrar falha do CI sem logs úteis.
 - [x] Concluir auditoria textual inicial.
 - [x] Sincronizar release notes.
+- [x] Confirmar annotations no check-run.
+- [x] Ampliar proteção SHA dos holdouts de medicamentos v1-v4.
+- [x] Criar consolidação técnica v1-v12.
+- [x] Validar os 27 links locais do README.
+- [x] Sincronizar a branch `release/v1.49.0` com a `main` auditada.
 - [ ] Conferir Actions manualmente na interface.
 - [ ] Rodar suíte local ou em ambiente conectado.
-- [ ] Conferir links do README no GitHub renderizado.
+- [x] Conferir existência dos links locais do README.
+- [ ] Conferir a renderização visual dos links no GitHub.
 - [ ] Conferir visual do snapshot SVG no GitHub renderizado.
 
 ## Próxima etapa da auditoria
