@@ -2280,3 +2280,67 @@ main {
     gap: 4px;
   }
 }
+
+
+.analytics-loading-state {
+  display: grid;
+  gap: 9px;
+  padding: 18px;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  background: white;
+}
+
+.analytics-loading-state > span {
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.analytics-loading-state > div {
+  height: 48px;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      90deg,
+      #f3f4f6 0%,
+      #f8fafc 45%,
+      #eef1f5 60%,
+      #f3f4f6 100%
+    );
+  background-size: 220% 100%;
+  animation: atlas-loading 1.2s ease-in-out infinite;
+}
+
+.analytics-loading-state > div:nth-child(3) {
+  width: 88%;
+}
+
+.analytics-loading-state > div:nth-child(4) {
+  width: 76%;
+}
+
+.analytics-loading-detail {
+  margin-top: 12px;
+}
+
+.analytics-loading-detail > div {
+  height: 72px;
+}
+
+@keyframes atlas-loading {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analytics-loading-state > div {
+    animation: none;
+  }
+}
