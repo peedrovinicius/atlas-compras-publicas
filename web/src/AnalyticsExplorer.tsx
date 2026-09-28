@@ -21,7 +21,6 @@ const SORT_OPTIONS: Array<{ value: ProductSort; label: string }> = [
   { value: "latest", label: "Mais recentes" },
   { value: "name", label: "Nome" },
 ];
-const EXAMPLES = ["resina", "ionômero", "anestésico", "flúor"];
 const EMPTY_FILTERS: AnalyticsFilters = {
   state_code: "",
   macroregion: "",
@@ -878,22 +877,6 @@ export default function AnalyticsExplorer() {
             </div>
           </details>
         </form>
-
-        <div className="analytics-examples">
-          <span>Exemplos</span>
-          {EXAMPLES.map((example) => (
-            <button
-              type="button"
-              key={example}
-              onClick={() => {
-                setQuery(example);
-                void runSearch(example, filters, 0, sort, true);
-              }}
-            >
-              {example}
-            </button>
-          ))}
-        </div>
 
         {recentSearches.length > 0 && (
           <div className="analytics-recent-searches">
