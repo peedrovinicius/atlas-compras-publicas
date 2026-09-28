@@ -82,6 +82,13 @@ export type ProductSearchItem = {
   display_name: string;
 };
 
+export type ProductSearchFacetItem = {
+  value: string;
+  product_count: number;
+};
+
+export type ProductSearchFacets = Record<string, ProductSearchFacetItem[]>;
+
 export type ProductSearchResponse = {
   query: string;
   sort: ProductSort;
@@ -96,6 +103,7 @@ export type ProductSearchResponse = {
     end_date: string | null;
   };
   items: ProductSearchItem[];
+  facets: ProductSearchFacets;
   total: number;
   limit: number;
   offset: number;
