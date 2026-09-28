@@ -3498,3 +3498,32 @@ select:focus-visible {
     margin-left: -4px;
   }
 }
+
+
+/* v1.70 reference price range */
+.analytics-reference-range {
+  display: grid;
+  gap: 1px;
+  margin-top: 5px;
+}
+
+.analytics-reference-range > span {
+  color: #8a94a5;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.analytics-reference-range > b {
+  color: #4b5565;
+  font-size: 9px;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .analytics-reference-range {
+    margin-top: 3px;
+  }
+}
