@@ -1,7 +1,6 @@
 from dental_procurement_intelligence.identity.models import ProductCategory
 from dental_procurement_intelligence.identity.rules.models import CategoryRuleSpec
 
-
 DENTAL_CATEGORY_SPECS: tuple[CategoryRuleSpec, ...] = (
     CategoryRuleSpec(
         "dental.flowable_resin",
@@ -216,7 +215,10 @@ MIXED_KIT_FAMILY_TERMS: tuple[tuple[str, ...], ...] = (
 RESIN_TECHNOLOGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("bulk_fill", ("BULK FILL", "BULKFILL")),
     ("nanohybrid", ("NANOHIBRIDA", "NANO-HIBRIDA", "NANOHYBRID")),
-    ("microhybrid", ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICRO HIBRIDA", "MICROHIDRIDA", "MICROHYBRID")),
+    (
+        "microhybrid",
+        ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICRO HIBRIDA", "MICROHIDRIDA", "MICROHYBRID"),
+    ),
 )
 CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("dual_cure", ("CURA DUAL", "DUAL CURE")),
