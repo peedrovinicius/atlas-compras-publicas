@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from collections.abc import Sequence
 from dataclasses import asdict
 from typing import Any
@@ -33,6 +34,32 @@ from dental_procurement_intelligence.pncp import PNCPClient
 
 def _serialize(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2, default=str)
+
+
+def _demo_result_request_limit(argument: int | None) -> int | None:
+    if argument is not None:
+        if argument < 1:
+            raise ValueError(
+                "--max-result-requests-per-procurement deve ser pelo menos 1"
+            )
+        return argument
+
+    raw = os.environ.get("ATLAS_DEMO_MAX_RESULT_REQUESTS", "").strip()
+    if not raw:
+        return None
+
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise ValueError(
+            "ATLAS_DEMO_MAX_RESULT_REQUESTS deve ser um inteiro positivo"
+        ) from exc
+
+    if value < 1:
+        raise ValueError(
+            "ATLAS_DEMO_MAX_RESULT_REQUESTS deve ser um inteiro positivo"
+        )
+    return value
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -136,6 +163,15 @@ def build_parser() -> argparse.ArgumentParser:
     demo_data.add_argument("--year", type=int)
     demo_data.add_argument("--sequence", type=int)
     demo_data.add_argument("--output-root", default="data/demo")
+    demo_data.add_argument(
+        "--max-result-requests-per-procurement",
+        type=int,
+        default=None,
+        help=(
+            "Limita consultas de resultados por contratação. "
+            "Quando omitido, usa ATLAS_DEMO_MAX_RESULT_REQUESTS se definido."
+        ),
+    )
 
     signals = subparsers.add_parser(
         "detect-anomalies",
@@ -284,6 +320,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cnpj=args.cnpj,
                 year=args.year,
                 sequence=args.sequence,
+                max_result_requests_per_procurement=_demo_result_request_limit(
+                    args.max_result_requests_per_procurement
+                ),
             )
         print(_serialize(asdict(result)))
         return 0

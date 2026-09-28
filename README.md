@@ -8,7 +8,7 @@ Plataforma de inteligência sobre compras públicas que estrutura itens do PNCP,
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-[Demo ao vivo](https://atlas-compras-publicas-web.onrender.com) · [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs) · [Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md)
+[Demo ao vivo](https://atlas-compras-publicas-web.onrender.com) · [Swagger / OpenAPI](https://atlas-compras-publicas-analytics.onrender.com/docs) · [Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md)
 
 </div>
 
@@ -141,8 +141,8 @@ O CI atual executa `ruff check .`, `pytest -q` e o build TypeScript/Vite do fron
 A aplicação publicada usa React + TypeScript no frontend e FastAPI + DuckDB na camada analítica:
 
 - [Abrir Atlas](https://atlas-compras-publicas-web.onrender.com)
-- [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs)
-- [Health check](https://atlas-compras-publicas.onrender.com/health)
+- [Swagger / OpenAPI](https://atlas-compras-publicas-analytics.onrender.com/docs)
+- [Health check](https://atlas-compras-publicas-analytics.onrender.com/health)
 
 A experiência pública possui duas áreas.
 

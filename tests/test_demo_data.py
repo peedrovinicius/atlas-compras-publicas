@@ -4,7 +4,10 @@ from types import SimpleNamespace
 import httpx
 
 from dental_procurement_intelligence.analytics import demo_data
-from dental_procurement_intelligence.cli import build_parser
+from dental_procurement_intelligence.cli import (
+    _demo_result_request_limit,
+    build_parser,
+)
 
 
 def test_demo_data_cli_defaults_are_explicit() -> None:
@@ -14,6 +17,7 @@ def test_demo_data_cli_defaults_are_explicit() -> None:
     assert args.year is None
     assert args.sequence is None
     assert args.output_root == "data/demo"
+    assert args.max_result_requests_per_procurement is None
 
 
 def test_build_demo_data_orchestrates_existing_pipeline(
@@ -170,3 +174,16 @@ def test_build_demo_data_skips_failed_procurement(
     assert result.procurement_count == 1
     assert result.procurement_keys == (capture.procurement_key,)
     assert result.silver_award_count == 1
+
+
+
+def test_demo_result_request_limit_uses_environment(monkeypatch) -> None:
+    monkeypatch.setenv("ATLAS_DEMO_MAX_RESULT_REQUESTS", "8")
+    assert _demo_result_request_limit(None) == 8
+
+
+def test_demo_result_request_limit_argument_wins_over_environment(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("ATLAS_DEMO_MAX_RESULT_REQUESTS", "8")
+    assert _demo_result_request_limit(3) == 3
