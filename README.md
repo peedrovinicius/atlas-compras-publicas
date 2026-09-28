@@ -8,11 +8,28 @@ Dados do PNCP transformados em pipeline auditável para normalização de itens,
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Documentação](docs/README.md) · [Arquitetura](docs/architecture.md) · [Metodologia de sinais](docs/metodologia-anomalias.md) · [Issues](https://github.com/peedrovinicius/atlas-compras-publicas/issues) · [Como contribuir](CONTRIBUTING.md)
+[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Documentação](docs/README.md) · [Changelog](CHANGELOG.md) · [Arquitetura](docs/architecture.md) · [Issues](https://github.com/peedrovinicius/atlas-compras-publicas/issues) · [Como contribuir](CONTRIBUTING.md)
 
 </div>
 
+## Visão geral
+
 O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas em conjuntos comparáveis, rastreáveis e auditáveis. A cadeia cobre captura, preservação da evidência original, normalização de produtos, consolidação analítica e detecção estatística de sinais.
+
+<table>
+<tr>
+<td align="center"><strong>548</strong><br/><sub>exemplos técnicos</sub></td>
+<td align="center"><strong>984</strong><br/><sub>campos técnicos avaliados</sub></td>
+<td align="center"><strong>91,36%</strong><br/><sub>micro accuracy técnica ponderada</sub></td>
+<td align="center"><strong>192</strong><br/><sub>exemplos de medicamentos</sub></td>
+</tr>
+</table>
+
+<p align="center">
+  <img src="docs/assets/dashboard-quality-snapshot.svg" alt="Snapshot real de qualidade do Atlas de Compras Públicas" width="100%" />
+</p>
+
+<sub>Snapshot gerado de baselines congeladas e versionadas. Resultados pós-tuning são documentados separadamente e não substituem as medições independentes.</sub>
 
 A odontologia é a primeira vertical em produção. Medicamentos permanecem em validação independente porque a evolução do domínio separa baseline congelada, pós-tuning e promoção metodológica.
 
@@ -127,14 +144,14 @@ Documentos principais:
 - [Congelamento do holdout de medicamentos v4](docs/medications-v4-freeze.md)
 - [Consolidação de medicamentos v1-v4](docs/benchmark-medications-consolidated-v1-v4.md)
 
-## Snapshot real
-
-![Snapshot real de qualidade e benchmarks](docs/assets/dashboard-quality-snapshot.svg)
+## Evidências de qualidade
 
 O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 192 exemplos de medicamentos e 768 campos de medicamentos.
 
 - [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
 - [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
+- [Consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
+- [Consolidação de medicamentos v1-v4](docs/benchmark-medications-consolidated-v1-v4.md)
 
 O snapshot não simula preços, homologações ou sinais. Esses painéis só serão publicados quando existir uma base DuckDB analítica consolidada.
 
