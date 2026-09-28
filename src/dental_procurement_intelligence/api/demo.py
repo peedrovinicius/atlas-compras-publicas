@@ -1,6 +1,7 @@
 """Página pública simples da demo do Atlas."""
 
 from html import escape
+import json
 
 from dental_procurement_intelligence.identity.models import ProductCategory
 
@@ -423,14 +424,7 @@ def render_demo(version: str) -> str:
         category.value: label
         for category, label in _CATEGORY_LABELS.items()
     }
-    labels_json = (
-        "{"
-        + ",".join(
-            f'"{escape(key)}":"{escape(value)}"'
-            for key, value in labels.items()
-        )
-        + "}"
-    )
+    labels_json = json.dumps(labels, ensure_ascii=False)
     supported = "\n".join(
         (
             '<span data-unknown="true">'
