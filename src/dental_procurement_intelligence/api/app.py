@@ -36,6 +36,18 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
         ),
     )
 
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ],
+        allow_origin_regex=r"https://atlas-compras-publicas(?:-web)?\.onrender\.com",
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type"],
+    )
+
     rate_window_seconds = 60.0
     rate_limit = 60
     normalization_requests: dict[str, deque[float]] = defaultdict(deque)
