@@ -653,25 +653,36 @@ export default function AnalyticsExplorer() {
 
   return (
     <>
-      <section className="hero analytics-hero">
-        <span className="eyebrow">Inteligência sobre compras públicas</span>
-        <h1>Pesquise um produto e descubra quanto o governo está pagando por ele.</h1>
+      <section className="hero analytics-hero analytics-hero-compact">
+        <span className="eyebrow">Inteligência de preços públicos</span>
+        <h1>Descubra quanto o governo paga pelo produto que você procura.</h1>
         <p>
-          Digite como você conhece o produto ou escolha uma categoria abaixo. O Atlas traduz
-          termos comuns para a estrutura do PNCP e mostra preços, histórico, fornecedores e evidências.
+          Pesquise do seu jeito. O Atlas organiza dados públicos do PNCP para comparar
+          preços homologados, histórico e evidências em uma única análise.
         </p>
+        <div className="analytics-trust-row" aria-label="Características do Atlas">
+          <span>Dados públicos</span>
+          <span>Preços homologados</span>
+          <span>Fonte rastreável</span>
+        </div>
       </section>
 
       <section className="panel analytics-search-panel">
         <form onSubmit={submit}>
-          <label htmlFor="analytics-search">Produto ou característica</label>
+          <div className="analytics-search-heading">
+            <div>
+              <span className="section-kicker">Explorador de preços</span>
+              <label htmlFor="analytics-search">O que você quer pesquisar?</label>
+            </div>
+            <small>Digite um produto, cor, apresentação ou termo usado no dia a dia.</small>
+          </div>
           <div className="analytics-search-row">
             <div className="analytics-search-input-wrap">
               <input
                 id="analytics-search"
                 value={query}
                 onChange={(event: { target: { value: string } }) => setQuery(event.target.value)}
-                placeholder="Ex.: resina A2, adesivo odontológico, ionômero de vidro"
+                placeholder="Ex.: resina A2, CIV, anestésico local"
                 autoComplete="off"
                 aria-autocomplete="list"
                 aria-expanded={suggestions.length > 0}
@@ -728,17 +739,14 @@ export default function AnalyticsExplorer() {
           </div>
 
           {discoveryHighlights.length > 0 && (
-            <div className="analytics-discovery">
-              <div className="analytics-discovery-heading">
-                <span>
-                  {discoverySuggestions.length > 0
-                    ? "Talvez você esteja procurando"
-                    : "Encontre por categoria"}
-                </span>
-                <small>Clique para pesquisar sem precisar saber o texto do PNCP</small>
-              </div>
-              <div className="analytics-discovery-grid">
-                {discoveryHighlights.map((item) => (
+            <div className="analytics-quick-categories">
+              <span>
+                {discoverySuggestions.length > 0
+                  ? "Talvez você esteja procurando"
+                  : "Categorias populares"}
+              </span>
+              <div>
+                {discoveryHighlights.slice(0, 6).map((item) => (
                   <button
                     type="button"
                     key={item.product_category}
@@ -747,31 +755,24 @@ export default function AnalyticsExplorer() {
                       void runSearch(item.label, filters, 0, sort, true);
                     }}
                   >
-                    <strong>{item.label}</strong>
-                    <span>
-                      {number(item.product_count)} grupos · {number(item.priced_observation_count)} preços
-                    </span>
+                    {item.label}
+                    <small>{number(item.priced_observation_count)}</small>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="analytics-filter-heading">
-            <span>Filtros opcionais</span>
-            <button
-              type="button"
-              onClick={() => {
-                const cleared = { ...EMPTY_FILTERS };
-                setFilters(cleared);
-                void runSearch(query, cleared, 0);
-              }}
-            >
-              Limpar filtros
-            </button>
-          </div>
-
-          <div className="analytics-filter-grid">
+          <details className="analytics-filter-drawer">
+            <summary>
+              <span>Filtros avançados</span>
+              <small>
+                {Object.values(filters).filter((value) => value.trim()).length > 0
+                  ? `${Object.values(filters).filter((value) => value.trim()).length} ativos`
+                  : "Região, fornecedor, órgão e período"}
+              </small>
+            </summary>
+            <div className="analytics-filter-grid">
             <label>
               Região
               <select
@@ -859,7 +860,23 @@ export default function AnalyticsExplorer() {
                 ))}
               </select>
             </label>
-          </div>
+            </div>
+            <div className="analytics-filter-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  const cleared = { ...EMPTY_FILTERS };
+                  setFilters(cleared);
+                  void runSearch(query, cleared, 0, sort);
+                }}
+              >
+                Limpar
+              </button>
+              <button className="primary-button" type="submit" disabled={searching}>
+                Aplicar filtros
+              </button>
+            </div>
+          </details>
         </form>
 
         <div className="analytics-examples">
@@ -916,7 +933,9 @@ export default function AnalyticsExplorer() {
         <div className="results-header">
           <div>
             <span className="section-kicker">Resultados compatíveis</span>
-            <h2>Produtos encontrados</h2>
+            <h2>
+              {searching ? "Pesquisando..." : `Resultados para “${appliedQuery}”`}
+            </h2>
           </div>
           {!searching && <span className="item-count">{number(total)} grupos</span>}
         </div>
