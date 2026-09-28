@@ -1189,6 +1189,12 @@ export default function AnalyticsExplorer() {
                             ? `mediana por ${item.normalized_quantity_unit}`
                             : "mediana normalizada"}
                         </small>
+                        {item.percentile_25 !== null && item.percentile_75 !== null && (
+                          <span className="analytics-reference-range">
+                            <span>Faixa central</span>
+                            <b>{money(item.percentile_25)} – {money(item.percentile_75)}</b>
+                          </span>
+                        )}
                         <em>Ver análise</em>
                       </span>
                     </button>
@@ -1254,6 +1260,26 @@ export default function AnalyticsExplorer() {
                                     ? ` por ${item.normalized_quantity_unit}`
                                     : ""}
                                 </small>
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>Faixa central (P25–P75)</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {item.percentile_25 !== null && item.percentile_75 !== null
+                                  ? `${money(item.percentile_25)} – ${money(item.percentile_75)}`
+                                  : "Sem amostra"}
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>Faixa observada</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {item.min_price !== null && item.max_price !== null
+                                  ? `${money(item.min_price)} – ${money(item.max_price)}`
+                                  : "Sem amostra"}
                               </td>
                             ))}
                           </tr>
