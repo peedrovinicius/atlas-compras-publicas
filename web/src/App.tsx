@@ -291,6 +291,13 @@ export default function App() {
           : `${nextResults.length} resultados processados.`,
       );
       setApiOnline(true);
+      window.requestAnimationFrame(() => {
+        resultsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        resultsRef.current?.focus({ preventScroll: true });
+      });
     } catch (requestError) {
       setResults([]);
       setApiOnline(false);
@@ -542,7 +549,10 @@ export default function App() {
         <section
           ref={resultsRef}
           className="results-section laboratory-results"
+          tabIndex={-1}
           aria-live="polite"
+          aria-busy={loading}
+          aria-label="Resultados da normalização"
         >
           <div className="results-header">
             <div>
