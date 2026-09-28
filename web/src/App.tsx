@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import AnalyticsExplorer from "./AnalyticsExplorer";
+
 import {
   API_BASE_URL,
   checkHealth,
@@ -235,6 +237,7 @@ function Detail({
 }
 
 export default function App() {
+  const [mode, setMode] = useState<"analytics" | "laboratory">("analytics");
   const [input, setInput] = useState(DEFAULT_TEXT);
   const [results, setResults] = useState<NormalizationResult[]>([]);
   const [categories, setCategories] = useState<ParserCategory[]>([]);
@@ -354,6 +357,22 @@ export default function App() {
         </a>
 
         <nav className="header-actions" aria-label="Links principais">
+          <div className="mode-switch" aria-label="Áreas do Atlas">
+            <button
+              type="button"
+              className={mode === "analytics" ? "active" : ""}
+              onClick={() => setMode("analytics")}
+            >
+              Explorar preços
+            </button>
+            <button
+              type="button"
+              className={mode === "laboratory" ? "active" : ""}
+              onClick={() => setMode("laboratory")}
+            >
+              Laboratório
+            </button>
+          </div>
           <span
             className={
               apiOnline === false
@@ -382,6 +401,10 @@ export default function App() {
       </header>
 
       <main>
+        {mode === "analytics" ? (
+          <AnalyticsExplorer />
+        ) : (
+          <>
         <section className="hero">
           <span className="eyebrow">Normalização auditável do PNCP</span>
           <h1>Entenda o item antes de comparar o preço.</h1>
@@ -523,6 +546,8 @@ export default function App() {
             </div>
           )}
         </section>
+          </>
+        )}
       </main>
 
       <footer className="site-footer">
@@ -530,7 +555,11 @@ export default function App() {
           Atlas de Compras Públicas
           {apiVersion ? ` v${apiVersion}` : ""}
         </span>
-        <span>Até 20 descrições por análise</span>
+        <span>
+          {mode === "analytics"
+            ? "Dados públicos, comparação contextual e rastreabilidade"
+            : "Até 20 descrições por análise"}
+        </span>
       </footer>
     </div>
   );
