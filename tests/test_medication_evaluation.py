@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from dental_procurement_intelligence.evaluation import evaluate_medications
@@ -18,8 +19,6 @@ def test_frozen_medications_v1_is_perfect_after_tuning() -> None:
 
 
 def test_frozen_medications_v2_preserves_independent_baseline() -> None:
-    import json
-
     baseline = json.loads(
         Path("data/evaluation/medications-v2-baseline.json").read_text(
             encoding="utf-8"
