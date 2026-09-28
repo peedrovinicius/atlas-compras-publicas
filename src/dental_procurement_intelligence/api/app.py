@@ -16,6 +16,7 @@ from dental_procurement_intelligence.api.service import (
     analytics_overview,
     analytics_product_buyers,
     analytics_product_distribution,
+    analytics_product_discovery,
     analytics_product_history,
     analytics_product_records,
     analytics_product_records_export,
@@ -227,6 +228,13 @@ def create_app(database_path: str | Path | None = None) -> Any:
     @app.get("/api/v1/overview")
     def overview() -> dict[str, Any]:
         return execute(analytics_overview, resolved_database_path)
+
+    @app.get("/api/v1/products/discovery")
+    def product_discovery() -> dict[str, Any]:
+        return execute(
+            analytics_product_discovery,
+            resolved_database_path,
+        )
 
     @app.get("/api/v1/products/search")
     def product_search(
