@@ -73,6 +73,7 @@ _CATEGORY_SEARCH_ALIASES = {
         "gel de fluor",
         "fluor gel",
         "fluoreto",
+        "fluor",
     ),
     ProductCategory.PROPHYLAXIS_PASTE: (
         "pasta profilatica",
