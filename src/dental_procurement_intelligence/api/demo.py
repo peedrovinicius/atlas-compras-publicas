@@ -1,7 +1,7 @@
 """Página pública simples da demo do Atlas."""
 
-from html import escape
 import json
+from html import escape
 
 from dental_procurement_intelligence.identity.models import ProductCategory
 
