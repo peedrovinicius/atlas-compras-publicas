@@ -420,21 +420,21 @@ def test_product_history_aggregates_monthly_prices(tmp_path: Path) -> None:
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'CE', DATE '2026-05-10', 'defensible', 10.00
+                        '111', 'CE', DATE '2026-05-10', 'defensible', 10.00
                     ),
                     (
                         'p2', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'MG', DATE '2026-05-20', 'defensible', 14.00
+                        '222', 'MG', DATE '2026-05-20', 'defensible', 14.00
                     ),
                     (
                         'p3', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'PR', DATE '2026-06-05', 'defensible', 12.00
+                        '333', 'PR', DATE '2026-06-05', 'defensible', 12.00
                     )
             ) AS t(
                 procurement_key,
@@ -455,6 +455,7 @@ def test_product_history_aggregates_monthly_prices(tmp_path: Path) -> None:
                 unit_quantity_unit,
                 normalized_quantity_value,
                 normalized_quantity_unit,
+                supplier_document,
                 state_code,
                 analysis_date,
                 price_normalization_status,
@@ -502,21 +503,21 @@ def test_product_regions_compare_states_to_national_median(
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'CE', 'Nordeste', 'defensible', 10.00
+                        '111', 'CE', 'Nordeste', 'defensible', 10.00
                     ),
                     (
                         'p2', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'MG', 'Sudeste', 'defensible', 20.00
+                        '222', 'MG', 'Sudeste', 'defensible', 20.00
                     ),
                     (
                         'p3', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'MG', 'Sudeste', 'defensible', 30.00
+                        '333', 'MG', 'Sudeste', 'defensible', 30.00
                     )
             ) AS t(
                 procurement_key,
@@ -537,6 +538,7 @@ def test_product_regions_compare_states_to_national_median(
                 unit_quantity_unit,
                 normalized_quantity_value,
                 normalized_quantity_unit,
+                supplier_document,
                 state_code,
                 macroregion,
                 price_normalization_status,
