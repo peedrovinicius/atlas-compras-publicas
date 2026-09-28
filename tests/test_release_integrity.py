@@ -78,21 +78,29 @@ def test_dashboard_snapshot_matches_frozen_baselines() -> None:
     assert snapshot["technical"]["evaluated_field_count"] == fields
     assert snapshot["technical"]["correct_field_count"] == correct
 
-    medications = json.loads(
-        Path("data/evaluation/medications-v1-baseline.json").read_text(
-            encoding="utf-8"
+    medication_samples = 0
+    medication_fields = 0
+    medication_correct = 0
+    for version in range(1, 4):
+        baseline = json.loads(
+            Path(f"data/evaluation/medications-v{version}-baseline.json").read_text(
+                encoding="utf-8"
+            )
         )
-    )
-    assert snapshot["medications"]["sample_count"] == medications["sample_count"]
-    assert (
-        snapshot["medications"]["evaluated_field_count"]
-        == medications["evaluated_field_count"]
-    )
-    assert (
-        snapshot["medications"]["correct_field_count"]
-        == medications["correct_field_count"]
-    )
-    assert (
-        snapshot["medications"]["micro_accuracy"]
-        == medications["micro_accuracy"]
+        medication_samples += baseline["sample_count"]
+        medication_fields += baseline["evaluated_field_count"]
+        medication_correct += baseline["correct_field_count"]
+
+        holdout = snapshot["medications"]["holdouts"][f"v{version}"]
+        assert holdout["sample_count"] == baseline["sample_count"]
+        assert holdout["evaluated_field_count"] == baseline["evaluated_field_count"]
+        assert holdout["correct_field_count"] == baseline["correct_field_count"]
+        assert holdout["micro_accuracy"] == baseline["micro_accuracy"]
+
+    assert snapshot["medications"]["sample_count"] == medication_samples
+    assert snapshot["medications"]["evaluated_field_count"] == medication_fields
+    assert snapshot["medications"]["correct_field_count"] == medication_correct
+    assert snapshot["medications"]["weighted_micro_accuracy"] == round(
+        medication_correct / medication_fields,
+        4,
     )
