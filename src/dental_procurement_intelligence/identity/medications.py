@@ -68,6 +68,11 @@ _BENZYLPENICILLIN_PRESENTATION = re.compile(
 
 _TEXT_REWRITES = (
     ("ACIDOFOLICO", "ACIDO FOLICO"),
+    ("ACIDOACETICO", "ACIDO ACETICO"),
+    ("SOLUCAOORAL", "SOLUCAO ORAL"),
+    ("SOLUCAOINJETAVEL", "SOLUCAO INJETAVEL"),
+    ("USOTOPICO", "USO TOPICO"),
+    ("FOSFATODISSODICODEBETAMETASONA", "FOSFATO DISSODICO DE BETAMETASONA "),
 )
 _BRAND_ONLY_NAMES = {
     "BENESTARE",
@@ -83,25 +88,98 @@ def _prepare_text(description: str) -> str:
 
 def _clean_active_ingredient(text: str) -> str | None:
     without_code = _LEADING_CODE.sub("", text).strip()
-    cleaned = _INGREDIENT_STOP.split(without_code, maxsplit=1)[0].strip(" ,-")
 
-    strength_match = _STRENGTH.search(cleaned)
-    if strength_match:
-        cleaned = cleaned[: strength_match.start()].strip(" ,-")
+    structured_salts = (
+        (r"^AMBROXOL\s+COMPOSICAO\s+SAL\s+CLORIDRATO\b", "AMBROXOL CLORIDRATO"),
+        (r"^FENTANILA\s+APRESENTACAO\s+SAL\s+CITRATO\b", "FENTANILA CITRATO"),
+    )
+    for pattern, ingredient in structured_salts:
+        if re.search(pattern, without_code):
+            return ingredient
+
+    ingredient_text = _INGREDIENT_STOP.split(
+        without_code, maxsplit=1
+    )[0].strip(" ,-")
+
+    first_strength = _STRENGTH.search(ingredient_text)
+    if first_strength:
+        prefix = ingredient_text[: first_strength.start()].strip(" ,-")
+    else:
+        prefix = ingredient_text
+
+    prefix = re.sub(
+        r",\s*(FOSFATO|CLORIDRATO|LACTATO)\b",
+        r" \1",
+        prefix,
+    )
+    prefix = re.sub(r"\s+", " ", prefix).strip(" ,-")
+
+    if re.search(r"\b(?:FRASCO/AMPOLA|FRASCO|AMPOLA)\b", prefix):
+        prefix = re.split(
+            r"\b(?:FRASCO/AMPOLA|FRASCO|AMPOLA)\b",
+            prefix,
+            maxsplit=1,
+        )[0].strip(" ,-")
+
+    prefix = re.sub(r",?\s*\d+(?:[.,]\d+)?%$", "", prefix).strip(" ,-")
+
+    components = [prefix] if prefix else []
+
+    tail_pattern = re.compile(
+        r"(?:\+|\s)"
+        r"(?P<ingredient>[A-Z][A-Z -]*?)\s+"
+        r"(?=(?:\d{1,3}(?:\.\d{3})+|\d+(?:[.,]\d+)?)\s*"
+        r"(?:MCG|MG|G|UI)\b)"
+    )
+    for match in tail_pattern.finditer(ingredient_text):
+        candidate = match.group("ingredient").strip(" ,-")
+        candidate = re.sub(r"^(?:PO|DILUENTE)\s+", "", candidate)
+        if (
+            candidate
+            and candidate not in components
+            and not any(candidate in item for item in components)
+        ):
+            components.append(candidate)
+
+    associated = _ASSOCIATED_INGREDIENT.search(without_code)
+    if associated:
+        candidate = associated.group("ingredient").strip(" ,-")
+        if candidate and candidate not in components:
+            components.append(candidate)
+
+    adjunct = _POST_STRENGTH_ADJUNCT.search(without_code)
+    if adjunct:
+        candidate = adjunct.group("ingredient")
+        if candidate and candidate not in components:
+            components.append(candidate)
+
+    if components == ["BENZILPENICILINA"]:
+        qualifier = _BENZYLPENICILLIN_PRESENTATION.search(without_code)
+        if qualifier:
+            components[0] = (
+                f"BENZILPENICILINA {qualifier.group('qualifier')}"
+            )
+
+    cleaned = " + ".join(components).strip(" +")
 
     form_markers = (
         " COMPRIMIDO",
         " CAPSULA",
+        " CAPS",
         " AMPOLA",
         " FRASCO-AMPOLA",
         " FRASCO AMPOLA",
         " SOLUCAO ORAL",
+        " SUSPENSAO ORAL",
         " SOLUCAO INJETAVEL",
         " INJETAVEL",
         " COLIRIO",
+        " SOL. OFTALMICA",
         " XAROPE",
+        " ELIXIR",
         " POMADA",
         " CREME",
+        " GEL VAGINAL",
         " TUBETE",
     )
     positions = [
@@ -111,29 +189,6 @@ def _clean_active_ingredient(text: str) -> str | None:
     ]
     if positions:
         cleaned = cleaned[: min(positions)].strip(" ,-")
-
-    associated = _ASSOCIATED_INGREDIENT.search(without_code)
-    if associated:
-        associated_name = associated.group("ingredient").strip(" ,-")
-        if associated_name and associated_name not in cleaned:
-            cleaned = f"{cleaned} + {associated_name}".strip(" +")
-
-    plus_match = _PLUS_INGREDIENT.search(without_code)
-    if plus_match:
-        plus_name = plus_match.group("ingredient").strip(" ,-")
-        if plus_name and plus_name not in cleaned:
-            cleaned = f"{cleaned} + {plus_name}".strip(" +")
-
-    adjunct = _POST_STRENGTH_ADJUNCT.search(without_code)
-    if adjunct:
-        adjunct_name = adjunct.group("ingredient")
-        if adjunct_name not in cleaned:
-            cleaned = f"{cleaned} + {adjunct_name}".strip(" +")
-
-    if cleaned == "BENZILPENICILINA":
-        qualifier = _BENZYLPENICILLIN_PRESENTATION.search(without_code)
-        if qualifier:
-            cleaned = f"{cleaned} {qualifier.group('qualifier')}"
 
     generic_noise = {
         "",
@@ -195,20 +250,28 @@ def _dosage_form(text: str) -> MedicationDosageForm:
         or re.search(r"\bAMPOLA\b", text)
         or "PO LIOFILO" in text
         or "PO LIOFILIZADO" in text
+        or re.search(r"\b(?:IV|EV)/IM\b", text)
     ):
         return MedicationDosageForm.INJECTABLE
     if (
         "SOLUCAO ORAL" in text
+        or "SUSPENSAO ORAL" in text
         or "XAROPE" in text
+        or "ELIXIR" in text
         or "GOTAS" in text
         or re.search(r"\bXPE\b", text)
     ):
         return MedicationDosageForm.ORAL_LIQUID
     if "COMPRIMIDO" in text or re.search(r"\b(?:CPR|COMP)\b", text):
         return MedicationDosageForm.TABLET
-    if "CAPSULA" in text:
+    if "CAPSULA" in text or re.search(r"\bCAPS\b", text):
         return MedicationDosageForm.CAPSULE
-    if "POMADA" in text or "CREME" in text:
+    if (
+        "POMADA" in text
+        or "CREME" in text
+        or "GEL VAGINAL" in text
+        or "LOCAO OLEOSA" in text
+    ):
         return MedicationDosageForm.TOPICAL
     if "TUBETE" in text:
         return MedicationDosageForm.OTHER
@@ -226,11 +289,12 @@ def _route(
         or "INTRAVENOSO" in text
         or "ENDOVENOSO" in text
         or re.search(r"\bIV\b", text)
+        or re.search(r"\bEV\b", text)
     ):
         return MedicationRoute.INJECTABLE
     if dosage_form == MedicationDosageForm.OPHTHALMIC:
         return MedicationRoute.OPHTHALMIC
-    if dosage_form == MedicationDosageForm.TOPICAL:
+    if dosage_form == MedicationDosageForm.TOPICAL or "USO TOPICO" in text:
         return MedicationRoute.TOPICAL
     if dosage_form in (
         MedicationDosageForm.TABLET,
