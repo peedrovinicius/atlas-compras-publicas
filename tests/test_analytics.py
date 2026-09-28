@@ -9,6 +9,7 @@ import polars as pl
 from dental_procurement_intelligence.analytics import (
     DuckDBWarehouse,
     build_analytics,
+    build_analytics_dataset,
     build_item_frame,
 )
 from dental_procurement_intelligence.pncp import PNCPItem
@@ -232,3 +233,49 @@ def test_item_frame_exposes_technical_attributes() -> None:
     assert row["resin_technology"] == "nanohybrid"
     assert row["curing_mode"] == "light_cure"
     assert row["adhesive_strategy"] is None
+
+
+def test_build_analytics_dataset_preserves_page_hash_per_item(
+    tmp_path: Path,
+) -> None:
+    first_payload = [
+        {
+            "numeroItem": 1,
+            "descricao": "RESINA COMPOSTA A2 SERINGA 4G",
+        }
+    ]
+    second_payload = [
+        {
+            "numeroItem": 2,
+            "descricao": "ADESIVO DENTAL FRASCO 5ML",
+        }
+    ]
+    first_path = tmp_path / "page-1.json"
+    second_path = tmp_path / "page-2.json"
+    first_bytes = json.dumps(first_payload).encode("utf-8")
+    second_bytes = json.dumps(second_payload).encode("utf-8")
+    first_path.write_bytes(first_bytes)
+    second_path.write_bytes(second_bytes)
+
+    database = tmp_path / "analytics.duckdb"
+    result = build_analytics_dataset(
+        [first_path, second_path],
+        tmp_path / "items.parquet",
+        database,
+    )
+
+    assert result.row_count == 2
+
+    with duckdb.connect(str(database), read_only=True) as connection:
+        rows = connection.execute(
+            """
+            SELECT item_number, source_sha256
+            FROM silver_items
+            ORDER BY item_number
+            """
+        ).fetchall()
+
+    assert rows == [
+        (1, hashlib.sha256(first_bytes).hexdigest()),
+        (2, hashlib.sha256(second_bytes).hexdigest()),
+    ]
