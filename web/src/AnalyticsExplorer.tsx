@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-import { downloadProductRecordsCsv, fetchProductAnalytics, searchProducts } from "./api";
+import { downloadProductRecordsCsv, fetchProductAnalytics, fetchProductDiscovery, searchProducts } from "./api";
 import type {
   AnalyticsFilters,
   ProductAnalyticsBundle,
+  ProductDiscoveryItem,
   ProductSearchItem,
   ProductSort,
 } from "./types";
@@ -32,6 +33,14 @@ const UF_OPTIONS = [
   "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
   "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
 ];
+
+function normalizeDiscoveryText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR")
+    .trim();
+}
 
 function money(value: number | null | undefined): string {
   if (value === null || value === undefined) return "Sem amostra";
@@ -201,6 +210,8 @@ export default function AnalyticsExplorer() {
   });
   const [appliedQuery, setAppliedQuery] = useState(initialState.query);
   const [appliedSort, setAppliedSort] = useState<ProductSort>(initialState.sort);
+  const [discovery, setDiscovery] = useState<ProductDiscoveryItem[]>([]);
+  const [interpretedLabel, setInterpretedLabel] = useState<string | null>(null);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(initialState.offset);
@@ -240,6 +251,7 @@ export default function AnalyticsExplorer() {
       );
       setResults(response.items);
       setTotal(response.total);
+      setInterpretedLabel(response.interpreted_label);
       setOffset(response.offset);
       setAppliedQuery(cleaned);
       setAppliedFilters({ ...nextFilters });
@@ -248,6 +260,7 @@ export default function AnalyticsExplorer() {
     } catch (requestError) {
       setResults([]);
       setTotal(0);
+      setInterpretedLabel(null);
       setOffset(0);
       setError(
         requestError instanceof Error
@@ -331,6 +344,10 @@ export default function AnalyticsExplorer() {
   }
 
   useEffect(() => {
+    void fetchProductDiscovery()
+      .then((response) => setDiscovery(response.items))
+      .catch(() => undefined);
+
     void (async () => {
       await runSearch(
         initialState.query,
@@ -361,6 +378,17 @@ export default function AnalyticsExplorer() {
   const pageEnd = Math.min(offset + results.length, total);
   const hasPreviousPage = offset > 0;
   const hasNextPage = offset + results.length < total;
+  const normalizedQuery = normalizeDiscoveryText(query);
+  const discoverySuggestions = discovery
+    .filter((item) => {
+      if (normalizedQuery.length < 2) return false;
+      const label = normalizeDiscoveryText(item.label);
+      return label.includes(normalizedQuery) || normalizedQuery.includes(label);
+    })
+    .slice(0, 4);
+  const discoveryHighlights = (
+    discoverySuggestions.length > 0 ? discoverySuggestions : discovery
+  ).slice(0, 8);
 
   return (
     <>
@@ -368,8 +396,8 @@ export default function AnalyticsExplorer() {
         <span className="eyebrow">Inteligência sobre compras públicas</span>
         <h1>Pesquise um produto e descubra quanto o governo está pagando por ele.</h1>
         <p>
-          Compare preços homologados, evolução temporal, diferenças regionais,
-          fornecedores, órgãos compradores e sinais estatísticos com rastreabilidade até o PNCP.
+          Digite como você conhece o produto ou escolha uma categoria abaixo. O Atlas traduz
+          termos comuns para a estrutura do PNCP e mostra preços, histórico, fornecedores e evidências.
         </p>
       </section>
 
@@ -381,13 +409,43 @@ export default function AnalyticsExplorer() {
               id="analytics-search"
               value={query}
               onChange={(event: { target: { value: string } }) => setQuery(event.target.value)}
-              placeholder="Ex.: resina A2, ionômero, anestésico"
+              placeholder="Ex.: resina A2, adesivo odontológico, ionômero de vidro"
               autoComplete="off"
             />
             <button className="primary-button" type="submit" disabled={searching}>
               {searching ? "Pesquisando..." : "Pesquisar"}
             </button>
           </div>
+
+          {discoveryHighlights.length > 0 && (
+            <div className="analytics-discovery">
+              <div className="analytics-discovery-heading">
+                <span>
+                  {discoverySuggestions.length > 0
+                    ? "Talvez você esteja procurando"
+                    : "Encontre por categoria"}
+                </span>
+                <small>Clique para pesquisar sem precisar saber o texto do PNCP</small>
+              </div>
+              <div className="analytics-discovery-grid">
+                {discoveryHighlights.map((item) => (
+                  <button
+                    type="button"
+                    key={item.product_category}
+                    onClick={() => {
+                      setQuery(item.label);
+                      void runSearch(item.label, filters, 0, sort);
+                    }}
+                  >
+                    <strong>{item.label}</strong>
+                    <span>
+                      {number(item.product_count)} grupos · {number(item.priced_observation_count)} preços
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="analytics-filter-heading">
             <span>Filtros opcionais</span>
@@ -509,6 +567,12 @@ export default function AnalyticsExplorer() {
             </button>
           ))}
         </div>
+
+        {interpretedLabel && (
+          <p className="analytics-interpreted">
+            Busca reconhecida como <strong>{interpretedLabel}</strong>. Você pode continuar refinando por cor, apresentação ou filtros.
+          </p>
+        )}
 
         {error && <p className="analytics-error">{error}</p>}
       </section>
