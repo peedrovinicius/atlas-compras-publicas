@@ -42,7 +42,6 @@ def parser_category_label(category_id: str) -> str:
 _CATEGORY_SEARCH_ALIASES = {
     ProductCategory.COMPOSITE_RESIN: (
         "resina composta",
-        "resina",
         "composite resin",
     ),
     ProductCategory.FLOWABLE_RESIN: (
