@@ -3,22 +3,28 @@ name: CI
 on:
   pull_request:
     paths:
+      - "README.md"
       - "src/**"
       - "tests/**"
       - "data/evaluation/**"
       - "pyproject.toml"
       - ".github/workflows/**"
       - "docs/dashboard-quality-snapshot.json"
+      - "docs/dashboard-quality-snapshot.html"
+      - "docs/assets/dashboard-quality-snapshot.svg"
   push:
     branches:
       - main
     paths:
+      - "README.md"
       - "src/**"
       - "tests/**"
       - "data/evaluation/**"
       - "pyproject.toml"
       - ".github/workflows/**"
       - "docs/dashboard-quality-snapshot.json"
+      - "docs/dashboard-quality-snapshot.html"
+      - "docs/assets/dashboard-quality-snapshot.svg"
   workflow_dispatch:
 
 permissions:
