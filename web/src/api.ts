@@ -4,6 +4,7 @@ import type {
   ParserCategory,
   ProductAnalyticsBundle,
   ProductBuyers,
+  ProductDistribution,
   ProductHistory,
   ProductRecords,
   ProductRegions,
@@ -79,9 +80,18 @@ export async function fetchProductAnalytics(
   productId: string,
 ): Promise<ProductAnalyticsBundle> {
   const encoded = encodeURIComponent(productId);
-  const [summary, history, regions, suppliers, buyers, signals, records] =
-    await Promise.all([
+  const [
+    summary,
+    distribution,
+    history,
+    regions,
+    suppliers,
+    buyers,
+    signals,
+    records,
+  ] = await Promise.all([
       get<ProductSummary>(`/api/v1/products/${encoded}`),
+      get<ProductDistribution>(`/api/v1/products/${encoded}/distribution`),
       get<ProductHistory>(`/api/v1/products/${encoded}/history`),
       get<ProductRegions>(`/api/v1/products/${encoded}/regions`),
       get<ProductSuppliers>(`/api/v1/products/${encoded}/suppliers?limit=10`),
@@ -90,7 +100,7 @@ export async function fetchProductAnalytics(
       get<ProductRecords>(`/api/v1/products/${encoded}/records?limit=12`),
     ]);
 
-  return { summary, history, regions, suppliers, buyers, signals, records };
+  return { summary, distribution, history, regions, suppliers, buyers, signals, records };
 }
 
 export async function checkHealth(): Promise<{
