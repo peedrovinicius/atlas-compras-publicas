@@ -1,0 +1,43 @@
+name: Propor melhoria
+description: Sugira uma melhoria técnica, analítica, metodológica ou de documentação.
+title: "[Melhoria] "
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivação
+      description: Qual problema ou oportunidade esta proposta atende?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Escopo sugerido
+      description: Descreva uma solução objetiva e delimitada.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área principal
+      options:
+        - Captura PNCP
+        - Normalização e identidade
+        - Benchmarks
+        - Analytics e DuckDB
+        - API e dashboard
+        - Documentação
+        - CI e infraestrutura
+    validations:
+      required: true
+  - type: textarea
+    id: methodology
+    attributes:
+      label: Impacto metodológico
+      description: Informe se a proposta altera parser, taxonomia, benchmark, unidade de comparação ou critério de sinal.
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribuição
+      options:
+        - label: Tenho interesse em implementar esta melhoria.
