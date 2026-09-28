@@ -29,6 +29,14 @@ A ordem metodológica é obrigatória:
 7. documentar a baseline independente;
 8. só depois decidir se haverá tuning posterior.
 
+## Inventário de fontes candidatas
+
+O levantamento inicial de fontes candidatas está em:
+
+- [Pré-candidatos de fontes para medicamentos v4](medications-v4-candidate-sources.md)
+
+Esse inventário não congela o dataset. Ele serve apenas como fila de triagem para checagem de colisão, diversidade geográfica e qualidade dos itens.
+
 ## Critérios de independência
 
 Um candidato ao v4 deve ser excluído se:
