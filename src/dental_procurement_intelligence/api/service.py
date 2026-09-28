@@ -492,7 +492,7 @@ def analytics_product_summary(
         )
         row = cursor.fetchone()
         if row is None:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
         columns = [column[0] for column in cursor.description]
         summary = dict(zip(columns, row, strict=True))
 
@@ -593,7 +593,7 @@ def analytics_product_distribution(
             parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         row = connection.execute(
             f"""
@@ -738,7 +738,7 @@ def analytics_product_history(
             parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         cursor = connection.execute(
             f"""
@@ -820,7 +820,7 @@ def analytics_product_regions(
             parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         national = connection.execute(
             f"""
@@ -976,7 +976,7 @@ def analytics_product_suppliers(
             parameters,
         ).fetchone()[0]
         if not total_awards:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         total_suppliers = connection.execute(
             f"""
@@ -1078,7 +1078,7 @@ def analytics_product_buyers(
             parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         total_buyers = connection.execute(
             f"""
@@ -1233,7 +1233,7 @@ def analytics_product_signals(
             parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         total = connection.execute(
             f"""
@@ -1346,7 +1346,7 @@ def analytics_product_records(
             parameters,
         ).fetchone()[0]
         if not total:
-            raise LookupError("Nenhum registro encontrado para os filtros informados")
+            raise LookupError("Produto não encontrado para os filtros informados")
 
         cursor = connection.execute(
             f"""
