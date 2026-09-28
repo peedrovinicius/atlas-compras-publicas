@@ -31,6 +31,28 @@ from dental_procurement_intelligence.api.service import (
 from dental_procurement_intelligence.identity import available_domains, parse_product
 
 
+def _bootstrap_demo_database(path: Path) -> Path:
+    if path.exists():
+        return path
+
+    enabled = os.environ.get("ATLAS_BOOTSTRAP_DEMO", "").strip().lower()
+    if enabled not in {"1", "true", "yes"}:
+        return path
+
+    from dental_procurement_intelligence.analytics.demo_data import build_demo_data
+    from dental_procurement_intelligence.pncp import PNCPClient
+
+    with PNCPClient() as client:
+        result = build_demo_data(client, path.parent)
+
+    generated = Path(result.database_path)
+    if generated != path:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        generated.replace(path)
+
+    return path
+
+
 def create_app(database_path: str | Path | None = None) -> Any:
     try:
         from fastapi import Body, FastAPI, HTTPException, Query, Request
@@ -50,9 +72,11 @@ def create_app(database_path: str | Path | None = None) -> Any:
         ),
     )
 
-    resolved_database_path = Path(
-        database_path
-        or os.environ.get("ATLAS_DATABASE_PATH", "data/analytics.duckdb")
+    resolved_database_path = _bootstrap_demo_database(
+        Path(
+            database_path
+            or os.environ.get("ATLAS_DATABASE_PATH", "data/analytics.duckdb")
+        )
     )
     frontend_url = os.environ.get(
         "ATLAS_FRONTEND_URL",
