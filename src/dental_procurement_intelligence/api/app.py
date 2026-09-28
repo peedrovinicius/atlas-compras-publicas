@@ -1,6 +1,11 @@
+from collections import defaultdict, deque
 from pathlib import Path
+from threading import Lock
+from time import monotonic
 from typing import Any
 
+from dental_procurement_intelligence import __version__
+from dental_procurement_intelligence.api.demo import render_demo
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
     analytics_awards,
@@ -14,7 +19,7 @@ from dental_procurement_intelligence.identity import available_domains, parse_pr
 
 def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     try:
-        from fastapi import FastAPI, HTTPException, Query
+        from fastapi import FastAPI, HTTPException, Query, Request
         from fastapi.responses import HTMLResponse
     except ImportError as exc:
         raise RuntimeError(
@@ -30,6 +35,31 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
         ),
     )
 
+    rate_window_seconds = 60.0
+    rate_limit = 60
+    normalization_requests: dict[str, deque[float]] = defaultdict(deque)
+    rate_lock = Lock()
+
+    def enforce_normalization_rate_limit(request: Any) -> None:
+        forwarded = request.headers.get("x-forwarded-for", "")
+        client_ip = forwarded.split(",", 1)[0].strip()
+        if not client_ip and request.client is not None:
+            client_ip = request.client.host
+        client_ip = client_ip or "unknown"
+
+        now = monotonic()
+        with rate_lock:
+            bucket = normalization_requests[client_ip]
+            while bucket and now - bucket[0] >= rate_window_seconds:
+                bucket.popleft()
+            if len(bucket) >= rate_limit:
+                raise HTTPException(
+                    status_code=429,
+                    detail="Limite de normalizações atingido. Tente novamente em instantes.",
+                    headers={"Retry-After": "60"},
+                )
+            bucket.append(now)
+
     def execute(callable_: Any, *args: Any, **kwargs: Any) -> Any:
         try:
             return callable_(*args, **kwargs)
@@ -40,131 +70,25 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
 
     @app.get("/health")
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        return {"status": "ok", "version": __version__}
 
     @app.get("/", response_class=HTMLResponse)
     def demo() -> str:
-        return """<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Atlas de Compras Públicas</title>
-<style>
-:root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: #0d1117; color: #e6edf3; }
-main { width: min(920px, 92vw); margin: 0 auto; padding: 56px 0 72px; }
-.eyebrow {
-  color: #8b949e;
-  text-transform: uppercase;
-  letter-spacing: .14em;
-  font-size: 12px;
-}
-h1 { font-size: clamp(36px, 7vw, 66px); line-height: 1; margin: 10px 0 16px; }
-.lead { color: #aab3bd; line-height: 1.65; max-width: 760px; }
-.card {
-  margin-top: 30px;
-  padding: 22px;
-  border: 1px solid #30363d;
-  border-radius: 16px;
-  background: #161b22;
-}
-label { display: block; font-weight: 700; margin-bottom: 10px; }
-textarea {
-  width: 100%;
-  min-height: 110px;
-  resize: vertical;
-  border-radius: 10px;
-  border: 1px solid #30363d;
-  background: #0d1117;
-  color: #e6edf3;
-  padding: 14px;
-  font: inherit;
-}
-button {
-  margin-top: 12px;
-  border: 0;
-  border-radius: 10px;
-  padding: 11px 16px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  background: #e6edf3;
-  color: #0d1117;
-}
-pre {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  background: #0d1117;
-  border-radius: 10px;
-  padding: 16px;
-  min-height: 88px;
-  color: #c9d1d9;
-}
-.meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 14px; }
-a { color: #58a6ff; }
-.note { color: #8b949e; font-size: 13px; line-height: 1.55; margin-top: 18px; }
-</style>
-</head>
-<body>
-<main>
-  <div class="eyebrow">Demo pública</div>
-  <h1>Atlas de Compras Públicas</h1>
-  <p class="lead">
-    Teste a normalização real de uma descrição do PNCP. A demo usa o mesmo parser
-    versionado do repositório e não simula preços nem sinais estatísticos.
-  </p>
-
-  <section class="card">
-    <label for="description">Descrição do item</label>
-    <textarea id="description">RES FOTOP A2 C/2 SERINGAS 4G</textarea>
-    <button id="run">Normalizar</button>
-    <pre id="result">Clique em “Normalizar”.</pre>
-  </section>
-
-  <div class="meta">
-    <a href="/docs">Swagger / OpenAPI</a>
-    <a href="/api/v1/domains">Domínios</a>
-    <a href="https://github.com/peedrovinicius/atlas-compras-publicas">Código-fonte</a>
-  </div>
-
-  <p class="note">
-    Os painéis de preços, homologações e sinais dependem de uma base DuckDB analítica
-    consolidada e ainda não são publicados nesta demo.
-  </p>
-</main>
-<script>
-const button = document.getElementById("run");
-const input = document.getElementById("description");
-const output = document.getElementById("result");
-
-async function normalize() {
-  const description = input.value.trim();
-  if (!description) return;
-  output.textContent = "Processando...";
-  try {
-    const endpoint = "/api/v1/normalize?description=";
-    const response = await fetch(endpoint + encodeURIComponent(description));
-    const data = await response.json();
-    output.textContent = JSON.stringify(data, null, 2);
-  } catch (error) {
-    output.textContent = "Falha ao consultar a API.";
-  }
-}
-button.addEventListener("click", normalize);
-</script>
-</body>
-</html>"""
+        return render_demo(__version__)
 
     @app.get("/api/v1/normalize")
     def normalize(
+        request: Request,
         description: str = Query(min_length=3, max_length=2000),
     ) -> dict[str, Any]:
-        product = parse_product(description)
+        enforce_normalization_rate_limit(request)
+        cleaned_description = description.strip()
+        if len(cleaned_description) < 3:
+            raise HTTPException(
+                status_code=422,
+                detail="A descrição deve ter pelo menos 3 caracteres úteis.",
+            )
+        product = parse_product(cleaned_description)
 
         def quantity(value: Any) -> dict[str, Any] | None:
             if value is None:
@@ -177,6 +101,8 @@ button.addEventListener("click", normalize);
 
         attributes = product.technical_attributes
         return {
+            "atlas_version": __version__,
+            "classification_method": "deterministic_rules",
             "original_description": product.original_description,
             "normalized_description": product.normalized_description,
             "category": product.category.value,
