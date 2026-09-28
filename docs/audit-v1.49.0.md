@@ -19,6 +19,7 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Snapshot v1-v4 | atualizado |
 | Teste de snapshot v1-v4 | atualizado |
 | CI | falhou sem logs úteis |
+| Auditoria textual inicial | concluída |
 
 ## Achados
 
@@ -117,6 +118,18 @@ Interpretação da auditoria:
 - o padrão é compatível com falha operacional antes da execução do runner, limite de minutos, fila, permissão, quota ou problema de infraestrutura do Actions;
 - a próxima verificação precisa ser feita visualmente na aba Actions ou por execução local de `ruff check .` e `pytest -q`.
 
+### 7. Auditoria textual inicial concluída
+
+A revisão textual inicial não encontrou motivo para ampliar o README. A decisão editorial é manter a página principal enxuta e deixar o histórico técnico nos documentos especializados.
+
+Pontos mantidos:
+
+- linguagem técnica e direta;
+- sem simular painel de preços ou homologações;
+- sem substituir baseline por pós-tuning;
+- sem inserir promessa de estabilidade plena do domínio de medicamentos;
+- sem aumentar a lista de documentos na página principal.
+
 ## Checklist de auditoria
 
 - [x] Conferir separação baseline x pós-tuning.
@@ -129,17 +142,16 @@ Interpretação da auditoria:
 - [x] Ampliar cobertura de path do CI para README e snapshot visual.
 - [x] Disparar novo CI via commit no workflow.
 - [x] Registrar falha do CI sem logs úteis.
+- [x] Concluir auditoria textual inicial.
 - [ ] Conferir Actions manualmente na interface.
 - [ ] Rodar suíte local ou em ambiente conectado.
 - [ ] Conferir links do README no GitHub renderizado.
 - [ ] Conferir visual do snapshot SVG no GitHub renderizado.
-- [ ] Revisar documentação para termos artificiais ou promocionais.
-- [ ] Revisar se há excesso de arquivos técnicos no topo da documentação.
 
 ## Próxima etapa da auditoria
 
-A próxima etapa deve focar em três frentes:
+A próxima etapa depende de ambiente de execução ou interface visual:
 
-1. validação local ou visual do CI;
-2. sanidade visual do README e do snapshot no GitHub;
-3. revisão textual para manter o projeto técnico, sério e sem excesso de documentação operacional.
+1. abrir a aba Actions e ler a causa da falha do run `36411056152`;
+2. executar localmente `ruff check .` e `pytest -q`;
+3. conferir visualmente README e snapshot renderizados no GitHub.
