@@ -20,6 +20,7 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Teste de snapshot v1-v4 | atualizado |
 | CI | falhou sem logs úteis |
 | Auditoria textual inicial | concluída |
+| Release notes sincronizadas | concluído |
 
 ## Achados
 
@@ -130,6 +131,15 @@ Pontos mantidos:
 - sem inserir promessa de estabilidade plena do domínio de medicamentos;
 - sem aumentar a lista de documentos na página principal.
 
+### 8. Release notes sincronizadas
+
+`docs/release-v1.49.0.md` foi sincronizado com a auditoria para registrar:
+
+- revisão editorial do README;
+- ampliação do workflow de CI;
+- limitação real do Actions sem logs úteis;
+- status da auditoria textual inicial.
+
 ## Checklist de auditoria
 
 - [x] Conferir separação baseline x pós-tuning.
@@ -143,6 +153,7 @@ Pontos mantidos:
 - [x] Disparar novo CI via commit no workflow.
 - [x] Registrar falha do CI sem logs úteis.
 - [x] Concluir auditoria textual inicial.
+- [x] Sincronizar release notes.
 - [ ] Conferir Actions manualmente na interface.
 - [ ] Rodar suíte local ou em ambiente conectado.
 - [ ] Conferir links do README no GitHub renderizado.
