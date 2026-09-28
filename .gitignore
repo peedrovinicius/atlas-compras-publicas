@@ -19,6 +19,7 @@ data/raw/
 data/bronze/
 data/silver/
 data/gold/
+data/demo/raw/
 *.duckdb
 *.duckdb.wal
 *.parquet
