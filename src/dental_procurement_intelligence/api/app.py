@@ -12,6 +12,7 @@ from dental_procurement_intelligence.api.service import (
     analytics_awards,
     analytics_categories,
     analytics_overview,
+    analytics_product_history,
     analytics_product_search,
     analytics_product_summary,
     analytics_quality,
@@ -230,6 +231,14 @@ def create_app(database_path: str | Path | None = None) -> Any:
             query=q,
             limit=limit,
             offset=offset,
+        )
+
+    @app.get("/api/v1/products/{product_id}/history")
+    def product_history(product_id: str) -> dict[str, Any]:
+        return execute(
+            analytics_product_history,
+            resolved_database_path,
+            product_id=product_id,
         )
 
     @app.get("/api/v1/products/{product_id}")
