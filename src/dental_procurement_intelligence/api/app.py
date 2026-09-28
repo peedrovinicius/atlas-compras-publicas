@@ -14,8 +14,10 @@ from dental_procurement_intelligence.api.service import (
     analytics_overview,
     analytics_product_buyers,
     analytics_product_history,
+    analytics_product_records,
     analytics_product_regions,
     analytics_product_search,
+    analytics_product_signals,
     analytics_product_summary,
     analytics_product_suppliers,
     analytics_quality,
@@ -232,6 +234,34 @@ def create_app(database_path: str | Path | None = None) -> Any:
             analytics_product_search,
             resolved_database_path,
             query=q,
+            limit=limit,
+            offset=offset,
+        )
+
+    @app.get("/api/v1/products/{product_id}/signals")
+    def product_signals(
+        product_id: str,
+        limit: int = Query(default=50, ge=1, le=100),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
+        return execute(
+            analytics_product_signals,
+            resolved_database_path,
+            product_id=product_id,
+            limit=limit,
+            offset=offset,
+        )
+
+    @app.get("/api/v1/products/{product_id}/records")
+    def product_records(
+        product_id: str,
+        limit: int = Query(default=50, ge=1, le=100),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
+        return execute(
+            analytics_product_records,
+            resolved_database_path,
+            product_id=product_id,
             limit=limit,
             offset=offset,
         )
