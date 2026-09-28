@@ -135,9 +135,9 @@ def build_parser() -> argparse.ArgumentParser:
         "build-demo-data",
         help="Reconstrói a amostra analítica reproduzível usada na demonstração",
     )
-    demo_data.add_argument("--cnpj", default=DEMO_CNPJ)
-    demo_data.add_argument("--year", type=int, default=DEMO_YEAR)
-    demo_data.add_argument("--sequence", type=int, default=DEMO_SEQUENCE)
+    demo_data.add_argument("--cnpj")
+    demo_data.add_argument("--year", type=int)
+    demo_data.add_argument("--sequence", type=int)
     demo_data.add_argument("--output-root", default="data/demo")
 
     signals = subparsers.add_parser(
