@@ -13,6 +13,7 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Release documentada | concluído |
 | Branch `release/v1.49.0` | criada |
 | README alinhado com v1.49.0 | concluído |
+| Revisão do README | atualizada |
 | Medicamentos v4 baseline independente | preservada |
 | Medicamentos v4 pós-tuning | documentado separadamente |
 | Snapshot v1-v4 | atualizado |
@@ -54,9 +55,13 @@ Resultado:
 
 A auditoria considera correta a separação entre baseline independente e regressão pós-tuning.
 
-### 3. README corrigido e reduzido
+### 3. README corrigido, reduzido e revisado
 
 O README tinha um texto desatualizado dizendo que o v4 ainda não possuía pós-tuning. A inconsistência foi corrigida nesta auditoria.
+
+Também foi atualizada a revisão editorial em:
+
+- `docs/readme-review-v1.49.0.md`
 
 O README agora:
 
@@ -118,6 +123,7 @@ Interpretação da auditoria:
 - [x] Conferir documentação de release.
 - [x] Conferir README de alto nível.
 - [x] Corrigir README desatualizado.
+- [x] Atualizar revisão editorial do README.
 - [x] Conferir snapshot v1-v4.
 - [x] Conferir teste de snapshot v1-v4.
 - [x] Ampliar cobertura de path do CI para README e snapshot visual.
