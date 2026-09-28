@@ -849,28 +849,28 @@ def test_product_distribution_bins_defensible_prices(
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'defensible', 10.0
+                        '111', 'CE', 'defensible', 10.0
                     ),
                     (
                         'p2', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'defensible', 12.0
+                        '222', 'MG', 'defensible', 12.0
                     ),
                     (
                         'p3', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'defensible', 30.0
+                        '333', 'PR', 'defensible', 30.0
                     ),
                     (
                         'p4', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        'review', 999.0
+                        '444', 'SP', 'review', 999.0
                     )
             ) AS t(
                 procurement_key,
@@ -891,6 +891,8 @@ def test_product_distribution_bins_defensible_prices(
                 unit_quantity_unit,
                 normalized_quantity_value,
                 normalized_quantity_unit,
+                supplier_document,
+                state_code,
                 price_normalization_status,
                 awarded_price_per_base_unit
             )
