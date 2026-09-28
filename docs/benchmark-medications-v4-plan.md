@@ -29,13 +29,17 @@ A ordem metodológica é obrigatória:
 7. documentar a baseline independente;
 8. só depois decidir se haverá tuning posterior.
 
-## Inventário de fontes candidatas
+## Inventário e colisão
 
 O levantamento inicial de fontes candidatas está em:
 
 - [Pré-candidatos de fontes para medicamentos v4](medications-v4-candidate-sources.md)
 
-Esse inventário não congela o dataset. Ele serve apenas como fila de triagem para checagem de colisão, diversidade geográfica e qualidade dos itens.
+A primeira checagem formal de colisão por número de controle está em:
+
+- [Checagem de colisão do holdout de medicamentos v4](medications-v4-collision-check.md)
+
+Esses arquivos não congelam o dataset. Eles servem como fila auditável de triagem antes da seleção dos itens.
 
 ## Critérios de independência
 
@@ -107,9 +111,10 @@ Cada linha do v4 deve manter o contrato usado nos ciclos anteriores:
 ## Checklist antes do congelamento
 
 - [ ] 8 contratações inéditas selecionadas.
-- [ ] Colisão contra `medications-v1.jsonl` verificada.
-- [ ] Colisão contra `medications-v2.jsonl` verificada.
-- [ ] Colisão contra `medications-v3.jsonl` verificada.
+- [x] Colisão por número de controle contra `medications-v1.jsonl` verificada.
+- [x] Colisão por número de controle contra `medications-v2.jsonl` verificada.
+- [x] Colisão por número de controle contra `medications-v3.jsonl` verificada.
+- [ ] Colisão por descrição contra v1, v2 e v3 verificada.
 - [ ] 48 exemplos revisados.
 - [ ] 192 campos esperados revisados.
 - [ ] Nenhum tuning aplicado antes da primeira medição.
