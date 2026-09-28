@@ -14,6 +14,24 @@ import type {
 
 const DEFAULT_TEXT = "RES FOTOP A2 C/2 SERINGAS 4G";
 
+const CATEGORY_EXAMPLES: Record<string, string> = {
+  flowable_resin: "RESINA FLOW A2 SERINGA 2G",
+  composite_resin: "RES FOTOP A2 C/2 SERINGAS 4G",
+  dental_adhesive: "ADESIVO DENTAL FRASCO 4ML",
+  glass_ionomer: "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL LIQ 8ML",
+  phosphoric_acid: "ACIDO FOSFORICO 37% SERINGA 2,5ML",
+  alginate: "ALGINATO PARA MOLDAGEM PACOTE 410G",
+  fluoride_gel: "FLUORETO DE SODIO 2% GEL NEUTRO FRASCO 200ML",
+  prophylaxis_paste: "PASTA PROFILATICA TUBO 90G",
+  calcium_hydroxide: "HIDROXIDO DE CALCIO P.A 10G",
+  zinc_oxide: "OXIDO DE ZINCO 50G",
+  eugenol: "EUGENOL FRASCO 20ML",
+  radiographic_fixer: "FIXADOR RADIOGRAFICO PRONTO PARA USO LIQUIDO 475ML",
+  radiographic_developer: "REVELADOR RADIOGRAFICO PRONTO PARA USO 475ML",
+  local_anesthetic: "ANESTESICO LOCAL LIDOCAINA 2% COM EPINEFRINA 1:100.000",
+  unknown: "CIMENTO ODONTOLOGICO",
+};
+
 const EXAMPLES = [
   {
     label: "Resina A2",
@@ -226,6 +244,7 @@ export default function App() {
   const [message, setMessage] = useState("Preparando o exemplo inicial.");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const resultsRef = useRef<HTMLElement>(null);
 
   const descriptions = useMemo(() => parseDescriptions(input), [input]);
   const categoryLabels = useMemo(
@@ -285,12 +304,23 @@ export default function App() {
     void analyze(value);
   }
 
-  function focusForCategory(category: ParserCategory) {
-    inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    inputRef.current?.focus();
-    inputRef.current?.select();
-    setMessage(`Digite uma descrição de ${category.label}.`);
-    setError(null);
+  async function runCategoryExample(category: ParserCategory) {
+    const example = CATEGORY_EXAMPLES[category.id];
+
+    if (!example) {
+      setError(`Ainda não há exemplo configurado para ${category.label}.`);
+      return;
+    }
+
+    setInput(example);
+    await analyze(example);
+
+    window.requestAnimationFrame(() => {
+      resultsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }
 
   useEffect(() => {
@@ -431,7 +461,7 @@ export default function App() {
               </div>
             </div>
             <p className="aside-copy">
-              Clique em uma categoria para voltar direto ao campo de teste.
+              Clique em uma categoria para testar automaticamente um exemplo.
             </p>
 
             <div className="category-list">
@@ -444,7 +474,8 @@ export default function App() {
                       ? "category-row category-row-fallback"
                       : "category-row"
                   }
-                  onClick={() => focusForCategory(category)}
+                  disabled={loading}
+                  onClick={() => void runCategoryExample(category)}
                 >
                   <span className="category-dot" />
                   <span>{category.label}</span>
@@ -454,7 +485,11 @@ export default function App() {
           </aside>
         </section>
 
-        <section className="results-section" aria-live="polite">
+        <section
+          ref={resultsRef}
+          className="results-section"
+          aria-live="polite"
+        >
           <div className="results-header">
             <div>
               <span className="section-kicker">Saída estruturada</span>
@@ -470,7 +505,9 @@ export default function App() {
           {results.length === 0 && !loading ? (
             <div className="empty-state">
               <strong>Nenhum resultado para mostrar.</strong>
-              <span>Digite uma descrição acima e clique em Analisar.</span>
+              <span>
+                Clique em uma categoria ou exemplo acima, ou digite uma descrição.
+              </span>
             </div>
           ) : (
             <div className="result-list">
