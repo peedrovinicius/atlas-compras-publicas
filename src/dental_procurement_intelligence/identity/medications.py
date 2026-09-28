@@ -46,11 +46,12 @@ _STRENGTH = re.compile(
 )
 _INGREDIENT_STOP = re.compile(
     r"\s+(?:DOSAGEM|CONCENTRACAO|COMPOSICAO|APRESENTACAO|"
-    r"FORMA FARMACEUTICA|USO|APLICACAO|TIPO MEDICAMENTO)\b"
+    r"PRINCIPIO ATIVO|FORMA FARMACEUTICA|USO|APLICACAO|"
+    r"TIPO MEDICAMENTO)\b"
 )
 _ASSOCIATED_INGREDIENT = re.compile(
-    r"\bASSOCIAD[OA]\s+(?:AO|A)\s+"
-    r"(?P<ingredient>[A-Z][A-Z -]*?)"
+    r"\bASSOCIAD[OA]\s+(?:(?:AO|A|COM)\s+|C/\s*)"
+    r"(?P<ingredient>[A-Z][A-Z +/\-]*?)"
     r"(?=,|\s+(?:CONCENTRACAO|DOSAGEM|APRESENTACAO|"
     r"FORMA FARMACEUTICA|USO|COMPRIMIDO)\b|$)"
 )
@@ -73,6 +74,8 @@ _TEXT_REWRITES = (
     ("SOLUCAOINJETAVEL", "SOLUCAO INJETAVEL"),
     ("USOTOPICO", "USO TOPICO"),
     ("FOSFATODISSODICODEBETAMETASONA", "FOSFATO DISSODICO DE BETAMETASONA "),
+    ("CONCETRACAO", "CONCENTRACAO"),
+    ("VIADE ADMINISTRACAO", "VIA DE ADMINISTRACAO"),
 )
 _BRAND_ONLY_NAMES = {
     "BENESTARE",
@@ -116,7 +119,7 @@ def _clean_active_ingredient(text: str) -> str | None:
         first = ingredient_text
 
     first = re.sub(
-        r",\s*(FOSFATO|CLORIDRATO|LACTATO)\b",
+        r",\s*(FOSFATO|CLORIDRATO|LACTATO|SULFATO)\b",
         r" \1",
         first,
     )
@@ -132,6 +135,24 @@ def _clean_active_ingredient(text: str) -> str | None:
 
     first = re.sub(r",?\s*\d+(?:[.,]\d+)?%$", "", first).strip(" ,-")
     components = [first] if first else []
+
+    qualifier = re.search(
+        r"\b(?:PRINCIPIO ATIVO|COMPOSICAO)\s+(?:SAL\s+)?"
+        r"(?P<qualifier>ACETATO|CLORIDRATO|SUCCINATO|DINITRATO|"
+        r"FOSFATO|LACTATO|SULFATO|BENZATINA|POTASSICA|SODICA)\b",
+        without_code,
+    )
+    if components and qualifier:
+        value = qualifier.group("qualifier")
+        if value not in components[0]:
+            components[0] = f"{components[0]} {value}"
+
+    association_text = re.split(
+        r"\b(?:SOL INJ|SOLUCAO INJETAVEL|INJETAVEL|AMPOLA|POMADA|CREME)\b",
+        ingredient_text,
+        maxsplit=1,
+    )[0]
+    strength_matches = list(_STRENGTH.finditer(association_text))
 
     for index in range(1, len(strength_matches)):
         previous = strength_matches[index - 1]
@@ -182,10 +203,14 @@ def _clean_active_ingredient(text: str) -> str | None:
         " INJETAVEL",
         " COLIRIO",
         " SOL. OFTALMICA",
+        " SOLUCAO OFTALMICA",
+        " SOL INJ",
+        " PO PARA SOL INJ",
         " XAROPE",
         " ELIXIR",
         " POMADA",
         " CREME",
+        " GEL",
         " GEL VAGINAL",
         " TUBETE",
         " USO TOPICO",
@@ -266,11 +291,15 @@ def _dosage_form(text: str) -> MedicationDosageForm:
         or "PO LIOFILO" in text
         or "PO LIOFILIZADO" in text
         or re.search(r"\b(?:IV|EV)/IM\b", text)
+        or "PO PARA SOL INJ" in text
+        or "SOL INJ" in text
     ):
         return MedicationDosageForm.INJECTABLE
     if (
         "SOLUCAO ORAL" in text
         or "SUSPENSAO ORAL" in text
+        or "PO PARA SUSPENSAO" in text
+        or "EM PO PARA SUSPENSAO" in text
         or "XAROPE" in text
         or "ELIXIR" in text
         or "GOTAS" in text
@@ -285,6 +314,7 @@ def _dosage_form(text: str) -> MedicationDosageForm:
         "POMADA" in text
         or "CREME" in text
         or "GEL VAGINAL" in text
+        or re.search(r"\bGEL\b", text)
         or "LOCAO OLEOSA" in text
     ):
         return MedicationDosageForm.TOPICAL
@@ -309,7 +339,11 @@ def _route(
         return MedicationRoute.INJECTABLE
     if dosage_form == MedicationDosageForm.OPHTHALMIC:
         return MedicationRoute.OPHTHALMIC
-    if dosage_form == MedicationDosageForm.TOPICAL or "USO TOPICO" in text:
+    if (
+        dosage_form == MedicationDosageForm.TOPICAL
+        or "USO TOPICO" in text
+        or "ADMINISTRACAO TOPICA" in text
+    ):
         return MedicationRoute.TOPICAL
     if dosage_form in (
         MedicationDosageForm.TABLET,
