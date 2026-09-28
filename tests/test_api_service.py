@@ -672,3 +672,162 @@ def test_product_suppliers_and_buyers_use_public_award_context(
     assert beta["procurement_count"] == 2
     assert float(beta["awarded_total_value"]) == 370.0
     assert float(beta["median_price"]) == 12.5
+
+
+
+def test_product_signals_and_records_preserve_traceability(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES (
+                    'pncp:15126437000305:2026:212',
+                    'award-1',
+                    'contract-hash',
+                    'item-hash',
+                    'result-hash',
+                    1,
+                    1,
+                    'RESINA COMPOSTA A2 SERINGA 4G',
+                    'composite_resin',
+                    'syringe',
+                    'A2',
+                    NULL,
+                    'nanohybrid',
+                    'light_cure',
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    'UNIDADE',
+                    1,
+                    4.0,
+                    'g',
+                    4.0,
+                    'g',
+                    'Fornecedor Alfa',
+                    '111',
+                    'Marca X',
+                    '15126437000305',
+                    'Órgão Alfa',
+                    'U1',
+                    'Unidade Alfa',
+                    'Curitiba',
+                    'PR',
+                    'Sul',
+                    'Pregão',
+                    DATE '2026-06-10',
+                    10.00,
+                    10.0,
+                    100.00,
+                    10.00,
+                    'defensible',
+                    'base física identificada'
+                )
+            ) AS t(
+                procurement_key,
+                award_key,
+                contract_source_sha256,
+                item_source_sha256,
+                result_source_sha256,
+                item_number,
+                result_sequence,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                procurement_unit,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_name,
+                supplier_document,
+                brand,
+                organization_cnpj,
+                organization_name,
+                buyer_unit_code,
+                buyer_unit_name,
+                municipality_name,
+                state_code,
+                macroregion,
+                modality,
+                analysis_date,
+                awarded_unit_value,
+                awarded_quantity,
+                awarded_total_value,
+                awarded_price_per_base_unit,
+                price_normalization_status,
+                price_normalization_reason
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE gold_price_signals AS
+            SELECT
+                silver_awards.*,
+                'brasil_ano' AS comparison_scope,
+                'Brasil' AS comparison_geography,
+                '2026' AS comparison_period,
+                'group-1' AS scope_group_key,
+                8 AS group_size,
+                CAST(8.0 AS DECIMAL(38,12)) AS median_price,
+                CAST(7.0 AS DECIMAL(38,12)) AS q1_price,
+                CAST(9.0 AS DECIMAL(38,12)) AS q3_price,
+                CAST(0.5 AS DECIMAL(38,12)) AS mad_price,
+                4.2 AS modified_z_score,
+                'modified_z_score' AS detection_method,
+                TRUE AS is_price_signal
+            FROM silver_awards
+            """
+        )
+
+    search = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+    )
+    product_id = search["items"][0]["product_id"]
+
+    signals = service.analytics_product_signals(
+        database,
+        product_id=product_id,
+    )
+    records = service.analytics_product_records(
+        database,
+        product_id=product_id,
+    )
+
+    assert signals["total"] == 1
+    assert signals["items"][0]["award_key"] == "award-1"
+    assert signals["items"][0]["detection_method"] == "modified_z_score"
+    assert signals["items"][0]["contract_source_sha256"] == "contract-hash"
+    assert "prova de irregularidade" in signals["disclaimer"]
+    assert signals["items"][0]["pncp_url"] == (
+        "https://pncp.gov.br/app/editais/15126437000305/2026/212"
+    )
+
+    assert records["total"] == 1
+    record = records["items"][0]
+    assert record["original_description"] == "RESINA COMPOSTA A2 SERINGA 4G"
+    assert record["supplier_name"] == "Fornecedor Alfa"
+    assert record["organization_name"] == "Órgão Alfa"
+    assert record["item_source_sha256"] == "item-hash"
+    assert record["result_source_sha256"] == "result-hash"
+    assert record["pncp_url"] == (
+        "https://pncp.gov.br/app/editais/15126437000305/2026/212"
+    )
