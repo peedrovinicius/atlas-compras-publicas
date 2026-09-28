@@ -1490,3 +1490,123 @@ input { font: inherit; }
     min-width: 0;
   }
 }
+
+
+.analytics-recent-searches,
+.analytics-refinements {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.analytics-recent-searches > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.analytics-recent-searches > div:first-child span,
+.analytics-refinements > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.analytics-recent-searches > div:first-child button {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  padding: 0;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.analytics-recent-searches > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.analytics-recent-searches > div:last-child button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: #46516a;
+  padding: 6px 9px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.analytics-recent-searches > div:last-child button:hover {
+  border-color: #9fb0dd;
+  background: #fbfcff;
+}
+
+.analytics-refinements {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.analytics-refinements > div {
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.analytics-refinements small {
+  padding-top: 6px;
+  color: #768197;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.analytics-refinements > div > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.analytics-refinements button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: #46516a;
+  padding: 6px 9px;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.analytics-refinements button:hover {
+  border-color: #9fb0dd;
+  background: #f7f9ff;
+}
+
+.analytics-refinements button b {
+  min-width: 18px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--muted);
+  padding: 2px 5px;
+  font-size: 9px;
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .analytics-refinements > div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .analytics-refinements small {
+    padding-top: 0;
+  }
+}
