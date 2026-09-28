@@ -161,3 +161,49 @@ def test_medication_v2_tuning_handles_multiple_active_ingredients() -> None:
     assert dual.active_ingredient == (
         "BENZILPENICILINA POTASSICA + PROCAINA"
     )
+
+
+def test_medication_v3_tuning_covers_new_generalized_patterns() -> None:
+    succinate = parse_medication(
+        "Metilprednisolona princípio ativo: sal succinato, "
+        "dosagem: 125, apresentação: pó liofilizado + diluente, injetável"
+    )
+    associated = parse_medication(
+        "Bupivacaína Cloridrato apresentação: associada à glicose, "
+        "dosagem: 0,5% + 8%, tipo: solução injetável"
+    )
+    topical = parse_medication(
+        "RIFAMICINA SV SODICA - CONCENTRACAO/DOSAGEM 10 MG/ML,"
+        "FORMA FARMACEUTICA SOLUCAO,VIA DE ADMINISTRACAO TOPICA"
+    )
+    oral_powder = parse_medication(
+        "AMOXICILINA + CLAVULANATO DE POTASSIO - "
+        "CONCENTRACAO/DOSAGEM 250 MG/5ML + 62,5 MG/5ML, "
+        "EM PÓ PARA SUSPENSÃO, VIA DE ADMINISTRACAO ORAL"
+    )
+    ophthalmic = parse_medication("TOBRAMICINA SOLUÇÃO OFTÁLMICA 3 MG/ML")
+
+    assert succinate.active_ingredient == "METILPREDNISOLONA SUCCINATO"
+    assert associated.active_ingredient == "BUPIVACAINA CLORIDRATO + GLICOSE"
+    assert topical.route == MedicationRoute.TOPICAL
+    assert oral_powder.dosage_form == MedicationDosageForm.ORAL_LIQUID
+    assert oral_powder.route == MedicationRoute.ORAL
+    assert oral_powder.strength == "250 mg/5 ml"
+    assert ophthalmic.active_ingredient == "TOBRAMICINA"
+    assert ophthalmic.dosage_form == MedicationDosageForm.OPHTHALMIC
+
+
+def test_medication_v3_tuning_handles_salts_and_abbreviated_forms() -> None:
+    morphine = parse_medication(
+        "MORFINA, SULFATO - CONCENTRACAO/DOSAGEM 1MG/ML "
+        "FORMA FARMACEUTICA SOLUÇÃO INJETAVEL"
+    )
+    cefalotin = parse_medication("CEFALOTINA SODICA PO PARA SOL INJ 1G")
+    gel = parse_medication("LIDOCAÍNA CLORIDRATO GEL 20MG/G TUBO 30G")
+
+    assert morphine.active_ingredient == "MORFINA SULFATO"
+    assert cefalotin.active_ingredient == "CEFALOTINA SODICA"
+    assert cefalotin.dosage_form == MedicationDosageForm.INJECTABLE
+    assert gel.active_ingredient == "LIDOCAINA CLORIDRATO"
+    assert gel.dosage_form == MedicationDosageForm.TOPICAL
+    assert gel.route == MedicationRoute.TOPICAL
