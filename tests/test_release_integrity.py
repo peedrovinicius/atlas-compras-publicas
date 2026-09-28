@@ -6,7 +6,6 @@ from pathlib import Path
 
 from dental_procurement_intelligence import __version__
 
-
 _FROZEN_GIT_BLOBS = {
     "data/evaluation/technical-attributes-v11-baseline.json":
         "dba8020419137bc918efb31ae5f632954fb708d2",
