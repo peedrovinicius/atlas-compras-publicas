@@ -1008,6 +1008,7 @@ def test_product_search_filters_and_paginates(tmp_path: Path) -> None:
     assert filtered["items"][0]["shade"] == "A2"
     assert filtered["filters"]["state_code"] == "CE"
     assert filtered["filters"]["supplier"] == "alfa"
+    assert float(filtered["items"][0]["median_price"]) == 10.0
 
     page = service.analytics_product_search(
         database,
