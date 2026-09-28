@@ -80,10 +80,20 @@ class PNCPClient:
             raise ValueError("Unexpected PNCP payload: expected a JSON array")
         return payload
 
-    def contract(self, cnpj: str, year: int, sequence: int) -> PNCPContract:
+    def get_contract_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
         path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
-        payload = self._get_json(path)
-        return PNCPContract.model_validate(payload)
+        return self._get_raw(path)
+
+    def contract(self, cnpj: str, year: int, sequence: int) -> PNCPContract:
+        raw = self.get_contract_raw(cnpj, year, sequence)
+        return PNCPContract.model_validate(json.loads(raw.content))
+
+    def get_items_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
+        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
+        return self._get_raw(path)
+
+    def get_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
+        return self.contract_items(cnpj, year, sequence)
 
     def contract_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
         path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
