@@ -1,12 +1,20 @@
+<div align="center">
+
 # Atlas de Compras Públicas
 
-![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)
+Engenharia de dados e análise auditável de compras públicas brasileiras a partir do PNCP.
 
-**Inteligência de dados auditável para compras públicas no Brasil.**
+[![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
+![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas (PNCP) em informação comparável, rastreável e explicável. O projeto combina engenharia de dados, normalização de produtos, análise de preços e validação quantitativa para apoiar a exploração de compras públicas em diferentes regiões e períodos.
+[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md) · [Metodologia de sinais](docs/metodologia-anomalias.md) · [Como contribuir](CONTRIBUTING.md)
 
-A odontologia é a primeira vertical implementada e funciona como um domínio de alta complexidade para validar o núcleo analítico. O domínio de medicamentos já possui quatro benchmarks independentes próprios, mas permanece separado da produção enquanto o campo de princípio ativo segue em validação metodológica.
+</div>
+
+O projeto transforma dados públicos do Portal Nacional de Contratações Públicas (PNCP) em conjuntos comparáveis e rastreáveis. A cadeia cobre captura, preservação da evidência original, normalização de produtos, consolidação de preços e detecção estatística de sinais.
+
+A odontologia é a primeira vertical em produção. Medicamentos permanecem em validação independente enquanto o campo de princípio ativo segue em avaliação metodológica.
 
 ## O que o projeto entrega
 
