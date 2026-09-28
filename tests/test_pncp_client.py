@@ -46,3 +46,39 @@ def test_invalid_cnpj_is_rejected_before_network_call() -> None:
             raise AssertionError("Expected ValueError")
     finally:
         client.close()
+
+
+def test_client_follows_pncp_redirects() -> None:
+    requests: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(str(request.url))
+        if request.url.host == "example.test":
+            return httpx.Response(
+                301,
+                headers={
+                    "Location": (
+                        "https://redirected.test/v1/orgaos/"
+                        "10000000000003/compras/2021/1"
+                    )
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "numeroControlePNCP": "10000000000003-1-000001/2021",
+            },
+        )
+
+    client = PNCPClient(
+        settings=Settings(pncp_base_url="https://example.test"),
+        transport=httpx.MockTransport(handler),
+    )
+    try:
+        raw = client.get_contract_raw("10.000.000/0000-03", 2021, 1)
+    finally:
+        client.close()
+
+    assert raw.status_code == 200
+    assert raw.url.startswith("https://redirected.test/")
+    assert len(requests) == 2
