@@ -61,8 +61,13 @@ class PNCPClient:
     def close(self) -> None:
         self._client.close()
 
-    def _get_raw(self, path: str) -> PNCPRawResponse:
-        response = self._client.get(path)
+    def _get_raw(
+        self,
+        path: str,
+        *,
+        params: dict[str, int] | None = None,
+    ) -> PNCPRawResponse:
+        response = self._client.get(path, params=params)
         response.raise_for_status()
         return PNCPRawResponse(
             url=str(response.url),
@@ -90,9 +95,61 @@ class PNCPClient:
         cnpj: str,
         year: int,
         sequence: int,
+        *,
+        page: int | None = None,
+        page_size: int | None = None,
     ) -> PNCPRawResponse:
         path = f"/v1/orgaos/{_normalize_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
-        return self._get_raw(path)
+        params = None
+        if page is not None or page_size is not None:
+            params = {
+                "pagina": page or 1,
+                "tamanhoPagina": page_size or 100,
+            }
+        return self._get_raw(path, params=params)
+
+    def get_item_pages_raw(
+        self,
+        cnpj: str,
+        year: int,
+        sequence: int,
+        *,
+        page_size: int = 100,
+        max_pages: int = 1000,
+    ) -> list[PNCPRawResponse]:
+        if page_size < 1:
+            raise ValueError("page_size must be positive")
+        if max_pages < 1:
+            raise ValueError("max_pages must be positive")
+
+        pages: list[PNCPRawResponse] = []
+        seen_payloads: set[bytes] = set()
+
+        for page in range(1, max_pages + 1):
+            raw = self.get_items_raw(
+                cnpj,
+                year,
+                sequence,
+                page=page,
+                page_size=page_size,
+            )
+            payload = json.loads(raw.content)
+            records = list(self._ensure_list(payload))
+
+            if not records:
+                break
+            if raw.content in seen_payloads:
+                raise ValueError("PNCP item pagination did not advance")
+
+            pages.append(raw)
+            seen_payloads.add(raw.content)
+
+            if len(records) < page_size:
+                break
+        else:
+            raise ValueError("PNCP item pagination exceeded max_pages")
+
+        return pages
 
     def get_item_results_raw(
         self,
@@ -115,12 +172,14 @@ class PNCPClient:
         return self.contract_items(cnpj, year, sequence)
 
     def contract_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
-        raw = self.get_items_raw(cnpj, year, sequence)
-        payload = json.loads(raw.content)
-        return [
-            PNCPItem.model_validate(item)
-            for item in self._ensure_list(payload)
-        ]
+        items: list[PNCPItem] = []
+        for raw in self.get_item_pages_raw(cnpj, year, sequence):
+            payload = json.loads(raw.content)
+            items.extend(
+                PNCPItem.model_validate(item)
+                for item in self._ensure_list(payload)
+            )
+        return items
 
     def item_results(
         self,
