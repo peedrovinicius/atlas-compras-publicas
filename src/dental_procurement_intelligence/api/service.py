@@ -314,3 +314,114 @@ def analytics_product_search(
         "limit": limit,
         "offset": offset,
     }
+
+
+
+def analytics_product_summary(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    minimum_sample_size: int = 5,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+    if minimum_sample_size < 1:
+        raise ValueError("minimum_sample_size deve ser positivo")
+
+    identity = _product_identity_expression()
+    identity_fields = ", ".join(_PRODUCT_IDENTITY_FIELDS)
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        cursor = connection.execute(
+            f"""
+            SELECT
+                {identity} AS product_id,
+                {identity_fields},
+                COUNT(*) AS award_count,
+                COUNT(DISTINCT procurement_key) AS procurement_count,
+                COUNT(
+                    DISTINCT CONCAT(
+                        procurement_key,
+                        '|',
+                        CAST(item_number AS VARCHAR)
+                    )
+                ) AS item_count,
+                COUNT(DISTINCT supplier_document) AS supplier_count,
+                COUNT(DISTINCT state_code) AS state_count,
+                MIN(analysis_date) AS period_start,
+                MAX(analysis_date) AS period_end,
+                MAX(analysis_date) AS latest_update,
+                MIN(original_description) AS sample_description,
+                COUNT(*) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS price_sample_count
+            FROM silver_awards
+            WHERE {identity} = ?
+            GROUP BY {identity_fields}
+            """,
+            [product_id],
+        )
+        row = cursor.fetchone()
+        if row is None:
+            raise LookupError("Produto não encontrado na base analítica")
+        columns = [column[0] for column in cursor.description]
+        summary = dict(zip(columns, row, strict=True))
+
+        price_cursor = connection.execute(
+            f"""
+            SELECT
+                MEDIAN(awarded_price_per_base_unit) AS median_price,
+                AVG(awarded_price_per_base_unit) AS average_price,
+                MIN(awarded_price_per_base_unit) AS min_price,
+                MAX(awarded_price_per_base_unit) AS max_price,
+                QUANTILE_CONT(
+                    awarded_price_per_base_unit,
+                    0.25
+                ) AS percentile_25,
+                QUANTILE_CONT(
+                    awarded_price_per_base_unit,
+                    0.75
+                ) AS percentile_75,
+                STDDEV_POP(
+                    awarded_price_per_base_unit
+                ) AS standard_deviation,
+                SUM(
+                    awarded_quantity * normalized_quantity_value
+                ) AS total_physical_quantity
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND price_normalization_status = 'defensible'
+              AND awarded_price_per_base_unit IS NOT NULL
+              AND awarded_price_per_base_unit > 0
+            """,
+            [product_id],
+        )
+        price_row = price_cursor.fetchone()
+        price_columns = [column[0] for column in price_cursor.description]
+        price_stats = dict(zip(price_columns, price_row, strict=True))
+
+    price_sample_count = summary["price_sample_count"]
+    category_label = parser_category_label(summary["product_category"])
+    details = [
+        category_label,
+        summary.get("shade"),
+        summary.get("presentation"),
+    ]
+
+    return {
+        **summary,
+        "display_name": " · ".join(
+            str(value) for value in details if value
+        ),
+        "minimum_sample_size": minimum_sample_size,
+        "sample_sufficient": price_sample_count >= minimum_sample_size,
+        "price_unit": (
+            f"R$/{summary['normalized_quantity_unit']}"
+            if summary.get("normalized_quantity_unit")
+            else None
+        ),
+        "price_stats": price_stats,
+    }
