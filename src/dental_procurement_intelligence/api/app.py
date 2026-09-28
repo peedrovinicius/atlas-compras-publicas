@@ -13,6 +13,7 @@ from dental_procurement_intelligence.api.service import (
     analytics_categories,
     analytics_overview,
     analytics_product_buyers,
+    analytics_product_distribution,
     analytics_product_history,
     analytics_product_records,
     analytics_product_regions,
@@ -300,6 +301,18 @@ def create_app(database_path: str | Path | None = None) -> Any:
             analytics_product_regions,
             resolved_database_path,
             product_id=product_id,
+        )
+
+    @app.get("/api/v1/products/{product_id}/distribution")
+    def product_distribution(
+        product_id: str,
+        bins: int = Query(default=10, ge=5, le=40),
+    ) -> dict[str, Any]:
+        return execute(
+            analytics_product_distribution,
+            resolved_database_path,
+            product_id=product_id,
+            bin_count=bins,
         )
 
     @app.get("/api/v1/products/{product_id}/history")
