@@ -2,12 +2,12 @@
 
 Os arquivos analíticos desta pasta são gerados localmente e não são versionados.
 
-Fonte padrão da demonstração:
+Fonte padrão da demonstração analítica:
 
-- CNPJ: `01612541000133`
+- CNPJ: `15126437000305`
 - ano: `2026`
-- sequencial PNCP: `47`
-- número de controle referenciado no benchmark v5: `01612541000133-1-000047/2026`
+- sequencial PNCP: `212`
+- número de controle PNCP: `15126437000305-1-000212/2026`
 
 Reconstrução completa:
 
@@ -34,6 +34,6 @@ data/demo/
   atlas-demo.duckdb
 ```
 
-A captura consulta um endpoint público por item para os resultados homologados. A duração depende do tamanho da contratação e da disponibilidade do PNCP.
+A captura consulta endpoints públicos do PNCP e só produz análises de preço quando existem resultados homologados disponíveis. A duração depende do tamanho da contratação e da disponibilidade do PNCP.
 
 Os artefatos binários e a evidência bruta local são ignorados pelo Git. O repositório mantém apenas o código necessário para reconstruí-los.
