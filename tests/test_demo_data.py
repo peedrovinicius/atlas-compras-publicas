@@ -13,9 +13,9 @@ from dental_procurement_intelligence.cli import build_parser
 def test_demo_data_cli_defaults_are_explicit() -> None:
     args = build_parser().parse_args(["build-demo-data"])
 
-    assert args.cnpj == DEMO_CNPJ
-    assert args.year == DEMO_YEAR
-    assert args.sequence == DEMO_SEQUENCE
+    assert args.cnpj is None
+    assert args.year is None
+    assert args.sequence is None
     assert args.output_root == "data/demo"
 
 
@@ -43,8 +43,8 @@ def test_build_demo_data_orchestrates_existing_pipeline(
     monkeypatch.setattr(
         demo_data,
         "build_analytics_dataset",
-        lambda raw, parquet, database: (
-            calls.append(("items", (raw, parquet, database)))
+        lambda raw, parquet, database, **kwargs: (
+            calls.append(("items", (raw, parquet, database, kwargs)))
             or SimpleNamespace(row_count=3)
         ),
     )
@@ -79,9 +79,20 @@ def test_build_demo_data_orchestrates_existing_pipeline(
         lambda database: calls.append(("quality", database)),
     )
 
-    result = demo_data.build_demo_data(object(), tmp_path / "demo")
+    procurement = demo_data.DemoProcurement(
+        cnpj=demo_data.DEMO_CNPJ,
+        year=demo_data.DEMO_YEAR,
+        sequence=demo_data.DEMO_SEQUENCE,
+        label="test",
+    )
+    result = demo_data.build_demo_data(
+        object(),
+        tmp_path / "demo",
+        procurements=(procurement,),
+    )
 
-    assert result.procurement_key == capture.procurement_key
+    assert result.procurement_count == 1
+    assert result.procurement_keys == (capture.procurement_key,)
     assert result.item_count == 3
     assert result.result_count == 2
     assert result.silver_item_count == 3
