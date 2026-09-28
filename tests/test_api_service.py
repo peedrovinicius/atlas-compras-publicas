@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import duckdb
 import pytest
 
 from dental_procurement_intelligence.api import service
@@ -182,3 +183,92 @@ def test_pagination_rejects_invalid_bounds(
 
     with pytest.raises(ValueError, match="offset"):
         service.analytics_categories(database, offset=-1)
+
+
+
+def test_product_search_groups_awards_by_technical_identity(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'a1', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g',
+                        '111', 'CE', DATE '2026-05-10',
+                        'defensible', 10.00
+                    ),
+                    (
+                        'p2', 'a2', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g',
+                        '222', 'MG', DATE '2026-06-10',
+                        'defensible', 12.00
+                    ),
+                    (
+                        'p3', 'a3', 'IONOMERO DE VIDRO 10G',
+                        'glass_ionomer', 'powder', NULL, NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, 1, 10.0, 'g',
+                        '333', 'PR', DATE '2026-06-11',
+                        'review', NULL
+                    )
+            ) AS t(
+                procurement_key,
+                award_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                supplier_document,
+                state_code,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    result = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+        limit=20,
+        offset=0,
+    )
+
+    assert result["query"] == "resina composta A2"
+    assert result["total"] == 1
+    item = result["items"][0]
+    assert item["product_category"] == "composite_resin"
+    assert item["display_name"].startswith("Resina composta")
+    assert item["award_count"] == 2
+    assert item["procurement_count"] == 2
+    assert item["supplier_count"] == 2
+    assert item["state_count"] == 2
+    assert item["priced_observation_count"] == 2
+
+
+def test_product_search_rejects_short_query(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    database.touch()
+
+    with pytest.raises(ValueError, match="pelo menos 2"):
+        service.analytics_product_search(database, query="a")
