@@ -230,6 +230,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
         q: str = Query(min_length=2, max_length=200),
         limit: int = Query(default=20, ge=1, le=100),
         offset: int = Query(default=0, ge=0),
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> dict[str, Any]:
         return execute(
             analytics_product_search,
@@ -237,6 +243,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
             query=q,
             limit=limit,
             offset=offset,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/signals")
@@ -244,6 +256,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
         product_id: str,
         limit: int = Query(default=50, ge=1, le=100),
         offset: int = Query(default=0, ge=0),
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> dict[str, Any]:
         return execute(
             analytics_product_signals,
@@ -251,6 +269,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
             product_id=product_id,
             limit=limit,
             offset=offset,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/records")
@@ -258,6 +282,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
         product_id: str,
         limit: int = Query(default=50, ge=1, le=100),
         offset: int = Query(default=0, ge=0),
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> dict[str, Any]:
         return execute(
             analytics_product_records,
@@ -265,6 +295,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
             product_id=product_id,
             limit=limit,
             offset=offset,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/suppliers")
@@ -272,6 +308,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
         product_id: str,
         limit: int = Query(default=20, ge=1, le=100),
         offset: int = Query(default=0, ge=0),
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> dict[str, Any]:
         return execute(
             analytics_product_suppliers,
@@ -279,6 +321,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
             product_id=product_id,
             limit=limit,
             offset=offset,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/buyers")
@@ -286,6 +334,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
         product_id: str,
         limit: int = Query(default=20, ge=1, le=100),
         offset: int = Query(default=0, ge=0),
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> dict[str, Any]:
         return execute(
             analytics_product_buyers,
@@ -293,42 +347,102 @@ def create_app(database_path: str | Path | None = None) -> Any:
             product_id=product_id,
             limit=limit,
             offset=offset,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/regions")
-    def product_regions(product_id: str) -> dict[str, Any]:
+    def product_regions(
+        product_id: str,
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict[str, Any]:
         return execute(
             analytics_product_regions,
             resolved_database_path,
             product_id=product_id,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/distribution")
     def product_distribution(
         product_id: str,
         bins: int = Query(default=10, ge=5, le=40),
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> dict[str, Any]:
         return execute(
             analytics_product_distribution,
             resolved_database_path,
             product_id=product_id,
             bin_count=bins,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}/history")
-    def product_history(product_id: str) -> dict[str, Any]:
+    def product_history(
+        product_id: str,
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict[str, Any]:
         return execute(
             analytics_product_history,
             resolved_database_path,
             product_id=product_id,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/products/{product_id}")
-    def product_summary(product_id: str) -> dict[str, Any]:
+    def product_summary(
+        product_id: str,
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict[str, Any]:
         return execute(
             analytics_product_summary,
             resolved_database_path,
             product_id=product_id,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
         )
 
     @app.get("/api/v1/categories")
