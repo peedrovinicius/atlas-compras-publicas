@@ -15,16 +15,38 @@ from dental_procurement_intelligence.identity.rules import (
 )
 from dental_procurement_intelligence.identity.rules.dental import (
     ADHESIVE_HINTS as _ADHESIVE_HINTS,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     ADHESIVE_STRATEGY_RULES as _ADHESIVE_STRATEGY_RULES,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     ANESTHETIC_ACTIVE_INGREDIENTS as _ANESTHETIC_ACTIVE_INGREDIENTS,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     ANESTHETIC_INGREDIENT_RULES as _ANESTHETIC_INGREDIENT_RULES,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     CURING_MODE_RULES as _CURING_MODE_RULES,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     FLUID_RESIN_TERMS as _FLUID_RESIN_TERMS,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     FLUORIDE_FORMULATION_RULES as _FLUORIDE_FORMULATION_RULES,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     IONOMER_USE_RULES as _IONOMER_USE_RULES,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     MIXED_KIT_FAMILY_TERMS as _MIXED_KIT_FAMILY_TERMS,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     RESIN_HEAD_TERMS as _RESIN_HEAD_TERMS,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     RESIN_TECHNOLOGY_RULES as _RESIN_TECHNOLOGY_RULES,
+)
+from dental_procurement_intelligence.identity.rules.dental import (
     VASOCONSTRICTOR_RULES as _VASOCONSTRICTOR_RULES,
 )
 from dental_procurement_intelligence.normalization import (
