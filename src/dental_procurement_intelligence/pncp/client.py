@@ -1,6 +1,7 @@
 import json
 from collections.abc import Iterable
 from dataclasses import dataclass
+from time import sleep
 from typing import Any
 
 import httpx
@@ -67,14 +68,28 @@ class PNCPClient:
         *,
         params: dict[str, int] | None = None,
     ) -> PNCPRawResponse:
-        response = self._client.get(path, params=params)
-        response.raise_for_status()
-        return PNCPRawResponse(
-            url=str(response.url),
-            status_code=response.status_code,
-            content_type=response.headers.get("content-type"),
-            content=response.content,
-        )
+        last_error: httpx.TransportError | None = None
+        for attempt in range(1, self.settings.pncp_max_attempts + 1):
+            try:
+                response = self._client.get(path, params=params)
+                response.raise_for_status()
+                return PNCPRawResponse(
+                    url=str(response.url),
+                    status_code=response.status_code,
+                    content_type=response.headers.get("content-type"),
+                    content=response.content,
+                )
+            except httpx.TransportError as exc:
+                last_error = exc
+                if attempt == self.settings.pncp_max_attempts:
+                    raise
+                sleep(
+                    self.settings.pncp_retry_backoff_seconds
+                    * attempt
+                )
+
+        assert last_error is not None
+        raise last_error
 
     @staticmethod
     def _ensure_list(payload: Any) -> Iterable[dict[str, Any]]:
