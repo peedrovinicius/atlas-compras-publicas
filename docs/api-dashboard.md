@@ -42,6 +42,7 @@ A documentação OpenAPI é fornecida pelo FastAPI em `/docs`.
 - `GET /api/v1/products/{product_id}/buyers`
 - `GET /api/v1/products/{product_id}/signals`
 - `GET /api/v1/products/{product_id}/records`
+- `GET /api/v1/products/{product_id}/records.csv`
 
 ### Visões analíticas gerais
 
@@ -152,6 +153,13 @@ O frontend não contém números analíticos codificados. Os resultados vêm da 
 
 A busca por produtos usa `limit` e `offset`, devolve o total de grupos compatíveis e permite navegação por páginas sem alterar a identidade do produto.
 
+O parâmetro `sort` aceita:
+
+- `coverage`: prioriza grupos com mais preços comparáveis;
+- `procurements`: prioriza grupos com mais contratações;
+- `latest`: prioriza grupos com observação mais recente;
+- `name`: ordena pela identificação do produto.
+
 As rotas de inteligência por produto aceitam os mesmos filtros opcionais:
 
 - `state_code`: UF exata;
@@ -164,6 +172,16 @@ As rotas de inteligência por produto aceitam os mesmos filtros opcionais:
 Os filtros são aplicados ao mesmo universo em resumo, distribuição, histórico, geografia, fornecedores, compradores, sinais e registros de evidência. Isso evita comparar números calculados sobre subconjuntos diferentes.
 
 Todos os filtros são parametrizados e não interpolam entrada do usuário diretamente em SQL. A API rejeita intervalo em que `start_date` seja posterior a `end_date`.
+
+## Exportação CSV
+
+`/records.csv` usa o mesmo conjunto de filtros da análise e exporta todos os registros do recorte, percorrendo internamente as páginas necessárias.
+
+O arquivo é entregue em UTF-8 com BOM e inclui identificadores da homologação, contratação, fornecedor, órgão comprador, localidade, valores, status da normalização, hashes de origem e link para o PNCP.
+
+## URL compartilhável
+
+A aplicação React serializa no endereço a pesquisa, filtros, ordenação, offset atual e `product_id` selecionado. Abrir essa URL reconstrói o mesmo recorte analítico e, quando houver produto selecionado, carrega diretamente a análise correspondente.
 
 ## Dashboard HTML estático
 
