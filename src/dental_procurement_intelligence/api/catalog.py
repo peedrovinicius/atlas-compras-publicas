@@ -28,3 +28,10 @@ def parser_categories() -> list[dict[str, str | bool]]:
         }
         for category in ProductCategory
     ]
+
+
+def parser_category_label(category_id: str) -> str:
+    for category, label in _CATEGORY_LABELS.items():
+        if category.value == category_id:
+            return label
+    return category_id.replace("_", " ").strip().title()
