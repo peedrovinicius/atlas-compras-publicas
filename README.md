@@ -22,19 +22,21 @@ A aplicação pública já permite pesquisar produtos, comparar preços homologa
 
 ## Exemplo real: antes e depois
 
-Entrada:
+Exemplo proveniente do holdout público `data/evaluation/v5.jsonl`, item `lr-350`:
 
 ```text
-RES FOTOP A2 C/2 SERINGAS 4G
+PRIME ADESIVO FRASCO 4ML
 ```
 
-Saída estruturada:
+Saída do parser atual:
 
 ```text
-resina composta | A2 | seringa | 2 un | 4 g/un | 8 g total
+adesivo odontológico | frasco | 4 ml/un | medida não ambígua
 ```
 
-Esse tipo de transformação permite comparar itens pelo que eles representam, não apenas pelo texto bruto.
+A documentação detalhada registra a origem, os campos extraídos e a forma de reprodução sem correção manual.
+
+[Ver exemplo real e reproduzível](docs/exemplo-parser-real.md)
 
 ## O problema
 
@@ -194,7 +196,7 @@ O último comando usa uma contratação já referenciada no dataset congelado v5
 | Pydantic | Validação tipada das estruturas do PNCP |
 | httpx | Cliente HTTP para a API do PNCP |
 | FastAPI | API pública e contratos HTTP |
-| React + TypeScript | Interface web da demo pública |
+| React + TypeScript | Aplicação web pública e laboratório do parser |
 | Vite | Build e desenvolvimento do frontend |
 | pytest | Regressão e proteção das regras |
 | Ruff | Lint e consistência de código |
