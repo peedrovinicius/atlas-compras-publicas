@@ -8,7 +8,7 @@ Dados do PNCP transformados em pipeline auditável para normalização de itens,
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Documentação](docs/README.md) · [Arquitetura](docs/architecture.md) · [Metodologia de sinais](docs/metodologia-anomalias.md) · [Como contribuir](CONTRIBUTING.md)
+[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Documentação](docs/README.md) · [Arquitetura](docs/architecture.md) · [Metodologia de sinais](docs/metodologia-anomalias.md) · [Issues](https://github.com/peedrovinicius/atlas-compras-publicas/issues) · [Como contribuir](CONTRIBUTING.md)
 
 </div>
 
@@ -221,3 +221,10 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Fonte dos dados
 
 Os dados são obtidos da API pública do Portal Nacional de Contratações Públicas. O projeto preserva dados brutos, transformações e resultados derivados para permitir auditoria e reprodução.
+
+
+## Contribuindo
+
+Contribuições externas são bem-vindas quando preservam rastreabilidade, baselines independentes e metodologia documentada. Consulte [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir um Pull Request.
+
+Governança do repositório: [Segurança](SECURITY.md) · [Suporte](SUPPORT.md) · [Código de Conduta](CODE_OF_CONDUCT.md)
