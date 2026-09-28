@@ -263,6 +263,9 @@ export default function AnalyticsExplorer() {
     productId: string,
     nextFilters = appliedFilters,
     shouldScroll = true,
+    nextQuery = appliedQuery,
+    nextSort = appliedSort,
+    nextOffset = offset,
   ) {
     setSelectedId(productId);
     setLoading(true);
@@ -274,7 +277,7 @@ export default function AnalyticsExplorer() {
         nextFilters,
       );
       setBundle(analytics);
-      syncExplorerUrl(appliedQuery, nextFilters, appliedSort, offset, productId);
+      syncExplorerUrl(nextQuery, nextFilters, nextSort, nextOffset, productId);
       if (shouldScroll) {
         window.requestAnimationFrame(() => {
           detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -336,7 +339,14 @@ export default function AnalyticsExplorer() {
         initialState.sort,
       );
       if (initialState.productId) {
-        await loadProduct(initialState.productId, initialState.filters, false);
+        await loadProduct(
+          initialState.productId,
+          initialState.filters,
+          false,
+          initialState.query,
+          initialState.sort,
+          initialState.offset,
+        );
       }
     })();
   }, []);
@@ -467,6 +477,20 @@ export default function AnalyticsExplorer() {
                 }
               />
             </label>
+
+            <label>
+              Ordenar resultados
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as ProductSort)}
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </form>
 
@@ -540,6 +564,7 @@ export default function AnalyticsExplorer() {
                   appliedQuery,
                   appliedFilters,
                   Math.max(0, offset - PAGE_SIZE),
+                  appliedSort,
                 )
               }
             >
@@ -554,6 +579,7 @@ export default function AnalyticsExplorer() {
                   appliedQuery,
                   appliedFilters,
                   offset + PAGE_SIZE,
+                  appliedSort,
                 )
               }
             >
@@ -574,11 +600,23 @@ export default function AnalyticsExplorer() {
                 <h2>{summary.display_name}</h2>
                 <p>{summary.sample_description}</p>
               </div>
-              <span className={summary.sample_sufficient ? "sample-status" : "sample-status sample-status-warning"}>
-                {summary.sample_sufficient
-                  ? `${number(summary.price_sample_count)} preços comparáveis`
-                  : `Amostra pequena: ${number(summary.price_sample_count)} preços`}
-              </span>
+              <div className="analytics-title-actions">
+                <span className={summary.sample_sufficient ? "sample-status" : "sample-status sample-status-warning"}>
+                  {summary.sample_sufficient
+                    ? `${number(summary.price_sample_count)} preços comparáveis`
+                    : `Amostra pequena: ${number(summary.price_sample_count)} preços`}
+                </span>
+                <button type="button" onClick={() => void copyShareLink()}>
+                  {shareFeedback ?? "Copiar link"}
+                </button>
+                <button
+                  type="button"
+                  disabled={exporting}
+                  onClick={() => void exportCsv()}
+                >
+                  {exporting ? "Exportando..." : "Exportar CSV"}
+                </button>
+              </div>
             </div>
 
             {!summary.sample_sufficient && (
@@ -633,7 +671,9 @@ export default function AnalyticsExplorer() {
                 {bundle.history.points.length === 0 ? (
                   <p className="analytics-empty">Sem série temporal defensável para este produto.</p>
                 ) : (
-                  <div className="analytics-table-wrap">
+                  <>
+                    <HistoryChart points={bundle.history.points} />
+                    <div className="analytics-table-wrap">
                     <table>
                       <thead><tr><th>Mês</th><th>Mediana</th><th>Faixa central</th><th>Observações</th></tr></thead>
                       <tbody>
@@ -647,7 +687,8 @@ export default function AnalyticsExplorer() {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                    </div>
+                  </>
                 )}
               </article>
 
