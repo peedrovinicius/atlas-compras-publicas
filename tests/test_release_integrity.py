@@ -81,7 +81,7 @@ def test_dashboard_snapshot_matches_frozen_baselines() -> None:
     medication_samples = 0
     medication_fields = 0
     medication_correct = 0
-    for version in range(1, 4):
+    for version in range(1, 5):
         baseline = json.loads(
             Path(f"data/evaluation/medications-v{version}-baseline.json").read_text(
                 encoding="utf-8"
