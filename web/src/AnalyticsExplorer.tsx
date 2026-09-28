@@ -435,6 +435,7 @@ export default function AnalyticsExplorer() {
       if (shouldScroll) {
         window.requestAnimationFrame(() => {
           detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          detailRef.current?.focus({ preventScroll: true });
         });
       }
     } catch (requestError) {
@@ -954,11 +955,21 @@ export default function AnalyticsExplorer() {
           </p>
         )}
 
-        {error && <p className="analytics-error">{error}</p>}
+        {error && (
+          <p className="analytics-error" role="alert">
+            {error}
+          </p>
+        )}
       </section>
 
       {hasSearched && (
-      <section ref={resultsRef} className="analytics-results">
+      <section
+        ref={resultsRef}
+        className="analytics-results"
+        tabIndex={-1}
+        aria-busy={searching}
+        aria-label="Resultados da pesquisa"
+      >
         <div className="results-header">
           <div>
             <span className="section-kicker">Resultados compatíveis</span>
@@ -967,6 +978,11 @@ export default function AnalyticsExplorer() {
             </h2>
           </div>
           {!searching && <span className="item-count">{number(total)} grupos</span>}
+          <span className="sr-only" role="status" aria-live="polite">
+            {!searching
+              ? `${number(total)} grupos encontrados para ${appliedQuery}`
+              : "Pesquisando produtos"}
+          </span>
         </div>
 
         {hasAppliedFilters && (
@@ -1130,7 +1146,13 @@ export default function AnalyticsExplorer() {
       </section>
       )}
 
-      <section ref={detailRef} className="analytics-detail">
+      <section
+        ref={detailRef}
+        className="analytics-detail"
+        tabIndex={-1}
+        aria-busy={loading}
+        aria-label="Análise detalhada do produto"
+      >
         {loading && (
           <div className="analytics-loading-state analytics-loading-detail" aria-live="polite">
             <span>Preparando a análise completa</span>
@@ -1145,7 +1167,7 @@ export default function AnalyticsExplorer() {
             <div className="analytics-title-row">
               <div>
                 <span className="section-kicker">Análise consolidada</span>
-                <h2>{summary.display_name}</h2>
+                <h2 id="analytics-detail-title">{summary.display_name}</h2>
                 <p>{summary.sample_description}</p>
               </div>
               <div className="analytics-title-actions">
