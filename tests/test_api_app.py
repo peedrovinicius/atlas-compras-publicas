@@ -13,6 +13,7 @@ def test_api_exposes_versioned_analytics_routes() -> None:
     assert "/" in paths
     assert "/health" in paths
     assert "/api/v1/normalize" in paths
+    assert "/api/v1/normalize/batch" in paths
     assert "/api/v1/domains" in paths
     assert "/api/v1/parser/categories" in paths
     assert "/api/v1/overview" in paths
@@ -69,7 +70,9 @@ def test_public_demo_root_is_available_without_analytics_database() -> None:
     assert "Não reconhecido" in response.text
     assert "CIMENTO ODONTOLOGICO" in response.text
     assert "Testar agora" in response.text
-    assert "Ver detalhes técnicos" in response.text
+    assert "Uma descrição por linha" in response.text
+    assert "category-button" in response.text
+    assert "Atributos técnicos" in response.text
     assert "DOMContentLoaded" in response.text
     assert "Atlas de Compras Públicas v1.49.0" in response.text
 
@@ -156,3 +159,38 @@ def test_public_demo_lists_every_supported_category_label() -> None:
 
     for category in categories:
         assert category["label"] in html
+
+
+def test_public_demo_batch_normalizes_multiple_descriptions() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.post(
+        "/api/v1/normalize/batch",
+        json=[
+            "RES FOTOP A2 C/2 SERINGAS 4G",
+            "HIDROXIDO DE CALCIO P.A 10G",
+        ],
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] == 2
+    assert [item["category"] for item in payload["items"]] == [
+        "composite_resin",
+        "calcium_hydroxide",
+    ]
+
+
+def test_public_demo_batch_rejects_more_than_twenty_descriptions() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.post(
+        "/api/v1/normalize/batch",
+        json=["RESINA COMPOSTA A2 SERINGA 4G"] * 21,
+    )
+
+    assert response.status_code == 422
