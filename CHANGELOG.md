@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.55.0
+
+- busca textual genérica passa a ignorar diferenças de acentuação;
+- autocomplete navegável por teclado com setas, Enter e Escape;
+- estado ativo das sugestões exposto com atributos ARIA;
+- seleção por teclado abre diretamente a análise do produto;
+- estado sem resultados oferece atalhos para categorias realmente disponíveis na base;
+- teste de regressão para pesquisa sem acento em descrição pública acentuada;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.55.0.
+
 ## 1.54.0
 
 - autocomplete com até seis produtos reais enquanto o usuário digita;
