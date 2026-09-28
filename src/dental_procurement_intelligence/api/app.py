@@ -51,17 +51,51 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Atlas de Compras Públicas</title>
 <style>
-:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; color-scheme: dark; }
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
 * { box-sizing: border-box; }
 body { margin: 0; background: #0d1117; color: #e6edf3; }
 main { width: min(920px, 92vw); margin: 0 auto; padding: 56px 0 72px; }
-.eyebrow { color: #8b949e; text-transform: uppercase; letter-spacing: .14em; font-size: 12px; }
+.eyebrow {
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 12px;
+}
 h1 { font-size: clamp(36px, 7vw, 66px); line-height: 1; margin: 10px 0 16px; }
 .lead { color: #aab3bd; line-height: 1.65; max-width: 760px; }
-.card { margin-top: 30px; padding: 22px; border: 1px solid #30363d; border-radius: 16px; background: #161b22; }
+.card {
+  margin-top: 30px;
+  padding: 22px;
+  border: 1px solid #30363d;
+  border-radius: 16px;
+  background: #161b22;
+}
 label { display: block; font-weight: 700; margin-bottom: 10px; }
-textarea { width: 100%; min-height: 110px; resize: vertical; border-radius: 10px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; padding: 14px; font: inherit; }
-button { margin-top: 12px; border: 0; border-radius: 10px; padding: 11px 16px; font: inherit; font-weight: 700; cursor: pointer; background: #e6edf3; color: #0d1117; }
+textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #e6edf3;
+  padding: 14px;
+  font: inherit;
+}
+button {
+  margin-top: 12px;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: #e6edf3;
+  color: #0d1117;
+}
 pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #0d1117; border-radius: 10px; padding: 16px; min-height: 88px; color: #c9d1d9; }
 .meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 14px; }
 a { color: #58a6ff; }
@@ -105,7 +139,8 @@ async function normalize() {
   if (!description) return;
   output.textContent = "Processando...";
   try {
-    const response = await fetch("/api/v1/normalize?description=" + encodeURIComponent(description));
+    const endpoint = "/api/v1/normalize?description=";
+    const response = await fetch(endpoint + encodeURIComponent(description));
     const data = await response.json();
     output.textContent = JSON.stringify(data, null, 2);
   } catch (error) {
