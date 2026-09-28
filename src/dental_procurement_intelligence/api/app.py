@@ -1,4 +1,5 @@
 from collections import defaultdict, deque
+import os
 from pathlib import Path
 from threading import Lock
 from time import monotonic
@@ -17,7 +18,7 @@ from dental_procurement_intelligence.api.service import (
 from dental_procurement_intelligence.identity import available_domains, parse_product
 
 
-def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
+def create_app(database_path: str | Path | None = None) -> Any:
     try:
         from fastapi import Body, FastAPI, HTTPException, Query, Request
         from fastapi.middleware.cors import CORSMiddleware
@@ -34,6 +35,15 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
             "API analítica para dados normalizados, qualidade, homologações "
             "e sinais estatísticos do Atlas de Compras Públicas."
         ),
+    )
+
+    resolved_database_path = Path(
+        database_path
+        or os.environ.get("ATLAS_DATABASE_PATH", "data/analytics.duckdb")
+    )
+    frontend_url = os.environ.get(
+        "ATLAS_FRONTEND_URL",
+        "https://atlas-compras-publicas-web.onrender.com",
     )
 
     app.add_middleware(
@@ -87,10 +97,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
 
     @app.get("/", include_in_schema=False)
     def frontend() -> RedirectResponse:
-        return RedirectResponse(
-            "https://atlas-compras-publicas-web.onrender.com",
-            status_code=307,
-        )
+        return RedirectResponse(frontend_url, status_code=307)
 
     def serialize_description(description: str) -> dict[str, Any]:
         cleaned_description = description.strip()
@@ -178,6 +185,15 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
             "items": [serialize_description(description) for description in cleaned],
         }
 
+    @app.get("/api/v1/meta")
+    def meta() -> dict[str, Any]:
+        return {
+            "version": __version__,
+            "database_available": resolved_database_path.exists(),
+            "database_name": resolved_database_path.name,
+            "frontend_url": frontend_url,
+        }
+
     @app.get("/api/v1/domains")
     def domains() -> list[dict[str, Any]]:
         return [
@@ -196,7 +212,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
 
     @app.get("/api/v1/overview")
     def overview() -> dict[str, Any]:
-        return execute(analytics_overview, database_path)
+        return execute(analytics_overview, resolved_database_path)
 
     @app.get("/api/v1/categories")
     def categories(
@@ -206,7 +222,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     ) -> dict[str, Any]:
         return execute(
             analytics_categories,
-            database_path,
+            resolved_database_path,
             category=category,
             limit=limit,
             offset=offset,
@@ -214,7 +230,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
 
     @app.get("/api/v1/quality")
     def quality() -> dict[str, Any]:
-        return execute(analytics_quality, database_path)
+        return execute(analytics_quality, resolved_database_path)
 
     @app.get("/api/v1/awards")
     def awards(
@@ -226,7 +242,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     ) -> dict[str, Any]:
         return execute(
             analytics_awards,
-            database_path,
+            resolved_database_path,
             category=category,
             macroregion=macroregion,
             year=year,
@@ -243,7 +259,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     ) -> dict[str, Any]:
         return execute(
             analytics_anomalies,
-            database_path,
+            resolved_database_path,
             category=category,
             scope=scope,
             limit=limit,
@@ -257,7 +273,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     ) -> dict[str, Any]:
         return execute(
             analytics_unrecognized,
-            database_path,
+            resolved_database_path,
             limit=limit,
             offset=offset,
         )
