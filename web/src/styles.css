@@ -1347,3 +1347,36 @@ input { font: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+
+.analytics-suggestions > button.analytics-suggestion-active,
+.analytics-suggestions > button[aria-selected="true"] {
+  background: #f0f4ff;
+}
+
+.analytics-empty-recovery {
+  align-items: flex-start;
+}
+
+.analytics-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.analytics-empty-actions button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.analytics-empty-actions button:hover {
+  border-color: #9fb0dd;
+  background: #fbfcff;
+}
