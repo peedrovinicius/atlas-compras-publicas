@@ -269,6 +269,11 @@ def test_product_search_groups_awards_by_technical_identity(
     assert item["supplier_count"] == 2
     assert item["state_count"] == 2
     assert item["priced_observation_count"] == 2
+    assert item["min_price"] == pytest.approx(10.0)
+    assert item["percentile_25"] == pytest.approx(10.5)
+    assert item["median_price"] == pytest.approx(11.0)
+    assert item["percentile_75"] == pytest.approx(11.5)
+    assert item["max_price"] == pytest.approx(12.0)
 
 
 
