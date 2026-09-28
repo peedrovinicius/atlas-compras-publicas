@@ -131,6 +131,10 @@ export default function AnalyticsExplorer() {
 
   const summary = bundle?.summary;
   const stats = summary?.price_stats;
+  const maxDistributionCount = bundle?.distribution.bins.reduce(
+    (maximum, bin) => Math.max(maximum, bin.count),
+    0,
+  ) ?? 0;
 
   return (
     <>
@@ -256,6 +260,36 @@ export default function AnalyticsExplorer() {
 
             <div className="analytics-grid">
               <article className="analytics-card analytics-card-wide">
+                <span className="section-kicker">Distribuição</span>
+                <h3>Distribuição dos preços comparáveis</h3>
+                {bundle.distribution.bins.length === 0 ? (
+                  <p className="analytics-empty">Sem preços defensáveis suficientes para distribuir.</p>
+                ) : (
+                  <>
+                    <p className="analytics-note">
+                      {number(bundle.distribution.observations)} observações entre {money(bundle.distribution.min_price)} e {money(bundle.distribution.max_price)}.
+                    </p>
+                    <div className="distribution-chart" aria-label="Distribuição de preços por faixa">
+                      {bundle.distribution.bins.map((bin) => {
+                        const width = maxDistributionCount
+                          ? Math.max(4, (bin.count / maxDistributionCount) * 100)
+                          : 0;
+                        return (
+                          <div className="distribution-row" key={bin.index}>
+                            <span>{money(bin.lower)} – {money(bin.upper)}</span>
+                            <div className="distribution-track">
+                              <div className="distribution-bar" style={{ width: `${width}%` }} />
+                            </div>
+                            <strong>{number(bin.count)}</strong>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </article>
+
+              <article className="analytics-card analytics-card-wide">
                 <span className="section-kicker">Evolução</span>
                 <h3>Histórico de preços</h3>
                 {bundle.history.points.length === 0 ? (
@@ -350,19 +384,35 @@ export default function AnalyticsExplorer() {
                 <h3>Registros que sustentam a análise</h3>
                 <div className="analytics-records">
                   {bundle.records.items.map((record) => (
-                    <div key={record.award_key}>
-                      <span>
-                        <strong>{money(record.awarded_price_per_base_unit)}</strong>
-                        <small>{date(record.analysis_date)} · {record.state_code ?? "UF não informada"}</small>
-                      </span>
-                      <p>{record.original_description}</p>
-                      <span>
-                        <small>{record.supplier_name ?? "Fornecedor não informado"}</small>
+                    <details className="evidence-card" key={record.award_key}>
+                      <summary>
+                        <span>
+                          <strong>{money(record.awarded_price_per_base_unit)}</strong>
+                          <small>{date(record.analysis_date)} · {record.state_code ?? "UF não informada"}</small>
+                        </span>
+                        <p>{record.original_description}</p>
+                        <span>
+                          <small>{record.supplier_name ?? "Fornecedor não informado"}</small>
+                          <small>ver evidência</small>
+                        </span>
+                      </summary>
+                      <div className="evidence-grid">
+                        <div><span>Órgão</span><strong>{record.organization_name ?? "Não informado"}</strong></div>
+                        <div><span>Unidade compradora</span><strong>{record.buyer_unit_name ?? "Não informada"}</strong></div>
+                        <div><span>Local</span><strong>{[record.municipality_name, record.state_code].filter(Boolean).join(" / ") || "Não informado"}</strong></div>
+                        <div><span>Modalidade</span><strong>{record.modality ?? "Não informada"}</strong></div>
+                        <div><span>Quantidade homologada</span><strong>{record.awarded_quantity ?? "Não informada"}</strong></div>
+                        <div><span>Valor total</span><strong>{money(record.awarded_total_value)}</strong></div>
+                        <div><span>Status do preço</span><strong>{record.price_normalization_status ?? "Não informado"}</strong></div>
+                        <div><span>Motivo</span><strong>{record.price_normalization_reason ?? "Não informado"}</strong></div>
+                      </div>
+                      <div className="evidence-hashes">
+                        <small>contratação {shortHash(record.contract_source_sha256)}</small>
                         <small>item {shortHash(record.item_source_sha256)}</small>
                         <small>resultado {shortHash(record.result_source_sha256)}</small>
                         {record.pncp_url && <a href={record.pncp_url} target="_blank" rel="noreferrer">Abrir no PNCP</a>}
-                      </span>
-                    </div>
+                      </div>
+                    </details>
                   ))}
                 </div>
               </article>
