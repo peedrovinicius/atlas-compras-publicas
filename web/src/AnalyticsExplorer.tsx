@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-import { downloadProductRecordsCsv, fetchProductAnalytics, fetchProductDiscovery, searchProducts } from "./api";
+import { downloadProductRecordsCsv, fetchProductAnalytics, fetchProductDiscovery, searchProducts, suggestProducts } from "./api";
 import type {
   AnalyticsFilters,
   ProductAnalyticsBundle,
@@ -212,6 +212,8 @@ export default function AnalyticsExplorer() {
   const [appliedSort, setAppliedSort] = useState<ProductSort>(initialState.sort);
   const [discovery, setDiscovery] = useState<ProductDiscoveryItem[]>([]);
   const [interpretedLabel, setInterpretedLabel] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<ProductSearchItem[]>([]);
+  const [suggesting, setSuggesting] = useState(false);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(initialState.offset);
@@ -223,6 +225,7 @@ export default function AnalyticsExplorer() {
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const detailRef = useRef<HTMLElement>(null);
+  const suggestionRequestRef = useRef(0);
 
   async function runSearch(
     nextQuery = query,
@@ -340,8 +343,67 @@ export default function AnalyticsExplorer() {
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSuggestions([]);
     void runSearch();
   }
+
+  async function chooseSuggestion(item: ProductSearchItem) {
+    setQuery(item.display_name);
+    setSuggestions([]);
+    setResults([item]);
+    setTotal(1);
+    setOffset(0);
+    setAppliedQuery(item.display_name);
+    setAppliedFilters({ ...filters });
+    setAppliedSort("coverage");
+    await loadProduct(
+      item.product_id,
+      filters,
+      true,
+      item.display_name,
+      "coverage",
+      0,
+    );
+  }
+
+  useEffect(() => {
+    const cleaned = query.trim();
+    if (cleaned.length < 2 || cleaned === appliedQuery) {
+      setSuggestions([]);
+      setSuggesting(false);
+      return;
+    }
+
+    const requestId = ++suggestionRequestRef.current;
+    const timeout = window.setTimeout(() => {
+      setSuggesting(true);
+      void suggestProducts(cleaned, filters)
+        .then((response) => {
+          if (requestId !== suggestionRequestRef.current) return;
+          setSuggestions(response.items);
+        })
+        .catch(() => {
+          if (requestId !== suggestionRequestRef.current) return;
+          setSuggestions([]);
+        })
+        .finally(() => {
+          if (requestId === suggestionRequestRef.current) {
+            setSuggesting(false);
+          }
+        });
+    }, 250);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    query,
+    filters.state_code,
+    filters.macroregion,
+    filters.supplier,
+    filters.buyer,
+    filters.start_date,
+    filters.end_date,
+    appliedQuery,
+  ]);
 
   useEffect(() => {
     void fetchProductDiscovery()
@@ -405,13 +467,48 @@ export default function AnalyticsExplorer() {
         <form onSubmit={submit}>
           <label htmlFor="analytics-search">Produto ou característica</label>
           <div className="analytics-search-row">
-            <input
-              id="analytics-search"
-              value={query}
-              onChange={(event: { target: { value: string } }) => setQuery(event.target.value)}
-              placeholder="Ex.: resina A2, adesivo odontológico, ionômero de vidro"
-              autoComplete="off"
-            />
+            <div className="analytics-search-input-wrap">
+              <input
+                id="analytics-search"
+                value={query}
+                onChange={(event: { target: { value: string } }) => setQuery(event.target.value)}
+                placeholder="Ex.: resina A2, adesivo odontológico, ionômero de vidro"
+                autoComplete="off"
+                aria-autocomplete="list"
+                aria-expanded={suggestions.length > 0}
+                aria-controls="analytics-suggestions"
+              />
+              {(suggesting || suggestions.length > 0) && (
+                <div
+                  id="analytics-suggestions"
+                  className="analytics-suggestions"
+                  role="listbox"
+                >
+                  {suggesting && suggestions.length === 0 ? (
+                    <div className="analytics-suggestion-loading">
+                      Procurando produtos...
+                    </div>
+                  ) : (
+                    suggestions.map((item) => (
+                      <button
+                        type="button"
+                        role="option"
+                        key={item.product_id}
+                        onClick={() => void chooseSuggestion(item)}
+                      >
+                        <span>
+                          <strong>{item.display_name}</strong>
+                          <small>{item.sample_description}</small>
+                        </span>
+                        <span>
+                          {number(item.priced_observation_count)} preços
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
             <button className="primary-button" type="submit" disabled={searching}>
               {searching ? "Pesquisando..." : "Pesquisar"}
             </button>
