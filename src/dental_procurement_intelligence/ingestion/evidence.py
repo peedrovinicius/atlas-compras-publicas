@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -72,10 +72,10 @@ class EvidenceStore:
         response: PNCPRawResponse,
         retrieved_at: datetime | None = None,
     ) -> EvidenceRecord:
-        timestamp = retrieved_at or datetime.now(timezone.utc)
+        timestamp = retrieved_at or datetime.now(UTC)
         if timestamp.tzinfo is None:
             raise ValueError("retrieved_at must be timezone-aware")
-        timestamp = timestamp.astimezone(timezone.utc)
+        timestamp = timestamp.astimezone(UTC)
 
         digest = self._sha256(response.content)
         object_path = self._object_path(digest)
