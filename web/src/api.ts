@@ -11,6 +11,7 @@ import type {
   ProductRegions,
   ProductSearchResponse,
   ProductSignals,
+  ProductSort,
   ProductSummary,
   ProductSuppliers,
 } from "./types";
@@ -81,11 +82,13 @@ export async function normalizeDescriptions(
 export async function searchProducts(
   query: string,
   filters: AnalyticsFilters,
+  sort: ProductSort,
   limit = 10,
   offset = 0,
 ): Promise<ProductSearchResponse> {
   const params = analyticsFilterParams(filters);
   params.set("q", query);
+  params.set("sort", sort);
   params.set("limit", String(limit));
   params.set("offset", String(offset));
   return get<ProductSearchResponse>(`/api/v1/products/search?${params.toString()}`);
@@ -136,6 +139,30 @@ export async function fetchProductAnalytics(
     ]);
 
   return { summary, distribution, history, regions, suppliers, buyers, signals, records };
+}
+
+export async function downloadProductRecordsCsv(
+  productId: string,
+  filters: AnalyticsFilters,
+): Promise<void> {
+  const encoded = encodeURIComponent(productId);
+  const params = analyticsFilterParams(filters);
+  const query = params.toString();
+  const path = `/api/v1/products/${encoded}/records.csv${query ? `?${query}` : ""}`;
+  const response = await fetch(`${API_BASE_URL}${path}`);
+  if (!response.ok) {
+    await decode<never>(response);
+  }
+
+  const blob = await response.blob();
+  const href = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = href;
+  anchor.download = `atlas-${productId.slice(0, 8)}-registros.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(href);
 }
 
 export async function checkHealth(): Promise<{
