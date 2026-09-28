@@ -30,6 +30,7 @@ def test_build_item_frame_normalizes_price_by_total_package_mass() -> None:
     frame = build_item_frame([item], source_sha256="abc123")
     row = frame.to_dicts()[0]
 
+    assert row["procurement_key"] is None
     assert row["product_category"] == "composite_resin"
     assert row["normalized_total_quantity_value"] == 8.0
     assert row["normalized_total_quantity_unit"] == "g"
@@ -280,4 +281,50 @@ def test_build_analytics_dataset_preserves_page_hash_per_item(
     assert rows == [
         (1, hashlib.sha256(first_bytes).hexdigest()),
         (2, hashlib.sha256(second_bytes).hexdigest()),
+    ]
+
+
+def test_build_analytics_dataset_allows_same_item_number_across_procurements(
+    tmp_path: Path,
+) -> None:
+    first_path = tmp_path / "procurement-a.json"
+    second_path = tmp_path / "procurement-b.json"
+    first_path.write_text(
+        json.dumps(
+            [{"numeroItem": 1, "descricao": "RESINA COMPOSTA A2 SERINGA 4G"}]
+        ),
+        encoding="utf-8",
+    )
+    second_path.write_text(
+        json.dumps(
+            [{"numeroItem": 1, "descricao": "ADESIVO DENTAL FRASCO 5ML"}]
+        ),
+        encoding="utf-8",
+    )
+
+    database = tmp_path / "analytics.duckdb"
+    result = build_analytics_dataset(
+        [first_path, second_path],
+        tmp_path / "items.parquet",
+        database,
+        procurement_key_by_path={
+            first_path.as_posix(): "pncp:1:2026:1",
+            second_path.as_posix(): "pncp:2:2026:1",
+        },
+    )
+
+    assert result.row_count == 2
+
+    with duckdb.connect(str(database), read_only=True) as connection:
+        rows = connection.execute(
+            """
+            SELECT procurement_key, item_number, product_category
+            FROM silver_items
+            ORDER BY procurement_key
+            """
+        ).fetchall()
+
+    assert rows == [
+        ("pncp:1:2026:1", 1, "composite_resin"),
+        ("pncp:2:2026:1", 1, "dental_adhesive"),
     ]
