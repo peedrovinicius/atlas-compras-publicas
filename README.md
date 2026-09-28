@@ -170,7 +170,9 @@ A experiência pública possui duas áreas.
 - recuperação de busca vazia com atalhos para categorias realmente disponíveis;
 - resultados com mediana de preço, atualização e cobertura visíveis antes de abrir a análise;
 - filtros aplicados exibidos como chips removíveis;
-- termos usuais como `CIV`, `cimento de vidro`, `bonding` e `anestesia local` reconhecidos diretamente.
+- termos usuais como `CIV`, `cimento de vidro`, `bonding` e `anestesia local` reconhecidos diretamente;
+- refinamentos clicáveis por cor, apresentação e atributos técnicos, com contagem real de grupos compatíveis;
+- pesquisas recentes armazenadas somente no navegador do usuário, com opção de limpar.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
@@ -265,6 +267,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.57.0](docs/release-v1.57.0.md)
 - [Release v1.56.0](docs/release-v1.56.0.md)
 - [Release v1.55.0](docs/release-v1.55.0.md)
 - [Release v1.54.0](docs/release-v1.54.0.md)
