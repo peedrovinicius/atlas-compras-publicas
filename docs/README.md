@@ -30,6 +30,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 
 ## Release atual
 
+- [Changelog](../CHANGELOG.md)
 - [Release v1.49.0](release-v1.49.0.md)
 - [Auditoria v1.49.0](audit-v1.49.0.md)
 - [Revisão do README v1.49.0](readme-review-v1.49.0.md)
