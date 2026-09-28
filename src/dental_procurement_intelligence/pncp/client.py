@@ -137,6 +137,8 @@ class PNCPClient:
             records = list(self._ensure_list(payload))
 
             if not records:
+                if page == 1:
+                    pages.append(raw)
                 break
             if raw.content in seen_payloads:
                 raise ValueError("PNCP item pagination did not advance")
