@@ -2,6 +2,18 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.68.0
+
+- busca de produtos passa a oferecer ordenação por relevância estruturada como padrão;
+- categoria interpretada, cor e apresentação passam a contribuir para o score de relevância;
+- autocomplete usa a mesma ordenação por relevância;
+- aliases de apresentação em português passam a resolver valores estruturados como `syringe`, `bottle`, `cartridge` e `ampoule`;
+- `tubete` e `carpule` passam a localizar apresentações normalizadas como `cartridge`;
+- resultados expõem motivos de correspondência, como categoria, cor e apresentação;
+- seleção direta do autocomplete limpa facets da busca anterior;
+- regressões adicionadas para relevância, aliases e explicação dos matches;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.68.0.
+
 ## 1.67.0
 
 - endpoint `/ready` valida a disponibilidade real do DuckDB e da tabela `silver_awards`;
