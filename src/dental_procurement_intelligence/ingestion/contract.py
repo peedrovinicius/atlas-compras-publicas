@@ -46,6 +46,7 @@ def capture_contract(
     year: int,
     sequence: int,
     skip_result_transport_errors: bool = False,
+    max_result_requests: int | None = None,
 ) -> ContractCaptureResult:
     """Captura metadados, itens, resultados e manifesto estável da contratação."""
 
@@ -78,10 +79,17 @@ def capture_contract(
             items.append(item)
     result_evidence: list[EvidenceRecord] = []
     result_count = 0
+    result_requests = 0
+
+    if max_result_requests is not None and max_result_requests < 1:
+        raise ValueError("max_result_requests must be positive")
 
     for item in items:
         if item.has_result is False:
             continue
+        if max_result_requests is not None and result_requests >= max_result_requests:
+            break
+        result_requests += 1
 
         try:
             raw_result = client.get_item_results_raw(
