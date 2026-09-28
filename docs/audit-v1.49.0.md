@@ -29,6 +29,11 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Guia local de qualidade | alinhado ao CI |
 | LICENSE | ausente, decisão do mantenedor |
 | SECURITY.md | ausente, melhoria futura |
+| Estrutura do repositório | 216 arquivos auditados |
+| Arquivos suspeitos/temporários | nenhum encontrado |
+| Índice de documentação | criado |
+| Branches | 55, limpeza destrutiva não aplicada |
+| Descrição do repositório | ausente |
 
 ## Achados
 
@@ -217,7 +222,42 @@ A auditoria alinhou o `CONTRIBUTING.md` ao comando real do workflow para evitar 
 
 Nenhuma licença foi escolhida automaticamente nesta auditoria, pois essa decisão pertence ao mantenedor do projeto. `SECURITY.md` fica registrado como melhoria futura caso o repositório passe a receber contribuições externas ou seja tornado público.
 
-### 15. Auditoria textual inicial concluída
+### 15. Higiene estrutural do repositório
+
+A árvore completa da `main` foi inspecionada.
+
+Resumo:
+
+- 234 entradas na árvore;
+- 216 arquivos;
+- 84 arquivos Markdown;
+- 64 arquivos Python;
+- 41 arquivos JSON;
+- 21 arquivos JSONL;
+- nenhum `.env` real versionado;
+- nenhum backup, arquivo temporário, cache, screenshot ou arquivo com nome ligado a ChatGPT, OpenAI ou Codex encontrado pela inspeção estrutural de nomes.
+
+O `.gitignore` cobre ambientes locais, caches Python, arquivos `.env`, bancos DuckDB, Parquet, dados locais e artefatos de editor/sistema operacional.
+
+O `.env.example` contém apenas configuração pública do PNCP e timeout, sem segredo.
+
+### 16. Índice de documentação criado
+
+O diretório `docs/` possui grande volume de histórico técnico. Para melhorar navegação sem apagar evidência histórica, foi criado:
+
+- `docs/README.md`
+
+O índice concentra arquitetura, metodologia, benchmarks atuais, snapshot e release vigente. O README principal recebeu um link direto para esse índice.
+
+### 17. Branches e metadados do repositório
+
+Foram encontradas 55 branches, incluindo releases históricas, branches de avaliação, tuning, arquitetura e features.
+
+Nenhuma branch foi apagada durante a auditoria porque a exclusão é destrutiva e pode remover referências úteis para reprodução histórica.
+
+O repositório permanece privado e atualmente não possui descrição no metadata do GitHub. A descrição deve ser preenchida antes de uma eventual publicação.
+
+### 18. Auditoria textual inicial concluída
 
 A revisão textual inicial não encontrou motivo para ampliar o README. A decisão editorial é manter a página principal enxuta e deixar o histórico técnico nos documentos especializados.
 
@@ -229,7 +269,7 @@ Pontos mantidos:
 - sem inserir promessa de estabilidade plena do domínio de medicamentos;
 - sem aumentar a lista de documentos na página principal.
 
-### 16. Release notes sincronizadas
+### 19. Release notes sincronizadas
 
 `docs/release-v1.49.0.md` foi sincronizado com a auditoria para registrar:
 
@@ -261,6 +301,11 @@ Pontos mantidos:
 - [x] Confirmar que a reexecução falha antes dos steps.
 - [x] Alinhar o comando Ruff do CONTRIBUTING com o CI.
 - [x] Verificar presença de LICENSE e SECURITY.md.
+- [x] Inspecionar a árvore completa do repositório.
+- [x] Conferir .gitignore e .env.example.
+- [x] Criar índice enxuto para docs/.
+- [x] Contabilizar branches sem excluir histórico.
+- [x] Conferir metadata e identificar descrição ausente.
 - [ ] Conferir Actions manualmente na interface.
 - [ ] Rodar suíte local ou em ambiente conectado.
 - [x] Conferir existência dos links locais do README.
