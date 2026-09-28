@@ -19,7 +19,7 @@ from dental_procurement_intelligence.identity import available_domains, parse_pr
 
 def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     try:
-        from fastapi import FastAPI, HTTPException, Query, Request
+        from fastapi import Body, FastAPI, HTTPException, Query, Request
         from fastapi.responses import HTMLResponse
     except ImportError as exc:
         raise RuntimeError(
@@ -76,18 +76,19 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     def demo() -> str:
         return render_demo(__version__)
 
-    @app.get("/api/v1/normalize")
-    def normalize(
-        request: Request,
-        description: str = Query(min_length=3, max_length=2000),
-    ) -> dict[str, Any]:
-        enforce_normalization_rate_limit(request)
+    def serialize_description(description: str) -> dict[str, Any]:
         cleaned_description = description.strip()
         if len(cleaned_description) < 3:
             raise HTTPException(
                 status_code=422,
                 detail="A descrição deve ter pelo menos 3 caracteres úteis.",
             )
+        if len(cleaned_description) > 2000:
+            raise HTTPException(
+                status_code=422,
+                detail="Cada descrição deve ter no máximo 2.000 caracteres.",
+            )
+
         product = parse_product(cleaned_description)
 
         def quantity(value: Any) -> dict[str, Any] | None:
@@ -127,6 +128,36 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
                 "anesthetic_vasoconstrictor": attributes.anesthetic_vasoconstrictor,
             },
             "matched_terms": list(product.matched_terms),
+        }
+
+    @app.get("/api/v1/normalize")
+    def normalize(
+        request: Request,
+        description: str = Query(min_length=3, max_length=2000),
+    ) -> dict[str, Any]:
+        enforce_normalization_rate_limit(request)
+        return serialize_description(description)
+
+    @app.post("/api/v1/normalize/batch")
+    def normalize_batch(
+        request: Request,
+        descriptions: list[str] = Body(min_length=1, max_length=20),
+    ) -> dict[str, Any]:
+        enforce_normalization_rate_limit(request)
+        cleaned = [description.strip() for description in descriptions if description.strip()]
+        if not cleaned:
+            raise HTTPException(
+                status_code=422,
+                detail="Informe pelo menos uma descrição.",
+            )
+        if len(cleaned) > 20:
+            raise HTTPException(
+                status_code=422,
+                detail="Envie no máximo 20 descrições por lote.",
+            )
+        return {
+            "count": len(cleaned),
+            "items": [serialize_description(description) for description in cleaned],
         }
 
     @app.get("/api/v1/domains")
