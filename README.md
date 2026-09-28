@@ -226,7 +226,9 @@ a baseline independente.
 O segundo holdout independente contém outras 8 contratações e 192 campos.
 A baseline do v2 ficou em **79,69%**, com 58,33% em ingrediente ativo,
 97,92% em concentração e 81,25% em forma farmacêutica e via. Nenhuma
-lacuna do v2 é corrigida na v1.45.
+lacuna do v2 foi corrigida na v1.45. Após o tuning controlado da v1.46,
+o conjunto congelado atingiu **192/192 campos corretos**, preservando a
+baseline independente de 79,69%.
 
 ~~~bash
 dpi evaluate-medications --dataset data/evaluation/medications-v1.jsonl
@@ -236,6 +238,7 @@ dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 - [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
 - [Medicamentos v1 pós-tuning v1.44](docs/benchmark-medications-v1-post-tuning.md)
 - [Benchmark independente de medicamentos v2](docs/benchmark-medications-v2.md)
+- [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
 
 O domínio permanece em `benchmark_required` até um novo holdout independente pós-tuning.
 
@@ -309,7 +312,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- fazer tuning controlado do benchmark independente de medicamentos v2
+- criar um novo holdout independente de medicamentos após o tuning da v1.46
 - consolidar uma base DuckDB real para os painéis de preços e homologações
 
 ## Fonte dos dados
