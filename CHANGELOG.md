@@ -2,6 +2,20 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.65.0
+
+- skip link adicionado para acesso direto ao conteúdo principal;
+- alternância Preços/Laboratório expõe estado ativo com `aria-pressed`;
+- status da API passa a usar região de status acessível;
+- resultados de busca anunciam quantidade encontrada sem poluir a interface;
+- erros de busca passam a usar `role="alert"`;
+- análise detalhada recebe foco após abertura de produto;
+- resultados do Laboratório recebem foco após normalização concluída;
+- seções principais expõem estado de carregamento com `aria-busy`;
+- foco visível de inputs, selects e regiões interativas padronizado;
+- preferência `prefers-reduced-motion` reduz animações e rolagem suave;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.65.0.
+
 ## 1.64.0
 
 - ações secundárias da análise agrupadas em menu compacto;
