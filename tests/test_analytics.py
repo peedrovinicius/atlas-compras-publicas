@@ -93,7 +93,9 @@ def test_build_analytics_creates_parquet_and_duckdb(tmp_path: Path) -> None:
 
     result = build_analytics(raw_path, parquet_path, database_path)
 
-    assert result.source_sha256 == hashlib.sha256(raw_bytes).hexdigest()
+    page_hash = hashlib.sha256(raw_bytes).hexdigest()
+    expected_dataset_hash = hashlib.sha256(page_hash.encode("ascii")).hexdigest()
+    assert result.source_sha256 == expected_dataset_hash
     assert result.row_count == 2
     assert result.identified_row_count == 2
     assert result.priced_row_count == 2
