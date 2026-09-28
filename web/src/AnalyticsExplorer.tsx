@@ -971,7 +971,12 @@ export default function AnalyticsExplorer() {
         )}
 
         {searching ? (
-          <div className="analytics-loading">Consultando a base analítica...</div>
+          <div className="analytics-loading-state" aria-live="polite">
+            <span>Consultando a base analítica</span>
+            <div />
+            <div />
+            <div />
+          </div>
         ) : results.length === 0 ? (
           <div className="empty-state analytics-empty-recovery">
             <strong>Nenhum produto encontrado.</strong>
@@ -1079,7 +1084,14 @@ export default function AnalyticsExplorer() {
       </section>
 
       <section ref={detailRef} className="analytics-detail">
-        {loading && <div className="analytics-loading">Carregando análise completa...</div>}
+        {loading && (
+          <div className="analytics-loading-state analytics-loading-detail" aria-live="polite">
+            <span>Preparando a análise completa</span>
+            <div />
+            <div />
+            <div />
+          </div>
+        )}
 
         {!loading && bundle && summary && stats && (
           <>
