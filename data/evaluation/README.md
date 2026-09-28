@@ -552,3 +552,12 @@ Holdout independente congelado após a v1.46, com 48 exemplos de 8 contrataçõe
 Baseline independente: **173/192 campos corretos (90,10%)**, com 0 falsos positivos, 5 falsos negativos e 14 mismatches.
 
 O dataset e a baseline são imutáveis. Nenhum tuning v3 integra esta release.
+
+
+### Resultado pós-tuning v1.48
+
+Após tuning controlado, o medicamentos v3 atingiu 192/192 campos corretos e 100% de micro accuracy.
+
+As regressões medicamentos v1 e v2 permanecem em 192/192.
+
+A baseline independente v3 de 90,10% permanece imutável. O resultado pós-tuning está em `medications-v3-post-v1.48.json`.
