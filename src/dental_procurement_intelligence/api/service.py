@@ -483,11 +483,31 @@ def analytics_product_search(
                       AND awarded_price_per_base_unit IS NOT NULL
                       AND awarded_price_per_base_unit > 0
                 ) AS priced_observation_count,
+                MIN(awarded_price_per_base_unit) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS min_price,
+                QUANTILE_CONT(awarded_price_per_base_unit, 0.25) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS percentile_25,
                 MEDIAN(awarded_price_per_base_unit) FILTER (
                     WHERE price_normalization_status = 'defensible'
                       AND awarded_price_per_base_unit IS NOT NULL
                       AND awarded_price_per_base_unit > 0
                 ) AS median_price,
+                QUANTILE_CONT(awarded_price_per_base_unit, 0.75) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS percentile_75,
+                MAX(awarded_price_per_base_unit) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS max_price,
                 {latest_date_expression} AS latest_date,
                 MIN(original_description) AS sample_description,
                 {relevance_expression} AS relevance_score
