@@ -5,9 +5,6 @@ from dataclasses import asdict
 from typing import Any
 
 from dental_procurement_intelligence.analytics import (
-    DEMO_CNPJ,
-    DEMO_SEQUENCE,
-    DEMO_YEAR,
     DuckDBWarehouse,
     anomaly_summary,
     award_summary,
