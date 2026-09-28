@@ -88,7 +88,7 @@ export async function suggestProducts(
   query: string,
   filters: AnalyticsFilters,
 ): Promise<ProductSearchResponse> {
-  return searchProducts(query, filters, "coverage", 6, 0);
+  return searchProducts(query, filters, "relevance", 6, 0);
 }
 
 export async function searchProducts(
