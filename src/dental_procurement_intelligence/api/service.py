@@ -431,6 +431,11 @@ def analytics_product_search(
                       AND awarded_price_per_base_unit IS NOT NULL
                       AND awarded_price_per_base_unit > 0
                 ) AS priced_observation_count,
+                MEDIAN(awarded_price_per_base_unit) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS median_price,
                 {latest_date_expression} AS latest_date,
                 MIN(original_description) AS sample_description
             {base_sql}
