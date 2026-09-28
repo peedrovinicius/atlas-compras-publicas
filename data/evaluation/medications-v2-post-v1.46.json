@@ -1,0 +1,22 @@
+{
+  "dataset": "data/evaluation/medications-v2.jsonl",
+  "baseline_file": "data/evaluation/medications-v2-baseline.json",
+  "baseline_micro_accuracy": 0.7969,
+  "parser_git_blob_sha": "3b88991a1971fcba916d1f6028cef237b80edcdc",
+  "parser_version": "1.46.0",
+  "measurement_method": "frozen_dataset_full_regression_after_bounded_v2_tuning",
+  "sample_count": 48,
+  "evaluated_field_count": 192,
+  "correct_field_count": 192,
+  "micro_accuracy": 1,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 0,
+  "protected_regression": {
+    "dataset": "data/evaluation/medications-v1.jsonl",
+    "correct_field_count": 192,
+    "evaluated_field_count": 192,
+    "micro_accuracy": 1
+  },
+  "interpretation": "Post-tuning regression on frozen medications-v2. It does not replace the independent 79.69% baseline."
+}
