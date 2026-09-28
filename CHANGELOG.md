@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.51.0
+
+- filtros compartilhados por período, macrorregião, UF, fornecedor e órgão/unidade compradora;
+- filtros aplicados de forma consistente a resumo, distribuição, histórico, geografia, fornecedores, compradores, sinais e evidências;
+- pesquisa de produtos com paginação real por `limit` e `offset`, preservando o total de grupos compatíveis;
+- interface pública com controles para aplicar e limpar filtros;
+- navegação Anterior/Próxima na lista de produtos;
+- testes de regressão para filtros, paginação e consistência das estatísticas filtradas;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.51.0.
+
 ## 1.50.0
 
 - aplicação pública reorganizada com `Explorar preços` como experiência principal e `Laboratório` para o parser;
