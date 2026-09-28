@@ -8,7 +8,7 @@ Transforma descrições do PNCP em produtos estruturados e comparáveis, preserv
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-[Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md) · [Changelog](CHANGELOG.md)
+[Demo ao vivo](https://atlas-compras-publicas.onrender.com) · [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs) · [Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md)
 
 </div>
 
@@ -111,7 +111,18 @@ O CI atual executa `ruff check .` e `pytest -q`.
 
 [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Dados do snapshot](docs/dashboard-quality-snapshot.json)
 
+## Demo pública
+
+A demo publicada executa a normalização real do Atlas diretamente pela API:
+
+- [Abrir demo](https://atlas-compras-publicas.onrender.com)
+- [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs)
+- [Health check](https://atlas-compras-publicas.onrender.com/health)
+
+A página inicial permite testar descrições livres. Os painéis analíticos de preços e sinais continuam fora da demo enquanto não existir uma base DuckDB consolidada e publicável.
+
 ## Quickstart
+
 
 Requer Python 3.12+.
 
