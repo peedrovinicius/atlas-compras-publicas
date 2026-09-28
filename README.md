@@ -157,7 +157,7 @@ A experiência pública possui duas áreas.
 - cartões de evidência com contexto da compra, status da normalização, hashes de origem e link para o PNCP;
 - filtros por período, região, UF, fornecedor e órgão/unidade, aplicados de forma consistente em toda a análise;
 - paginação da pesquisa de produtos, preservando o total de grupos compatíveis;
-- ordenação por cobertura, número de compras, atualização recente ou nome;
+- ordenação por relevância estruturada, cobertura, número de compras, atualização recente ou nome;
 - compartilhamento de análises por URL com filtros, ordenação, página e produto selecionado;
 - exportação CSV dos registros filtrados;
 - histórico visual com mediana e faixa interquartil, mantendo a tabela detalhada;
@@ -169,6 +169,8 @@ A experiência pública possui duas áreas.
 - navegação do autocomplete por teclado com `↑`, `↓`, `Enter` e `Esc`;
 - recuperação de busca vazia com atalhos para categorias realmente disponíveis;
 - resultados com mediana de preço, atualização e cobertura visíveis antes de abrir a análise;
+- motivos do match exibidos nos resultados quando categoria, cor ou apresentação contribuem para a correspondência;
+- aliases de apresentação como `seringa`, `frasco`, `tubete`, `carpule`, `ampola`, `pote`, `pacote` e `saco` reconhecidos na busca;
 - filtros aplicados exibidos como chips removíveis;
 - termos usuais como `CIV`, `cimento de vidro`, `bonding` e `anestesia local` reconhecidos diretamente;
 - refinamentos clicáveis por cor, apresentação e atributos técnicos, com contagem real de grupos compatíveis;
@@ -270,6 +272,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.68.0](docs/release-v1.68.0.md)
 - [Release v1.67.0](docs/release-v1.67.0.md)
 - [Release v1.66.0](docs/release-v1.66.0.md)
 - [Release v1.65.0](docs/release-v1.65.0.md)
