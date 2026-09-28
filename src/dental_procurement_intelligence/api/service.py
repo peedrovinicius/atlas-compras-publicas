@@ -14,7 +14,10 @@ from dental_procurement_intelligence.analytics import (
     unrecognized_count,
     unrecognized_items,
 )
-from dental_procurement_intelligence.api.catalog import parser_category_label
+from dental_procurement_intelligence.api.catalog import (
+    parser_category_label,
+    resolve_product_search_query,
+)
 from dental_procurement_intelligence.identity import available_domains
 
 
@@ -276,6 +279,42 @@ def _product_identity_expression() -> str:
     return f"MD5(CONCAT_WS('|', {parts}))"
 
 
+def analytics_product_discovery(
+    database_path: str | Path,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        cursor = connection.execute(
+            f"""
+            SELECT
+                product_category,
+                COUNT(DISTINCT {identity}) AS product_count,
+                COUNT(*) AS award_count,
+                COUNT(*) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS priced_observation_count
+            FROM silver_awards
+            WHERE product_category <> 'unknown'
+            GROUP BY product_category
+            ORDER BY priced_observation_count DESC, product_category
+            """
+        )
+        columns = [column[0] for column in cursor.description]
+        rows = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+    for row in rows:
+        row["label"] = parser_category_label(row["product_category"])
+
+    return {"items": rows}
+
+
 def analytics_product_search(
     database_path: str | Path,
     *,
@@ -301,7 +340,14 @@ def analytics_product_search(
     if sort not in {"coverage", "procurements", "latest", "name"}:
         raise ValueError("sort inválido")
 
-    tokens = [token.casefold() for token in cleaned.split()]
+    interpreted_category, residual_tokens, interpreted_label = (
+        resolve_product_search_query(cleaned)
+    )
+    tokens = (
+        residual_tokens
+        if interpreted_category is not None
+        else [token.casefold() for token in cleaned.split()]
+    )
     search_text = """
         LOWER(CONCAT_WS(
             ' ',
@@ -319,9 +365,17 @@ def analytics_product_search(
             anesthetic_vasoconstrictor
         ))
     """
-    where_tokens = " AND ".join(
-        f"{search_text} LIKE ?" for _ in tokens
-    )
+    search_clauses = ["product_category <> 'unknown'"]
+    search_parameters: list[Any] = []
+
+    if interpreted_category is not None:
+        search_clauses.append("product_category = ?")
+        search_parameters.append(interpreted_category)
+
+    for token in tokens:
+        search_clauses.append(f"{search_text} LIKE ?")
+        search_parameters.append(f"%{token}%")
+
     identity = _product_identity_expression()
     filter_clauses, filter_parameters = _award_filter_sql(
         state_code=state_code,
@@ -331,20 +385,15 @@ def analytics_product_search(
         start_date=start_date,
         end_date=end_date,
     )
-    extra_filters = (
-        "\n          AND " + "\n          AND ".join(filter_clauses)
-        if filter_clauses
-        else ""
-    )
+    search_clauses.extend(filter_clauses)
 
     base_sql = f"""
         FROM silver_awards
-        WHERE product_category <> 'unknown'
-          AND {where_tokens}{extra_filters}
+        WHERE {" AND ".join(search_clauses)}
         GROUP BY {", ".join(_PRODUCT_IDENTITY_FIELDS)}
     """
     parameters = [
-        *[f"%{token}%" for token in tokens],
+        *search_parameters,
         *filter_parameters,
     ]
 
@@ -418,6 +467,8 @@ def analytics_product_search(
     return {
         "query": cleaned,
         "sort": sort,
+        "interpreted_category": interpreted_category,
+        "interpreted_label": interpreted_label,
         "filters": {
             "state_code": state_code,
             "macroregion": macroregion,
