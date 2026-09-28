@@ -1,6 +1,7 @@
 import pytest
 
 from dental_procurement_intelligence.api.app import create_app
+from dental_procurement_intelligence.identity.models import ProductCategory
 
 
 def test_api_exposes_versioned_analytics_routes() -> None:
@@ -13,6 +14,7 @@ def test_api_exposes_versioned_analytics_routes() -> None:
     assert "/health" in paths
     assert "/api/v1/normalize" in paths
     assert "/api/v1/domains" in paths
+    assert "/api/v1/parser/categories" in paths
     assert "/api/v1/overview" in paths
     assert "/api/v1/categories" in paths
     assert "/api/v1/quality" in paths
@@ -60,12 +62,14 @@ def test_public_demo_root_is_available_without_analytics_database() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "Normalizador ao vivo" in response.text
-    assert "91,36%" in response.text
+    assert "Teste o Atlas" in response.text
+    assert "Tudo que o parser reconhece hoje" in response.text
+    assert "Resina composta" in response.text
+    assert "Anestésico local" in response.text
+    assert "Não reconhecido" in response.text
     assert "CIMENTO ODONTOLOGICO" in response.text
     assert "DOMContentLoaded" in response.text
     assert "Atlas de Compras Públicas v1.49.0" in response.text
-    assert "não simula" in response.text
 
 
 def test_health_exposes_current_version() -> None:
@@ -121,3 +125,32 @@ def test_normalize_rate_limit_is_enforced() -> None:
 
     assert response.status_code == 429
     assert response.headers["retry-after"] == "60"
+
+
+def test_supported_parser_categories_match_product_category_enum() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.get("/api/v1/parser/categories")
+
+    assert response.status_code == 200
+    payload = response.json()
+    ids = {item["id"] for item in payload}
+
+    assert ids == {category.value for category in ProductCategory}
+    assert len(payload) == len(ProductCategory)
+    assert sum(item["fallback"] for item in payload) == 1
+    assert next(item for item in payload if item["fallback"])["id"] == "unknown"
+
+
+def test_public_demo_lists_every_supported_category_label() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    categories = client.get("/api/v1/parser/categories").json()
+    html = client.get("/").text
+
+    for category in categories:
+        assert category["label"] in html
