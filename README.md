@@ -240,6 +240,7 @@ dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 - [Benchmark independente de medicamentos v2](docs/benchmark-medications-v2.md)
 - [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
 - [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
+- [Medicamentos v3 pós-tuning v1.48](docs/benchmark-medications-v3-post-tuning.md)
 
 O domínio permanece em `benchmark_required` até um novo holdout independente pós-tuning.
 
