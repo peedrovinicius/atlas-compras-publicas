@@ -348,19 +348,19 @@ export default function AnalyticsExplorer() {
   }
 
   async function chooseSuggestion(item: ProductSearchItem) {
-    setQuery(item.display_name);
+    const currentQuery = query.trim() || item.sample_description;
     setSuggestions([]);
     setResults([item]);
     setTotal(1);
     setOffset(0);
-    setAppliedQuery(item.display_name);
+    setAppliedQuery(currentQuery);
     setAppliedFilters({ ...filters });
     setAppliedSort("coverage");
     await loadProduct(
       item.product_id,
       filters,
       true,
-      item.display_name,
+      currentQuery,
       "coverage",
       0,
     );
