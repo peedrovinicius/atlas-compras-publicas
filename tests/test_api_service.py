@@ -404,3 +404,83 @@ def test_product_summary_rejects_unknown_product(tmp_path: Path) -> None:
             database,
             product_id="0" * 32,
         )
+
+
+
+def test_product_history_aggregates_monthly_prices(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'CE', DATE '2026-05-10', 'defensible', 10.00
+                    ),
+                    (
+                        'p2', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'MG', DATE '2026-05-20', 'defensible', 14.00
+                    ),
+                    (
+                        'p3', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'PR', DATE '2026-06-05', 'defensible', 12.00
+                    )
+            ) AS t(
+                procurement_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                state_code,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    search = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+    )
+    product_id = search["items"][0]["product_id"]
+
+    history = service.analytics_product_history(
+        database,
+        product_id=product_id,
+    )
+
+    assert history["total_observations"] == 3
+    assert len(history["points"]) == 2
+    may = history["points"][0]
+    assert may["observations"] == 2
+    assert float(may["median_price"]) == 12.0
+    assert float(may["percentile_25"]) == 11.0
+    assert float(may["percentile_75"]) == 13.0
+    june = history["points"][1]
+    assert june["observations"] == 1
+    assert float(june["median_price"]) == 12.0
