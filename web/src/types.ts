@@ -76,6 +76,7 @@ export type ProductSearchItem = {
   supplier_count: number;
   state_count: number;
   priced_observation_count: number;
+  median_price: number | null;
   latest_date: string | null;
   sample_description: string;
   display_name: string;
