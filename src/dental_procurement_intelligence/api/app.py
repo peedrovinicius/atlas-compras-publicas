@@ -5,7 +5,7 @@ from time import monotonic
 from typing import Any
 
 from dental_procurement_intelligence import __version__
-from dental_procurement_intelligence.api.demo import parser_categories, render_demo
+from dental_procurement_intelligence.api.catalog import parser_categories
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
     analytics_awards,
@@ -21,7 +21,7 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     try:
         from fastapi import Body, FastAPI, HTTPException, Query, Request
         from fastapi.middleware.cors import CORSMiddleware
-        from fastapi.responses import HTMLResponse
+        from fastapi.responses import RedirectResponse
     except ImportError as exc:
         raise RuntimeError(
             'Instale o extra da API com: pip install -e ".[api]"'
@@ -85,9 +85,12 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     def health() -> dict[str, str]:
         return {"status": "ok", "version": __version__}
 
-    @app.get("/", response_class=HTMLResponse)
-    def demo() -> str:
-        return render_demo(__version__)
+    @app.get("/", include_in_schema=False)
+    def frontend() -> RedirectResponse:
+        return RedirectResponse(
+            "https://atlas-compras-publicas-web.onrender.com",
+            status_code=307,
+        )
 
     def serialize_description(description: str) -> dict[str, Any]:
         cleaned_description = description.strip()
