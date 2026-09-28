@@ -51,10 +51,6 @@ const EXAMPLES = [
     label: "Hidróxido de cálcio",
     value: "HIDROXIDO DE CALCIO P.A 10G",
   },
-  {
-    label: "Caso difícil",
-    value: "CIMENTO ODONTOLOGICO",
-  },
 ];
 
 const PRESENTATION_LABELS: Record<string, string> = {
