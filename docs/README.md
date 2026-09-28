@@ -40,6 +40,7 @@ O domínio histórico `medications` testa a generalização além da odontologia
 ## Release atual
 
 - [Changelog](../CHANGELOG.md)
+- [Release v1.68.0](release-v1.68.0.md)
 - [Release v1.67.0](release-v1.67.0.md)
 - [Release v1.66.0](release-v1.66.0.md)
 - [Release v1.65.0](release-v1.65.0.md)
