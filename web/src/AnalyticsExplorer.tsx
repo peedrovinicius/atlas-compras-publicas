@@ -2,12 +2,28 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { fetchProductAnalytics, searchProducts } from "./api";
 import type {
+  AnalyticsFilters,
   ProductAnalyticsBundle,
   ProductSearchItem,
 } from "./types";
 
 const DEFAULT_QUERY = "resina";
+const PAGE_SIZE = 10;
 const EXAMPLES = ["resina", "ionômero", "anestésico", "flúor"];
+const EMPTY_FILTERS: AnalyticsFilters = {
+  state_code: "",
+  macroregion: "",
+  supplier: "",
+  buyer: "",
+  start_date: "",
+  end_date: "",
+};
+const REGION_OPTIONS = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"];
+const UF_OPTIONS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
+  "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
+  "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+];
 
 function money(value: number | null | undefined): string {
   if (value === null || value === undefined) return "Sem amostra";
@@ -59,8 +75,14 @@ function Metric({ label, value, note }: { label: string; value: string; note: st
 
 export default function AnalyticsExplorer() {
   const [query, setQuery] = useState(DEFAULT_QUERY);
+  const [filters, setFilters] = useState<AnalyticsFilters>({ ...EMPTY_FILTERS });
+  const [appliedFilters, setAppliedFilters] = useState<AnalyticsFilters>({
+    ...EMPTY_FILTERS,
+  });
+  const [appliedQuery, setAppliedQuery] = useState(DEFAULT_QUERY);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
   const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [bundle, setBundle] = useState<ProductAnalyticsBundle | null>(null);
   const [searching, setSearching] = useState(false);
@@ -68,7 +90,11 @@ export default function AnalyticsExplorer() {
   const [error, setError] = useState<string | null>(null);
   const detailRef = useRef<HTMLElement>(null);
 
-  async function runSearch(nextQuery = query) {
+  async function runSearch(
+    nextQuery = query,
+    nextFilters = filters,
+    nextOffset = 0,
+  ) {
     const cleaned = nextQuery.trim();
     if (cleaned.length < 2) {
       setError("Digite pelo menos 2 caracteres para pesquisar.");
@@ -81,12 +107,21 @@ export default function AnalyticsExplorer() {
     setSelectedId(null);
 
     try {
-      const response = await searchProducts(cleaned);
+      const response = await searchProducts(
+        cleaned,
+        nextFilters,
+        PAGE_SIZE,
+        nextOffset,
+      );
       setResults(response.items);
       setTotal(response.total);
+      setOffset(response.offset);
+      setAppliedQuery(cleaned);
+      setAppliedFilters({ ...nextFilters });
     } catch (requestError) {
       setResults([]);
       setTotal(0);
+      setOffset(0);
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -103,7 +138,10 @@ export default function AnalyticsExplorer() {
     setError(null);
 
     try {
-      const analytics = await fetchProductAnalytics(item.product_id);
+      const analytics = await fetchProductAnalytics(
+        item.product_id,
+        appliedFilters,
+      );
       setBundle(analytics);
       window.requestAnimationFrame(() => {
         detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -126,7 +164,7 @@ export default function AnalyticsExplorer() {
   }
 
   useEffect(() => {
-    void runSearch(DEFAULT_QUERY);
+    void runSearch(DEFAULT_QUERY, EMPTY_FILTERS, 0);
   }, []);
 
   const summary = bundle?.summary;
@@ -135,6 +173,10 @@ export default function AnalyticsExplorer() {
     (maximum, bin) => Math.max(maximum, bin.count),
     0,
   ) ?? 0;
+  const pageStart = total === 0 ? 0 : offset + 1;
+  const pageEnd = Math.min(offset + results.length, total);
+  const hasPreviousPage = offset > 0;
+  const hasNextPage = offset + results.length < total;
 
   return (
     <>
@@ -162,6 +204,96 @@ export default function AnalyticsExplorer() {
               {searching ? "Pesquisando..." : "Pesquisar"}
             </button>
           </div>
+
+          <div className="analytics-filter-heading">
+            <span>Filtros opcionais</span>
+            <button
+              type="button"
+              onClick={() => {
+                const cleared = { ...EMPTY_FILTERS };
+                setFilters(cleared);
+                void runSearch(query, cleared, 0);
+              }}
+            >
+              Limpar filtros
+            </button>
+          </div>
+
+          <div className="analytics-filter-grid">
+            <label>
+              Região
+              <select
+                value={filters.macroregion}
+                onChange={(event) =>
+                  setFilters({ ...filters, macroregion: event.target.value })
+                }
+              >
+                <option value="">Todas</option>
+                {REGION_OPTIONS.map((region) => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              UF
+              <select
+                value={filters.state_code}
+                onChange={(event) =>
+                  setFilters({ ...filters, state_code: event.target.value })
+                }
+              >
+                <option value="">Todas</option>
+                {UF_OPTIONS.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Fornecedor
+              <input
+                value={filters.supplier}
+                onChange={(event) =>
+                  setFilters({ ...filters, supplier: event.target.value })
+                }
+                placeholder="Nome ou documento"
+              />
+            </label>
+
+            <label>
+              Órgão ou unidade
+              <input
+                value={filters.buyer}
+                onChange={(event) =>
+                  setFilters({ ...filters, buyer: event.target.value })
+                }
+                placeholder="Nome, CNPJ ou código"
+              />
+            </label>
+
+            <label>
+              Data inicial
+              <input
+                type="date"
+                value={filters.start_date}
+                onChange={(event) =>
+                  setFilters({ ...filters, start_date: event.target.value })
+                }
+              />
+            </label>
+
+            <label>
+              Data final
+              <input
+                type="date"
+                value={filters.end_date}
+                onChange={(event) =>
+                  setFilters({ ...filters, end_date: event.target.value })
+                }
+              />
+            </label>
+          </div>
         </form>
 
         <div className="analytics-examples">
@@ -172,7 +304,7 @@ export default function AnalyticsExplorer() {
               key={example}
               onClick={() => {
                 setQuery(example);
-                void runSearch(example);
+                void runSearch(example, filters, 0);
               }}
             >
               {example}
@@ -221,6 +353,38 @@ export default function AnalyticsExplorer() {
                 </span>
               </button>
             ))}
+          </div>
+        )}
+
+        {!searching && total > 0 && (
+          <div className="analytics-pagination">
+            <button
+              type="button"
+              disabled={!hasPreviousPage}
+              onClick={() =>
+                void runSearch(
+                  appliedQuery,
+                  appliedFilters,
+                  Math.max(0, offset - PAGE_SIZE),
+                )
+              }
+            >
+              Anterior
+            </button>
+            <span>{number(pageStart)}–{number(pageEnd)} de {number(total)}</span>
+            <button
+              type="button"
+              disabled={!hasNextPage}
+              onClick={() =>
+                void runSearch(
+                  appliedQuery,
+                  appliedFilters,
+                  offset + PAGE_SIZE,
+                )
+              }
+            >
+              Próxima
+            </button>
           </div>
         )}
       </section>
