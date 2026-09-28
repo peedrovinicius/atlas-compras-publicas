@@ -1,7 +1,6 @@
-from decimal import Decimal, ROUND_HALF_EVEN, localcontext
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 
 import polars as pl
-
 
 ANALYTIC_DECIMAL_PRECISION = 38
 ANALYTIC_DECIMAL_SCALE = 12
