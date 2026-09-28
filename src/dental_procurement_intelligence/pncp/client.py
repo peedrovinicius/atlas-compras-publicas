@@ -70,10 +70,6 @@ class PNCPClient:
             content=response.content,
         )
 
-    def _get_json(self, path: str) -> Any:
-        raw = self._get_raw(path)
-        return json.loads(raw.content)
-
     @staticmethod
     def _ensure_list(payload: Any) -> Iterable[dict[str, Any]]:
         if not isinstance(payload, list):
@@ -81,15 +77,6 @@ class PNCPClient:
         return payload
 
     def get_contract_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
-        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
-        return self._get_raw(path)
-
-    def get_contract_raw(
-        self,
-        cnpj: str,
-        year: int,
-        sequence: int,
-    ) -> PNCPRawResponse:
         path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
         return self._get_raw(path)
 
@@ -115,25 +102,19 @@ class PNCPClient:
         )
         return self._get_raw(path)
 
-    def get_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
-        return self.contract_items(cnpj, year, sequence)
-
     def contract(self, cnpj: str, year: int, sequence: int) -> PNCPContract:
         raw = self.get_contract_raw(cnpj, year, sequence)
         return PNCPContract.model_validate(json.loads(raw.content))
-
-    def get_items_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
-        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
-        return self._get_raw(path)
 
     def get_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
         return self.contract_items(cnpj, year, sequence)
 
     def contract_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
-        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
+        raw = self.get_items_raw(cnpj, year, sequence)
+        payload = json.loads(raw.content)
         return [
             PNCPItem.model_validate(item)
-            for item in self._ensure_list(self._get_json(path))
+            for item in self._ensure_list(payload)
         ]
 
     def item_results(
@@ -143,11 +124,11 @@ class PNCPClient:
         sequence: int,
         item_number: int,
     ) -> list[PNCPItemResult]:
-        path = (
-            f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
-            f"/itens/{item_number}/resultados"
-        )
+        raw = self.get_item_results_raw(cnpj, year, sequence, item_number)
+        payload = json.loads(raw.content)
+        if isinstance(payload, dict):
+            payload = payload.get("listaResultados")
         return [
             PNCPItemResult.model_validate(item)
-            for item in self._ensure_list(self._get_json(path))
+            for item in self._ensure_list(payload)
         ]
