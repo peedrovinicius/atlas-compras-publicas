@@ -20,6 +20,7 @@ from dental_procurement_intelligence.identity import (
 from dental_procurement_intelligence.pncp import PNCPItem
 
 ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
+    "procurement_key": pl.String,
     "source_sha256": pl.String,
     "item_number": pl.Int64,
     "original_description": pl.String,
@@ -88,6 +89,7 @@ def build_item_frame(
     items: list[PNCPItem],
     *,
     source_sha256: str,
+    procurement_key: str | None = None,
 ) -> pl.DataFrame:
     """Constrói a representação analítica silver dos itens de contratação."""
 
@@ -111,6 +113,7 @@ def build_item_frame(
 
         rows.append(
             {
+                "procurement_key": procurement_key,
                 "source_sha256": source_sha256,
                 "item_number": item.item_number,
                 "original_description": item.description,
@@ -318,6 +321,8 @@ def build_analytics_dataset(
     raw_paths: list[str | Path],
     parquet_path: str | Path,
     database_path: str | Path,
+    *,
+    procurement_key_by_path: dict[str, str] | None = None,
 ) -> AnalyticsBuildResult:
     if not raw_paths:
         raise ValueError("Nenhuma página bruta de itens foi informada")
@@ -328,17 +333,46 @@ def build_analytics_dataset(
     for raw_path in raw_paths:
         items, source_sha256 = load_raw_items(raw_path)
         source_hashes.append(source_sha256)
+        resolved_path = Path(raw_path).as_posix()
+        procurement_key = (
+            procurement_key_by_path.get(resolved_path)
+            if procurement_key_by_path is not None
+            else None
+        )
         frames.append(
-            build_item_frame(items, source_sha256=source_sha256)
+            build_item_frame(
+                items,
+                source_sha256=source_sha256,
+                procurement_key=procurement_key,
+            )
         )
 
     frame = pl.concat(frames, how="vertical")
     if frame.height:
-        unique_items = frame.select(pl.col("item_number").n_unique()).item()
-        if unique_items != frame.height:
-            raise ValueError("Dataset de itens contém item_number duplicado")
+        keyed = frame.filter(pl.col("procurement_key").is_not_null())
+        unkeyed = frame.filter(pl.col("procurement_key").is_null())
 
-    frame = frame.sort("item_number")
+        if keyed.height:
+            unique_keyed_items = keyed.select(
+                pl.struct(["procurement_key", "item_number"]).n_unique()
+            ).item()
+            if unique_keyed_items != keyed.height:
+                raise ValueError(
+                    "Dataset de itens contém chave "
+                    "(procurement_key, item_number) duplicada"
+                )
+
+        if unkeyed.height:
+            unique_unkeyed_items = unkeyed.select(
+                pl.col("item_number").n_unique()
+            ).item()
+            if unique_unkeyed_items != unkeyed.height:
+                raise ValueError(
+                    "Dataset legado sem procurement_key contém "
+                    "item_number duplicado"
+                )
+
+    frame = frame.sort(["procurement_key", "item_number"], nulls_last=True)
     dataset_sha256 = hashlib.sha256(
         "".join(source_hashes).encode("ascii")
     ).hexdigest()
