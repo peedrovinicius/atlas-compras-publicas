@@ -436,14 +436,15 @@ def test_engine_rejects_vasoconstrictor_conflict() -> None:
     )
 
 
-def test_technical_attribute_work_does_not_tune_v5_category_failures() -> None:
-    descriptions = (
-        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+def test_technical_attribute_work_tracks_current_v5_category_boundary() -> None:
+    promoted = parse_product("IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL")
+    unresolved = (
         "PASTA PROFIATICA",
         "FLUORETO DE SODIO 2% GEL NEUTRO",
     )
 
-    for description in descriptions:
+    assert promoted.category == ProductCategory.GLASS_IONOMER
+    for description in unresolved:
         assert parse_product(description).category == ProductCategory.UNKNOWN
 
 
@@ -567,14 +568,15 @@ def test_technical_v2_tuning_does_not_expand_unrelated_contexts() -> None:
     assert anesthetic.technical_attributes.anesthetic_vasoconstrictor is None
 
 
-def test_technical_v2_tuning_keeps_taxonomy_holdout_unchanged() -> None:
-    descriptions = (
-        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+def test_technical_v2_regression_tracks_current_v5_category_boundary() -> None:
+    promoted = parse_product("IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL")
+    unresolved = (
         "PASTA PROFIATICA",
         "FLUORETO DE SODIO 2% GEL NEUTRO",
     )
 
-    for description in descriptions:
+    assert promoted.category == ProductCategory.GLASS_IONOMER
+    for description in unresolved:
         assert parse_product(description).category == ProductCategory.UNKNOWN
 
 
@@ -615,14 +617,15 @@ def test_technical_v3_tuning_recognizes_registered_variants() -> None:
     assert fluoride.category == ProductCategory.FLUORIDE_GEL
 
 
-def test_technical_v3_tuning_keeps_v5_holdout_failures_unchanged() -> None:
-    descriptions = (
-        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+def test_technical_v3_regression_tracks_current_v5_category_boundary() -> None:
+    promoted = parse_product("IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL")
+    unresolved = (
         "PASTA PROFIATICA",
         "FLUORETO DE SODIO 2% GEL NEUTRO",
     )
 
-    for description in descriptions:
+    assert promoted.category == ProductCategory.GLASS_IONOMER
+    for description in unresolved:
         assert parse_product(description).category == ProductCategory.UNKNOWN
 
 
@@ -686,14 +689,15 @@ def test_adhesive_curing_mode_keeps_direct_adhesive_evidence() -> None:
     assert product.technical_attributes.curing_mode == "light_cure"
 
 
-def test_technical_v4_tuning_keeps_v5_holdout_failures_unchanged() -> None:
-    descriptions = (
-        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+def test_technical_v4_regression_tracks_current_v5_category_boundary() -> None:
+    promoted = parse_product("IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL")
+    unresolved = (
         "PASTA PROFIATICA",
         "FLUORETO DE SODIO 2% GEL NEUTRO",
     )
 
-    for description in descriptions:
+    assert promoted.category == ProductCategory.GLASS_IONOMER
+    for description in unresolved:
         assert parse_product(description).category == ProductCategory.UNKNOWN
 
 
@@ -797,14 +801,15 @@ def test_technical_v5_explicit_alternative_has_no_single_resin_technology() -> N
     assert product.technical_attributes.curing_mode == "light_cure"
 
 
-def test_technical_v5_tuning_keeps_taxonomy_holdout_unchanged() -> None:
-    descriptions = (
-        "IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL",
+def test_technical_v5_regression_tracks_current_v5_category_boundary() -> None:
+    promoted = parse_product("IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL")
+    unresolved = (
         "PASTA PROFIATICA",
         "FLUORETO DE SODIO 2% GEL NEUTRO",
     )
 
-    for description in descriptions:
+    assert promoted.category == ProductCategory.GLASS_IONOMER
+    for description in unresolved:
         assert parse_product(description).category == ProductCategory.UNKNOWN
 
 
