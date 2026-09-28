@@ -1194,3 +1194,143 @@ def test_product_records_export_collects_all_pages(
     assert rows[0]["award_key"] == "award-0"
     assert rows[-1]["award_key"] == "award-204"
     assert calls == [0, 100, 200]
+
+
+
+def test_product_search_understands_friendly_category_aliases(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'PRIME ADESIVO FRASCO 4ML',
+                        'dental_adhesive', 'bottle', NULL, NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'ml', 4.0, 'ml',
+                        '111', 'CE', DATE '2026-05-10',
+                        'defensible', 10.0
+                    ),
+                    (
+                        'p2', 'GEL TOPICO NEUTRO 200ML',
+                        'fluoride_gel', 'bottle', NULL, NULL,
+                        NULL, NULL, NULL, NULL, 'neutral',
+                        NULL, NULL, 1, 200.0, 'ml', 200.0, 'ml',
+                        '222', 'MG', DATE '2026-06-10',
+                        'defensible', 20.0
+                    )
+            ) AS t(
+                procurement_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                state_code,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    adhesive = service.analytics_product_search(
+        database,
+        query="adesivo odontológico",
+    )
+    fluoride = service.analytics_product_search(
+        database,
+        query="flúor",
+    )
+
+    assert adhesive["total"] == 1
+    assert adhesive["items"][0]["product_category"] == "dental_adhesive"
+    assert adhesive["interpreted_category"] == "dental_adhesive"
+    assert adhesive["interpreted_label"] == "Adesivo odontológico"
+
+    assert fluoride["total"] == 1
+    assert fluoride["items"][0]["product_category"] == "fluoride_gel"
+    assert fluoride["interpreted_category"] == "fluoride_gel"
+
+
+def test_product_discovery_lists_only_available_categories(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'RESINA COMPOSTA A2',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'defensible', 10.0
+                    ),
+                    (
+                        'p2', 'ADESIVO FRASCO 4ML',
+                        'dental_adhesive', 'bottle', NULL, NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'ml', 4.0, 'ml',
+                        'review', NULL
+                    ),
+                    (
+                        'p3', 'ITEM NAO IDENTIFICADO',
+                        'unknown', NULL, NULL, NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                        'review', NULL
+                    )
+            ) AS t(
+                procurement_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    result = service.analytics_product_discovery(database)
+
+    assert [item["product_category"] for item in result["items"]] == [
+        "composite_resin",
+        "dental_adhesive",
+    ]
+    assert result["items"][0]["label"] == "Resina composta"
+    assert result["items"][0]["priced_observation_count"] == 1
