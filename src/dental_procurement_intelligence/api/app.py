@@ -13,6 +13,7 @@ from dental_procurement_intelligence.api.service import (
     analytics_categories,
     analytics_overview,
     analytics_product_search,
+    analytics_product_summary,
     analytics_quality,
     analytics_unrecognized,
 )
@@ -88,6 +89,8 @@ def create_app(database_path: str | Path | None = None) -> Any:
         try:
             return callable_(*args, **kwargs)
         except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -227,6 +230,14 @@ def create_app(database_path: str | Path | None = None) -> Any:
             query=q,
             limit=limit,
             offset=offset,
+        )
+
+    @app.get("/api/v1/products/{product_id}")
+    def product_summary(product_id: str) -> dict[str, Any]:
+        return execute(
+            analytics_product_summary,
+            resolved_database_path,
+            product_id=product_id,
         )
 
     @app.get("/api/v1/categories")
