@@ -16,8 +16,9 @@ const RECENT_SEARCHES_KEY = "atlas:recent-searches";
 const RECENT_SEARCHES_LIMIT = 6;
 type DetailView = "overview" | "market" | "evidence";
 
-const DEFAULT_SORT: ProductSort = "coverage";
+const DEFAULT_SORT: ProductSort = "relevance";
 const SORT_OPTIONS: Array<{ value: ProductSort; label: string }> = [
+  { value: "relevance", label: "Mais relevantes" },
   { value: "coverage", label: "Mais preços comparáveis" },
   { value: "procurements", label: "Mais compras" },
   { value: "latest", label: "Mais recentes" },
@@ -524,11 +525,12 @@ export default function AnalyticsExplorer() {
     setSuggestions([]);
     setActiveSuggestionIndex(-1);
     setResults([item]);
+    setFacets({});
     setTotal(1);
     setOffset(0);
     setAppliedQuery(currentQuery);
     setAppliedFilters({ ...filters });
-    setAppliedSort("coverage");
+    setAppliedSort("relevance");
     const nextRecent = [
       currentQuery,
       ...recentSearches.filter(
@@ -547,7 +549,7 @@ export default function AnalyticsExplorer() {
       filters,
       true,
       currentQuery,
-      "coverage",
+      "relevance",
       0,
     );
   }
@@ -1109,6 +1111,13 @@ export default function AnalyticsExplorer() {
                 <span>
                   <strong>{item.display_name}</strong>
                   <small>{item.sample_description}</small>
+                  {item.match_reasons.length > 0 && (
+                    <span className="analytics-match-reasons" aria-label="Por que combinou">
+                      {item.match_reasons.map((reason) => (
+                        <span key={reason}>{reason}</span>
+                      ))}
+                    </span>
+                  )}
                   <span className="analytics-result-facts">
                     <span>{number(item.procurement_count)} compras</span>
                     <span>{number(item.priced_observation_count)} preços</span>
