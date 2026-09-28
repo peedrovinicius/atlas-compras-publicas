@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.62.0
+
+- atalho `/` ou `Ctrl/Cmd+K` foca e seleciona o campo principal de busca;
+- o atalho é ignorado quando o usuário já está digitando em input, textarea, select ou área editável;
+- indicação visual discreta do atalho no campo de busca em desktop;
+- descrições de resultados longas passam a ser limitadas a duas linhas;
+- foco visível melhorado nos cartões de resultado;
+- ação textual simplificada de `Abrir análise` para `Ver análise`;
+- cards mobile mais compactos, com preço e ação na mesma linha;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.62.0.
+
 ## 1.61.0
 
 - home do Explorador deixa de executar busca automática por `resina`;
