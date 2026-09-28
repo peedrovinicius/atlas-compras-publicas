@@ -12,9 +12,9 @@ from dental_procurement_intelligence.ingestion import (
 )
 from dental_procurement_intelligence.pncp import PNCPClient
 
-DEMO_CNPJ = "01612541000133"
+DEMO_CNPJ = "15126437000305"
 DEMO_YEAR = 2026
-DEMO_SEQUENCE = 47
+DEMO_SEQUENCE = 212
 
 
 @dataclass(frozen=True, slots=True)
