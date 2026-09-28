@@ -7,6 +7,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 - [Arquitetura](architecture.md)
 - [Arquitetura multidomínio](multidomain-architecture.md)
 - [API e dashboard](api-dashboard.md)
+- [Contrato do warehouse v1](warehouse-v1.md)
 - [Dataset multi-contratação](multi-contratacao.md)
 - [Qualidade do normalizador](qualidade-normalizador.md)
 - [Exemplos de SQL no DuckDB](sql-examples.md)
