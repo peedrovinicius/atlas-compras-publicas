@@ -247,6 +247,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.51.0](docs/release-v1.51.0.md)
 - [Índice técnico](docs/README.md)
 - [Arquitetura](docs/architecture.md)
 - [Metodologia de sinais](docs/metodologia-anomalias.md)
