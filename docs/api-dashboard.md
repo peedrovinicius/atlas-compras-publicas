@@ -72,6 +72,20 @@ As sugestões respeitam os filtros atuais e são ordenadas por cobertura de pre�
 
 O resolvedor de aliases também aceita pequenas diferenças de digitação em expressões de categorias conhecidas. A aproximação é conservadora, exige similaridade alta e prefere expressões mais específicas. Termos sem correspondência suficiente continuam como busca textual normal, sem classificação forçada.
 
+## Busca sem acento e recuperação
+
+A busca textual genérica normaliza a consulta e compara os termos contra uma versão sem acentos do texto analítico. Assim, uma descrição como `PROTÉTICA` pode ser encontrada por `protetica`.
+
+Essa regra vale para a busca textual e não altera a identidade do produto nem o texto de origem.
+
+No frontend, o autocomplete pode ser navegado com teclado:
+
+- `ArrowDown` e `ArrowUp` percorrem as sugestões;
+- `Enter` abre a sugestão selecionada;
+- `Escape` fecha a lista.
+
+Quando uma pesquisa termina sem resultado, a interface oferece categorias existentes na própria base para recuperação rápida, em vez de encerrar a navegação em um estado vazio.
+
 ## Pesquisa e identidade de produto
 
 A busca pública opera sobre produtos já normalizados e exclui a categoria `unknown`.
