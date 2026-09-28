@@ -186,6 +186,68 @@ def analytics_unrecognized(
     }
 
 
+def _award_filter_sql(
+    *,
+    identity: str | None = None,
+    product_id: str | None = None,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> tuple[list[str], list[Any]]:
+    clauses: list[str] = []
+    parameters: list[Any] = []
+
+    if identity is not None and product_id is not None:
+        clauses.append(f"{identity} = ?")
+        parameters.append(product_id)
+
+    if state_code:
+        clauses.append("UPPER(COALESCE(state_code, '')) = UPPER(?)")
+        parameters.append(state_code.strip())
+
+    if macroregion:
+        clauses.append("LOWER(COALESCE(macroregion, '')) = LOWER(?)")
+        parameters.append(macroregion.strip())
+
+    if supplier:
+        term = f"%{supplier.strip().casefold()}%"
+        clauses.append(
+            "("
+            "LOWER(COALESCE(supplier_name, '')) LIKE ? "
+            "OR LOWER(COALESCE(CAST(supplier_document AS VARCHAR), '')) LIKE ?"
+            ")"
+        )
+        parameters.extend([term, term])
+
+    if buyer:
+        term = f"%{buyer.strip().casefold()}%"
+        clauses.append(
+            "("
+            "LOWER(COALESCE(organization_name, '')) LIKE ? "
+            "OR LOWER(COALESCE(CAST(organization_cnpj AS VARCHAR), '')) LIKE ? "
+            "OR LOWER(COALESCE(buyer_unit_name, '')) LIKE ? "
+            "OR LOWER(COALESCE(CAST(buyer_unit_code AS VARCHAR), '')) LIKE ?"
+            ")"
+        )
+        parameters.extend([term, term, term, term])
+
+    if start_date:
+        clauses.append("analysis_date >= CAST(? AS DATE)")
+        parameters.append(start_date)
+
+    if end_date:
+        clauses.append("analysis_date <= CAST(? AS DATE)")
+        parameters.append(end_date)
+
+    if start_date and end_date and start_date > end_date:
+        raise ValueError("start_date não pode ser posterior a end_date")
+
+    return clauses, parameters
+
+
 _PRODUCT_IDENTITY_FIELDS = (
     "product_category",
     "presentation",
@@ -218,6 +280,12 @@ def analytics_product_search(
     database_path: str | Path,
     *,
     query: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     limit: int = 20,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -252,14 +320,30 @@ def analytics_product_search(
         f"{search_text} LIKE ?" for _ in tokens
     )
     identity = _product_identity_expression()
+    filter_clauses, filter_parameters = _award_filter_sql(
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    extra_filters = (
+        "\n          AND " + "\n          AND ".join(filter_clauses)
+        if filter_clauses
+        else ""
+    )
 
     base_sql = f"""
         FROM silver_awards
         WHERE product_category <> 'unknown'
-          AND {where_tokens}
+          AND {where_tokens}{extra_filters}
         GROUP BY {", ".join(_PRODUCT_IDENTITY_FIELDS)}
     """
-    parameters = [f"%{token}%" for token in tokens]
+    parameters = [
+        *[f"%{token}%" for token in tokens],
+        *filter_parameters,
+    ]
 
     with duckdb.connect(str(path), read_only=True) as connection:
         available_columns = _table_columns(connection, "silver_awards")
@@ -326,6 +410,14 @@ def analytics_product_search(
 
     return {
         "query": cleaned,
+        "filters": {
+            "state_code": state_code,
+            "macroregion": macroregion,
+            "supplier": supplier,
+            "buyer": buyer,
+            "start_date": start_date,
+            "end_date": end_date,
+        },
         "items": rows,
         "total": total,
         "limit": limit,
