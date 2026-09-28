@@ -658,9 +658,14 @@ export default function AnalyticsExplorer() {
       return label.includes(normalizedQuery) || normalizedQuery.includes(label);
     })
     .slice(0, 4);
+  const knownPriceCategories = discovery.filter(
+    (item) => item.priced_observation_count > 0,
+  );
   const discoveryHighlights = (
-    discoverySuggestions.length > 0 ? discoverySuggestions : discovery
-  ).slice(0, 8);
+    discoverySuggestions.length > 0
+      ? discoverySuggestions
+      : knownPriceCategories
+  );
   const activeFilterEntries = (
     Object.entries(appliedFilters) as Array<[keyof AnalyticsFilters, string]>
   ).filter(([, value]) => value.trim().length > 0);
@@ -778,14 +783,26 @@ export default function AnalyticsExplorer() {
           </div>
 
           {discoveryHighlights.length > 0 && (
-            <div className="analytics-quick-categories">
-              <span>
-                {discoverySuggestions.length > 0
-                  ? "Talvez você esteja procurando"
-                  : "Categorias populares"}
-              </span>
-              <div>
-                {discoveryHighlights.slice(0, 6).map((item) => (
+            <div className="analytics-known-categories">
+              <div className="analytics-known-categories-heading">
+                <div>
+                  <span>
+                    {discoverySuggestions.length > 0
+                      ? "Talvez você esteja procurando"
+                      : "Categorias conhecidas"}
+                  </span>
+                  <small>
+                    {discoverySuggestions.length > 0
+                      ? "Categorias compatíveis com o que você digitou"
+                      : "Somente categorias com observações de preço na base"}
+                  </small>
+                </div>
+                {discoverySuggestions.length === 0 && (
+                  <strong>{number(knownPriceCategories.length)} categorias</strong>
+                )}
+              </div>
+              <div className="analytics-known-category-grid">
+                {discoveryHighlights.map((item) => (
                   <button
                     type="button"
                     key={item.product_category}
@@ -794,8 +811,11 @@ export default function AnalyticsExplorer() {
                       void runSearch(item.label, filters, 0, sort, true);
                     }}
                   >
-                    {item.label}
-                    <small>{number(item.priced_observation_count)}</small>
+                    <span>{item.label}</span>
+                    <small>
+                      {number(item.product_count)} grupos ·{" "}
+                      {number(item.priced_observation_count)} preços
+                    </small>
                   </button>
                 ))}
               </div>
