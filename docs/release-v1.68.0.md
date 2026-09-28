@@ -56,3 +56,8 @@ O gate funcional anterior à consolidação registrou:
 - 238 testes aprovados;
 - build React/TypeScript aprovado;
 - Vite concluído em 818 ms.
+
+
+## Contratos da release
+
+A versão 1.68.0 está sincronizada entre pacote Python, API, cliente PNCP e frontend. A ordenação padrão pública passa a ser `relevance`, preservando `coverage`, `procurements`, `latest` e `name` como alternativas explícitas.
