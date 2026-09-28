@@ -176,3 +176,63 @@ def test_item_pagination_collects_all_pages() -> None:
     assert len(pages) == 2
     assert [item.item_number for item in items] == [1, 2, 3]
     assert requests == [(1, 2), (2, 2), (1, 100)]
+
+
+def test_client_retries_transient_transport_errors() -> None:
+    attempts = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise httpx.ConnectTimeout("temporary timeout", request=request)
+        return httpx.Response(200, json=[])
+
+    settings = Settings(
+        pncp_base_url="https://integration.example.test",
+        pncp_query_base_url="https://query.example.test",
+        pncp_max_attempts=3,
+        pncp_retry_backoff_seconds=0,
+    )
+    client = PNCPClient(
+        settings=settings,
+        transport=httpx.MockTransport(handler),
+    )
+    try:
+        raw = client.get_items_raw("10.000.000/0000-03", 2021, 1)
+    finally:
+        client.close()
+
+    assert raw.status_code == 200
+    assert attempts == 3
+
+
+def test_client_does_not_retry_http_status_errors() -> None:
+    attempts = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return httpx.Response(404, request=request)
+
+    settings = Settings(
+        pncp_base_url="https://integration.example.test",
+        pncp_query_base_url="https://query.example.test",
+        pncp_max_attempts=3,
+        pncp_retry_backoff_seconds=0,
+    )
+    client = PNCPClient(
+        settings=settings,
+        transport=httpx.MockTransport(handler),
+    )
+    try:
+        try:
+            client.get_items_raw("10.000.000/0000-03", 2021, 1)
+        except httpx.HTTPStatusError:
+            pass
+        else:
+            raise AssertionError("Expected HTTPStatusError")
+    finally:
+        client.close()
+
+    assert attempts == 1
