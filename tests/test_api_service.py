@@ -271,6 +271,140 @@ def test_product_search_groups_awards_by_technical_identity(
     assert item["priced_observation_count"] == 2
 
 
+
+
+def test_product_search_relevance_prioritizes_structured_match(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'a1', 1,
+                        'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '111', 'CE', DATE '2026-05-10',
+                        'defensible', 10.00
+                    ),
+                    (
+                        'p2', 'a2', 2,
+                        'RESINA COMPOSTA A2 KIT',
+                        'composite_resin', 'kit', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, NULL, NULL, NULL, NULL,
+                        '222', 'MG', DATE '2026-06-10',
+                        'defensible', 11.00
+                    )
+            ) AS t(
+                procurement_key,
+                award_key,
+                item_number,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                state_code,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    result = service.analytics_product_search(
+        database,
+        query="resina composta seringa A2",
+        sort="relevance",
+    )
+
+    assert result["total"] == 1
+    item = result["items"][0]
+    assert item["presentation"] == "syringe"
+    assert item["relevance_score"] > 0
+    assert "Categoria: Resina composta" in item["match_reasons"]
+    assert "Cor A2" in item["match_reasons"]
+    assert "Apresentação: Seringa" in item["match_reasons"]
+
+
+def test_product_search_understands_carpule_as_cartridge(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'a1', 1,
+                        'ANESTESICO LOCAL TUBETE 1.8ML',
+                        'local_anesthetic', 'cartridge', NULL, NULL,
+                        NULL, NULL, NULL, NULL, NULL,
+                        'lidocaine', 'epinephrine', 1, 1.8, 'ml',
+                        1.8, 'ml', '111', 'CE', DATE '2026-05-10',
+                        'defensible', 5.00
+                    )
+            ) AS t(
+                procurement_key,
+                award_key,
+                item_number,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                state_code,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    result = service.analytics_product_search(
+        database,
+        query="anestesico local carpule",
+        sort="relevance",
+    )
+
+    assert result["total"] == 1
+    assert result["items"][0]["presentation"] == "cartridge"
+    assert "Apresentação: Tubete" in result["items"][0]["match_reasons"]
+
 def test_product_search_rejects_short_query(tmp_path: Path) -> None:
     database = tmp_path / "analytics.duckdb"
     database.touch()
