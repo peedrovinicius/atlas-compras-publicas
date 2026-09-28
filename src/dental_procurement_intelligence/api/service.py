@@ -439,17 +439,13 @@ def analytics_product_search(
         for token in tokens:
             normalized_token = normalize_product_search_text(token)
             relevance_parts.append(
-                (
-                    "MAX(CASE WHEN LOWER(STRIP_ACCENTS(original_description)) LIKE ? "
-                    "THEN 10 ELSE 0 END)"
-                )
+                "MAX(CASE WHEN LOWER(STRIP_ACCENTS(original_description)) LIKE ? "
+                "THEN 10 ELSE 0 END)"
             )
             relevance_parameters.append(f"%{normalized_token}%")
             relevance_parts.append(
-                (
-                    "CASE WHEN LOWER(STRIP_ACCENTS(COALESCE(shade, ''))) = ? "
-                    "THEN 30 ELSE 0 END"
-                )
+                "CASE WHEN LOWER(STRIP_ACCENTS(COALESCE(shade, ''))) = ? "
+                "THEN 30 ELSE 0 END"
             )
             relevance_parameters.append(normalized_token)
 
