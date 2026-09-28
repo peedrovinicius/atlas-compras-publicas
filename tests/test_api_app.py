@@ -55,26 +55,17 @@ def test_public_demo_normalizes_real_example() -> None:
     }
 
 
-def test_public_demo_root_is_available_without_analytics_database() -> None:
+def test_api_root_redirects_to_react_frontend() -> None:
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
 
     client = TestClient(create_app("data/analytics.duckdb"))
-    response = client.get("/")
+    response = client.get("/", follow_redirects=False)
 
-    assert response.status_code == 200
-    assert "Teste uma ou várias descrições." in response.text
-    assert "O que reconhece hoje" in response.text
-    assert "Resina composta" in response.text
-    assert "Anestésico local" in response.text
-    assert "Não reconhecido" in response.text
-    assert "CIMENTO ODONTOLOGICO" in response.text
-    assert "Testar agora" in response.text
-    assert "Uma descrição por linha" in response.text
-    assert "category-button" in response.text
-    assert "Atributos técnicos" in response.text
-    assert "DOMContentLoaded" in response.text
-    assert "Atlas de Compras Públicas v1.49.0" in response.text
+    assert response.status_code == 307
+    assert response.headers["location"] == (
+        "https://atlas-compras-publicas-web.onrender.com"
+    )
 
 
 def test_health_exposes_current_version() -> None:
@@ -149,16 +140,36 @@ def test_supported_parser_categories_match_product_category_enum() -> None:
     assert next(item for item in payload if item["fallback"])["id"] == "unknown"
 
 
-def test_public_demo_lists_every_supported_category_label() -> None:
+def test_parser_categories_expose_readable_labels() -> None:
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
 
     client = TestClient(create_app("data/analytics.duckdb"))
     categories = client.get("/api/v1/parser/categories").json()
-    html = client.get("/").text
+    labels = {category["label"] for category in categories}
 
-    for category in categories:
-        assert category["label"] in html
+    assert "Resina composta" in labels
+    assert "Anestésico local" in labels
+    assert "Não reconhecido" in labels
+
+
+def test_cors_allows_react_frontend() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.options(
+        "/api/v1/normalize",
+        headers={
+            "Origin": "https://atlas-compras-publicas-web.onrender.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == (
+        "https://atlas-compras-publicas-web.onrender.com"
+    )
 
 
 def test_public_demo_batch_normalizes_multiple_descriptions() -> None:
