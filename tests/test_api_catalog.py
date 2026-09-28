@@ -37,3 +37,19 @@ def test_unrelated_term_is_not_guessed() -> None:
     assert category is None
     assert residual == ["escova", "dental"]
     assert label is None
+
+
+
+def test_common_dental_terms_resolve_to_known_categories() -> None:
+    cases = {
+        "CIV": "glass_ionomer",
+        "cimento de vidro": "glass_ionomer",
+        "bonding": "dental_adhesive",
+        "anestesia local": "local_anesthetic",
+    }
+
+    for query, expected_category in cases.items():
+        category, residual, _ = resolve_product_search_query(query)
+
+        assert category == expected_category
+        assert residual == []
