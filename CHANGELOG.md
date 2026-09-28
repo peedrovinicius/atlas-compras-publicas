@@ -2,6 +2,14 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.66.0
+
+- Explorador de preços passa a exibir todas as categorias conhecidas que possuem observações de preço;
+- cada categoria mostra quantidade de grupos comparáveis e observações de preço;
+- categorias digitadas compatíveis continuam sendo priorizadas como sugestão;
+- rótulo de exemplo rápido `Caso difícil` removido do Laboratório;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.66.0.
+
 ## 1.65.0
 
 - skip link adicionado para acesso direto ao conteúdo principal;
