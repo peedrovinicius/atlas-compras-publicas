@@ -26,6 +26,7 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Links locais do README | 27 de 27 válidos |
 | Branch `release/v1.49.0` | sincronizada com a `main` auditada |
 | Reexecução do CI | mesma falha antes dos steps |
+| Padrão do CI | reproduzido em três commits independentes |
 | Guia local de qualidade | alinhado ao CI |
 | LICENSE | ausente, decisão do mantenedor |
 | SECURITY.md | ausente, melhoria futura |
@@ -202,7 +203,7 @@ Resultado da nova tentativa:
 | Steps | nenhum |
 | Annotations | 2 |
 
-O padrão é o mesmo da execução anterior. A falha ocorre antes de qualquer step do workflow e não fornece evidência de erro em `ruff`, `pytest` ou código do projeto.
+O padrão é o mesmo da execução anterior. A falha ocorre antes de qualquer step do workflow e não fornece evidência de erro em `ruff`, `pytest` ou código do projeto. O mesmo comportamento também ocorreu no commit `733443f`, que alterou apenas documentação: conclusão `failure`, duração aproximada de 2 segundos, zero steps e duas annotations. Assim, o bloqueio foi reproduzido em mudanças de workflow, teste e documentação.
 
 ### 13. CONTRIBUTING alinhado ao CI
 
