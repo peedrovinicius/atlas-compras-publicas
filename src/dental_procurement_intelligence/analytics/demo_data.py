@@ -12,14 +12,46 @@ from dental_procurement_intelligence.ingestion import (
 )
 from dental_procurement_intelligence.pncp import PNCPClient
 
-DEMO_CNPJ = "15126437000305"
-DEMO_YEAR = 2026
-DEMO_SEQUENCE = 212
+
+@dataclass(frozen=True, slots=True)
+class DemoProcurement:
+    cnpj: str
+    year: int
+    sequence: int
+    label: str
+
+
+DEMO_PROCUREMENTS = (
+    DemoProcurement(
+        cnpj="15126437000305",
+        year=2026,
+        sequence=212,
+        label="CHC/UFPR - insumos odontológicos",
+    ),
+    DemoProcurement(
+        cnpj="18277947000100",
+        year=2026,
+        sequence=259,
+        label="Guarda-Mor/MG - insumos odontológicos",
+    ),
+    DemoProcurement(
+        cnpj="39485412000102",
+        year=2026,
+        sequence=4,
+        label="Queimados/RJ - insumos odontológicos",
+    ),
+)
+
+# Compatibilidade com integrações e scripts que ainda importam as constantes antigas.
+DEMO_CNPJ = DEMO_PROCUREMENTS[0].cnpj
+DEMO_YEAR = DEMO_PROCUREMENTS[0].year
+DEMO_SEQUENCE = DEMO_PROCUREMENTS[0].sequence
 
 
 @dataclass(frozen=True, slots=True)
 class DemoDataBuildResult:
-    procurement_key: str
+    procurement_count: int
+    procurement_keys: tuple[str, ...]
     item_count: int
     result_count: int
     silver_item_count: int
@@ -37,11 +69,40 @@ def build_demo_data(
     client: PNCPClient,
     output_root: str | Path = "data/demo",
     *,
-    cnpj: str = DEMO_CNPJ,
-    year: int = DEMO_YEAR,
-    sequence: int = DEMO_SEQUENCE,
+    cnpj: str | None = None,
+    year: int | None = None,
+    sequence: int | None = None,
+    procurements: tuple[DemoProcurement, ...] | None = None,
 ) -> DemoDataBuildResult:
     """Reconstrói a amostra analítica pública a partir do PNCP."""
+
+    if procurements is not None and any(
+        value is not None for value in (cnpj, year, sequence)
+    ):
+        raise ValueError(
+            "Use procurements ou cnpj/year/sequence, não os dois formatos."
+        )
+
+    if procurements is None:
+        explicit = (cnpj, year, sequence)
+        if all(value is None for value in explicit):
+            procurements = DEMO_PROCUREMENTS
+        elif any(value is None for value in explicit):
+            raise ValueError(
+                "cnpj, year e sequence precisam ser informados em conjunto."
+            )
+        else:
+            procurements = (
+                DemoProcurement(
+                    cnpj=str(cnpj),
+                    year=int(year),
+                    sequence=int(sequence),
+                    label="contratação informada pela CLI",
+                ),
+            )
+
+    if not procurements:
+        raise ValueError("Informe pelo menos uma contratação para a amostra.")
 
     root = Path(output_root)
     raw_root = root / "raw"
@@ -49,21 +110,32 @@ def build_demo_data(
     awards_parquet = root / "silver" / "awards.parquet"
     database = root / "atlas-demo.duckdb"
 
-    capture = capture_contract(
-        client,
-        EvidenceStore(raw_root),
-        cnpj=cnpj,
-        year=year,
-        sequence=sequence,
-    )
+    store = EvidenceStore(raw_root)
+    captures = [
+        capture_contract(
+            client,
+            store,
+            cnpj=procurement.cnpj,
+            year=procurement.year,
+            sequence=procurement.sequence,
+        )
+        for procurement in procurements
+    ]
+
+    item_paths: list[str] = []
+    procurement_key_by_path: dict[str, str] = {}
+
+    for capture in captures:
+        for evidence in capture.all_item_evidence:
+            path = Path(evidence.object_path).as_posix()
+            item_paths.append(path)
+            procurement_key_by_path[path] = capture.procurement_key
 
     items = build_analytics_dataset(
-        [
-            evidence.object_path
-            for evidence in capture.all_item_evidence
-        ],
+        item_paths,
         items_parquet,
         database,
+        procurement_key_by_path=procurement_key_by_path,
     )
 
     manifests = discover_contract_bundles(raw_root / "contracts")
@@ -77,9 +149,12 @@ def build_demo_data(
     build_quality_views(database)
 
     return DemoDataBuildResult(
-        procurement_key=capture.procurement_key,
-        item_count=capture.item_count,
-        result_count=capture.result_count,
+        procurement_count=len(captures),
+        procurement_keys=tuple(
+            capture.procurement_key for capture in captures
+        ),
+        item_count=sum(capture.item_count for capture in captures),
+        result_count=sum(capture.result_count for capture in captures),
         silver_item_count=items.row_count,
         silver_award_count=awards.row_count,
         eligible_signal_rows=signals.eligible_row_count,
