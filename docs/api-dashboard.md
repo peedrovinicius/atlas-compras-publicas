@@ -150,9 +150,20 @@ O frontend não contém números analíticos codificados. Os resultados vêm da 
 
 ## Paginação e filtros
 
-Coleções paginadas usam `limit` e `offset`. Os limites máximos variam conforme a rota e são validados pela API.
+A busca por produtos usa `limit` e `offset`, devolve o total de grupos compatíveis e permite navegação por páginas sem alterar a identidade do produto.
 
-Os filtros são parametrizados e não interpolam entrada do usuário diretamente em SQL.
+As rotas de inteligência por produto aceitam os mesmos filtros opcionais:
+
+- `state_code`: UF exata;
+- `macroregion`: macrorregião;
+- `supplier`: busca parcial por nome ou documento do fornecedor;
+- `buyer`: busca parcial por órgão, CNPJ, unidade compradora ou código;
+- `start_date`: data inicial inclusiva no formato `YYYY-MM-DD`;
+- `end_date`: data final inclusiva no formato `YYYY-MM-DD`.
+
+Os filtros são aplicados ao mesmo universo em resumo, distribuição, histórico, geografia, fornecedores, compradores, sinais e registros de evidência. Isso evita comparar números calculados sobre subconjuntos diferentes.
+
+Todos os filtros são parametrizados e não interpolam entrada do usuário diretamente em SQL. A API rejeita intervalo em que `start_date` seja posterior a `end_date`.
 
 ## Dashboard HTML estático
 
