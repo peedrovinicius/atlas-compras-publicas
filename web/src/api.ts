@@ -1,4 +1,5 @@
 import type {
+  AnalyticsFilters,
   BatchResponse,
   NormalizationResult,
   ParserCategory,
@@ -42,6 +43,15 @@ async function decode<T>(response: Response): Promise<T> {
   return body as T;
 }
 
+function analyticsFilterParams(filters: AnalyticsFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    const cleaned = value.trim();
+    if (cleaned) params.set(key, cleaned);
+  }
+  return params;
+}
+
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`);
   return decode<T>(response);
@@ -70,16 +80,31 @@ export async function normalizeDescriptions(
 
 export async function searchProducts(
   query: string,
-  limit = 12,
+  filters: AnalyticsFilters,
+  limit = 10,
+  offset = 0,
 ): Promise<ProductSearchResponse> {
-  const params = new URLSearchParams({ q: query, limit: String(limit) });
+  const params = analyticsFilterParams(filters);
+  params.set("q", query);
+  params.set("limit", String(limit));
+  params.set("offset", String(offset));
   return get<ProductSearchResponse>(`/api/v1/products/search?${params.toString()}`);
 }
 
 export async function fetchProductAnalytics(
   productId: string,
+  filters: AnalyticsFilters,
 ): Promise<ProductAnalyticsBundle> {
   const encoded = encodeURIComponent(productId);
+  const filterQuery = analyticsFilterParams(filters);
+  const withFilters = (path: string, extra?: Record<string, string>) => {
+    const params = new URLSearchParams(filterQuery);
+    for (const [key, value] of Object.entries(extra ?? {})) {
+      params.set(key, value);
+    }
+    const query = params.toString();
+    return query ? `${path}?${query}` : path;
+  };
   const [
     summary,
     distribution,
@@ -90,14 +115,24 @@ export async function fetchProductAnalytics(
     signals,
     records,
   ] = await Promise.all([
-      get<ProductSummary>(`/api/v1/products/${encoded}`),
-      get<ProductDistribution>(`/api/v1/products/${encoded}/distribution`),
-      get<ProductHistory>(`/api/v1/products/${encoded}/history`),
-      get<ProductRegions>(`/api/v1/products/${encoded}/regions`),
-      get<ProductSuppliers>(`/api/v1/products/${encoded}/suppliers?limit=10`),
-      get<ProductBuyers>(`/api/v1/products/${encoded}/buyers?limit=10`),
-      get<ProductSignals>(`/api/v1/products/${encoded}/signals?limit=10`),
-      get<ProductRecords>(`/api/v1/products/${encoded}/records?limit=12`),
+      get<ProductSummary>(withFilters(`/api/v1/products/${encoded}`)),
+      get<ProductDistribution>(
+        withFilters(`/api/v1/products/${encoded}/distribution`),
+      ),
+      get<ProductHistory>(withFilters(`/api/v1/products/${encoded}/history`)),
+      get<ProductRegions>(withFilters(`/api/v1/products/${encoded}/regions`)),
+      get<ProductSuppliers>(
+        withFilters(`/api/v1/products/${encoded}/suppliers`, { limit: "10" }),
+      ),
+      get<ProductBuyers>(
+        withFilters(`/api/v1/products/${encoded}/buyers`, { limit: "10" }),
+      ),
+      get<ProductSignals>(
+        withFilters(`/api/v1/products/${encoded}/signals`, { limit: "10" }),
+      ),
+      get<ProductRecords>(
+        withFilters(`/api/v1/products/${encoded}/records`, { limit: "12" }),
+      ),
     ]);
 
   return { summary, distribution, history, regions, suppliers, buyers, signals, records };
