@@ -25,6 +25,10 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Consolidação técnica v1-v12 | criada |
 | Links locais do README | 27 de 27 válidos |
 | Branch `release/v1.49.0` | sincronizada com a `main` auditada |
+| Reexecução do CI | mesma falha antes dos steps |
+| Guia local de qualidade | alinhado ao CI |
+| LICENSE | ausente, decisão do mantenedor |
+| SECURITY.md | ausente, melhoria futura |
 
 ## Achados
 
@@ -177,7 +181,43 @@ A branch `release/v1.49.0` estava 20 commits atrás da `main` durante a auditori
 
 Ela foi atualizada por fast-forward para o estado auditado da `main`.
 
-### 12. Auditoria textual inicial concluída
+### 12. Falha do CI reproduzida em nova tentativa
+
+O job mais recente foi reexecutado para descartar falha transitória.
+
+Resultado da nova tentativa:
+
+| Campo | Valor |
+| --- | --- |
+| Run | `36412652497` |
+| Job | `quality` |
+| Status | completed |
+| Conclusão | failure |
+| Duração aproximada | 3 segundos |
+| Steps | nenhum |
+| Annotations | 2 |
+
+O padrão é o mesmo da execução anterior. A falha ocorre antes de qualquer step do workflow e não fornece evidência de erro em `ruff`, `pytest` ou código do projeto.
+
+### 13. CONTRIBUTING alinhado ao CI
+
+O guia local usava:
+
+`ruff check src tests`
+
+O CI oficial usa:
+
+`ruff check .`
+
+A auditoria alinhou o `CONTRIBUTING.md` ao comando real do workflow para evitar diferença entre validação local e CI.
+
+### 14. Arquivos de governança pública
+
+`LICENSE` e `SECURITY.md` não existem atualmente.
+
+Nenhuma licença foi escolhida automaticamente nesta auditoria, pois essa decisão pertence ao mantenedor do projeto. `SECURITY.md` fica registrado como melhoria futura caso o repositório passe a receber contribuições externas ou seja tornado público.
+
+### 15. Auditoria textual inicial concluída
 
 A revisão textual inicial não encontrou motivo para ampliar o README. A decisão editorial é manter a página principal enxuta e deixar o histórico técnico nos documentos especializados.
 
@@ -189,7 +229,7 @@ Pontos mantidos:
 - sem inserir promessa de estabilidade plena do domínio de medicamentos;
 - sem aumentar a lista de documentos na página principal.
 
-### 13. Release notes sincronizadas
+### 16. Release notes sincronizadas
 
 `docs/release-v1.49.0.md` foi sincronizado com a auditoria para registrar:
 
@@ -217,6 +257,10 @@ Pontos mantidos:
 - [x] Criar consolidação técnica v1-v12.
 - [x] Validar os 27 links locais do README.
 - [x] Sincronizar a branch `release/v1.49.0` com a `main` auditada.
+- [x] Reexecutar o CI para descartar falha transitória.
+- [x] Confirmar que a reexecução falha antes dos steps.
+- [x] Alinhar o comando Ruff do CONTRIBUTING com o CI.
+- [x] Verificar presença de LICENSE e SECURITY.md.
 - [ ] Conferir Actions manualmente na interface.
 - [ ] Rodar suíte local ou em ambiente conectado.
 - [x] Conferir existência dos links locais do README.
