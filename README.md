@@ -131,15 +131,9 @@ O projeto usa:
 - separação explícita entre baseline independente e pós-tuning;
 - hashes para proteger artefatos históricos de avaliação.
 
-O CI atual executa `ruff check .` e `pytest -q`.
+O CI atual executa `ruff check .`, `pytest -q` e o build TypeScript/Vite do frontend.
 
 [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Dados do snapshot](docs/dashboard-quality-snapshot.json)
-
-## SQL e camada analítica
-
-O DuckDB é usado para consolidar itens, homologações e grupos comparáveis. Há consultas reais documentadas para inspeção de qualidade, resumo por categoria, homologações por região e sinais estatísticos.
-
-[Ver exemplos de SQL](docs/sql-examples.md)
 
 ## Demo pública
 
