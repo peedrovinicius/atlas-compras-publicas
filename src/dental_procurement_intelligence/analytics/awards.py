@@ -166,6 +166,7 @@ def build_award_frame(
     item_source_sha256: str,
     result_sources: list[tuple[list[PNCPItemResult], str]],
     *,
+    item_source_sha256_by_number: dict[int, str] | None = None,
     contract: PNCPContract | None = None,
     contract_source_sha256: str | None = None,
     procurement_key: str | None = None,
@@ -244,7 +245,14 @@ def build_award_frame(
                     "procurement_key": resolved_procurement_key,
                     "award_key": result_key,
                     "contract_source_sha256": contract_source_sha256,
-                    "item_source_sha256": item_source_sha256,
+                    "item_source_sha256": (
+                        item_source_sha256_by_number.get(
+                            item.item_number,
+                            item_source_sha256,
+                        )
+                        if item_source_sha256_by_number is not None
+                        else item_source_sha256
+                    ),
                     "result_source_sha256": result_sha256,
                     "item_number": item.item_number,
                     "result_sequence": result.result_sequence,
@@ -455,17 +463,31 @@ def _bundle_frame(bundle: ContractBundle) -> pl.DataFrame:
         bundle.contract_evidence.object_path,
         bundle.contract_evidence.sha256,
     )
-    _verify_evidence(
-        bundle.item_evidence.object_path,
-        bundle.item_evidence.sha256,
-    )
+    for evidence in bundle.all_item_evidence:
+        _verify_evidence(
+            evidence.object_path,
+            evidence.sha256,
+        )
     for evidence in bundle.result_evidence:
         _verify_evidence(evidence.object_path, evidence.sha256)
 
     contract, contract_sha256 = load_raw_contract(
         bundle.contract_evidence.object_path
     )
-    items, item_sha256 = load_raw_items(bundle.item_evidence.object_path)
+    items: list[PNCPItem] = []
+    item_sha256_by_number: dict[int, str] = {}
+
+    for evidence in bundle.all_item_evidence:
+        page_items, page_sha256 = load_raw_items(evidence.object_path)
+        for item in page_items:
+            if item.item_number in item_sha256_by_number:
+                raise ValueError(
+                    f"Item duplicado entre evidências: {item.item_number}"
+                )
+            items.append(item)
+            item_sha256_by_number[item.item_number] = page_sha256
+
+    item_sha256 = bundle.item_evidence.sha256
     result_sources = [
         load_raw_results(evidence.object_path)
         for evidence in bundle.result_evidence
@@ -485,6 +507,7 @@ def _bundle_frame(bundle: ContractBundle) -> pl.DataFrame:
         items,
         item_sha256,
         result_sources,
+        item_source_sha256_by_number=item_sha256_by_number,
         contract=contract,
         contract_source_sha256=contract_sha256,
         procurement_key=bundle.procurement_key,
