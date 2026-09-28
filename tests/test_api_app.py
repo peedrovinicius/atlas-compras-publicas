@@ -63,11 +63,13 @@ def test_public_demo_root_is_available_without_analytics_database() -> None:
 
     assert response.status_code == 200
     assert "Teste o Atlas" in response.text
-    assert "Tudo que o parser reconhece hoje" in response.text
+    assert "O que reconhece hoje" in response.text
     assert "Resina composta" in response.text
     assert "Anestésico local" in response.text
     assert "Não reconhecido" in response.text
     assert "CIMENTO ODONTOLOGICO" in response.text
+    assert "Testar agora" in response.text
+    assert "Ver detalhes técnicos" in response.text
     assert "DOMContentLoaded" in response.text
     assert "Atlas de Compras Públicas v1.49.0" in response.text
 
