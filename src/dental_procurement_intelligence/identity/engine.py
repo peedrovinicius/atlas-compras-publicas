@@ -9,7 +9,6 @@ from dental_procurement_intelligence.identity.models import (
 )
 from dental_procurement_intelligence.identity.parser import parse_product
 
-
 _SHADE_CRITICAL = {
     ProductCategory.COMPOSITE_RESIN,
     ProductCategory.FLOWABLE_RESIN,
