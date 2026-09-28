@@ -20,6 +20,7 @@ def test_api_exposes_versioned_analytics_routes() -> None:
     assert "/api/v1/parser/categories" in paths
     assert "/api/v1/overview" in paths
     assert "/api/v1/products/search" in paths
+    assert "/api/v1/products/discovery" in paths
     assert "/api/v1/products/{product_id}" in paths
     assert "/api/v1/products/{product_id}/history" in paths
     assert "/api/v1/products/{product_id}/distribution" in paths
