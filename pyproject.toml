@@ -8,6 +8,7 @@ version = "1.48.0"
 description = "Inteligência de dados auditável para compras públicas no Brasil."
 readme = "README.md"
 requires-python = ">=3.12"
+keywords = ["compras-publicas", "pncp", "dados-publicos", "engenharia-de-dados", "analise-de-dados", "brasil"]
 dependencies = [
   "httpx>=0.28,<1",
   "pydantic>=2.10,<3",
@@ -15,6 +16,11 @@ dependencies = [
   "polars>=1.18,<2",
   "duckdb>=1.1,<2",
 ]
+
+[project.urls]
+Repository = "https://github.com/peedrovinicius/atlas-compras-publicas"
+Documentation = "https://github.com/peedrovinicius/atlas-compras-publicas/tree/main/docs"
+Issues = "https://github.com/peedrovinicius/atlas-compras-publicas/issues"
 
 [project.optional-dependencies]
 api = [
