@@ -84,6 +84,13 @@ export async function fetchProductDiscovery(): Promise<ProductDiscoveryResponse>
   return get<ProductDiscoveryResponse>("/api/v1/products/discovery");
 }
 
+export async function suggestProducts(
+  query: string,
+  filters: AnalyticsFilters,
+): Promise<ProductSearchResponse> {
+  return searchProducts(query, filters, "coverage", 6, 0);
+}
+
 export async function searchProducts(
   query: string,
   filters: AnalyticsFilters,
