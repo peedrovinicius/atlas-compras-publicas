@@ -430,6 +430,12 @@ def analytics_product_summary(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     minimum_sample_size: int = 5,
 ) -> dict[str, Any]:
     path = _require_database(database_path)
@@ -440,6 +446,17 @@ def analytics_product_summary(
 
     identity = _product_identity_expression()
     identity_fields = ", ".join(_PRODUCT_IDENTITY_FIELDS)
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         cursor = connection.execute(
@@ -468,14 +485,14 @@ def analytics_product_summary(
                       AND awarded_price_per_base_unit > 0
                 ) AS price_sample_count
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             GROUP BY {identity_fields}
             """,
-            [product_id],
+            parameters,
         )
         row = cursor.fetchone()
         if row is None:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
         columns = [column[0] for column in cursor.description]
         summary = dict(zip(columns, row, strict=True))
 
@@ -501,12 +518,12 @@ def analytics_product_summary(
                     awarded_quantity * normalized_quantity_value
                 ) AS total_physical_quantity
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND price_normalization_status = 'defensible'
               AND awarded_price_per_base_unit IS NOT NULL
               AND awarded_price_per_base_unit > 0
             """,
-            [product_id],
+            parameters,
         )
         price_row = price_cursor.fetchone()
         price_columns = [column[0] for column in price_cursor.description]
@@ -535,12 +552,16 @@ def analytics_product_summary(
         "price_stats": price_stats,
     }
 
-
-
 def analytics_product_distribution(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     bin_count: int = 10,
 ) -> dict[str, Any]:
     path = _require_database(database_path)
@@ -550,18 +571,29 @@ def analytics_product_distribution(
         raise ValueError("bin_count deve estar entre 5 e 40")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         exists = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         row = connection.execute(
             f"""
@@ -570,12 +602,12 @@ def analytics_product_distribution(
                 MIN(CAST(awarded_price_per_base_unit AS DOUBLE)) AS min_price,
                 MAX(CAST(awarded_price_per_base_unit AS DOUBLE)) AS max_price
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND price_normalization_status = 'defensible'
               AND awarded_price_per_base_unit IS NOT NULL
               AND awarded_price_per_base_unit > 0
             """,
-            [product_id],
+            parameters,
         ).fetchone()
 
         observations = int(row[0])
@@ -624,7 +656,7 @@ def analytics_product_distribution(
                 ) AS bucket_index,
                 COUNT(*) AS bucket_count
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND price_normalization_status = 'defensible'
               AND awarded_price_per_base_unit IS NOT NULL
               AND awarded_price_per_base_unit > 0
@@ -637,7 +669,7 @@ def analytics_product_distribution(
                 max_price,
                 min_price,
                 bin_count,
-                product_id,
+                *parameters,
             ],
         )
         counts = {
@@ -668,29 +700,45 @@ def analytics_product_distribution(
         "bins": bins,
     }
 
-
 def analytics_product_history(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> dict[str, Any]:
     path = _require_database(database_path)
     if len(product_id) != 32:
         raise ValueError("product_id inválido")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         exists = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         cursor = connection.execute(
             f"""
@@ -712,7 +760,7 @@ def analytics_product_history(
                 MIN(awarded_price_per_base_unit) AS min_price,
                 MAX(awarded_price_per_base_unit) AS max_price
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND price_normalization_status = 'defensible'
               AND awarded_price_per_base_unit IS NOT NULL
               AND awarded_price_per_base_unit > 0
@@ -720,7 +768,7 @@ def analytics_product_history(
             GROUP BY 1
             ORDER BY month
             """,
-            [product_id],
+            parameters,
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -734,30 +782,45 @@ def analytics_product_history(
         "total_observations": sum(row["observations"] for row in rows),
     }
 
-
-
 def analytics_product_regions(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> dict[str, Any]:
     path = _require_database(database_path)
     if len(product_id) != 32:
         raise ValueError("product_id inválido")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         exists = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         national = connection.execute(
             f"""
@@ -767,12 +830,12 @@ def analytics_product_regions(
                 COUNT(DISTINCT state_code) AS state_count,
                 MEDIAN(awarded_price_per_base_unit) AS median_price
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND price_normalization_status = 'defensible'
               AND awarded_price_per_base_unit IS NOT NULL
               AND awarded_price_per_base_unit > 0
             """,
-            [product_id],
+            parameters,
         ).fetchone()
 
         national_columns = [
@@ -795,7 +858,7 @@ def analytics_product_regions(
                     COUNT(DISTINCT procurement_key) AS procurement_count,
                     MEDIAN(awarded_price_per_base_unit) AS median_price
                 FROM silver_awards
-                WHERE {identity} = ?
+                WHERE {where_sql}
                   AND price_normalization_status = 'defensible'
                   AND awarded_price_per_base_unit IS NOT NULL
                   AND awarded_price_per_base_unit > 0
@@ -823,7 +886,7 @@ def analytics_product_regions(
             ORDER BY observations DESC, state_code
             """,
             [
-                product_id,
+                *parameters,
                 national_summary["median_price"],
                 national_summary["median_price"],
                 national_summary["median_price"],
@@ -844,7 +907,7 @@ def analytics_product_regions(
                 COUNT(DISTINCT state_code) AS state_count,
                 MEDIAN(awarded_price_per_base_unit) AS median_price
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND price_normalization_status = 'defensible'
               AND awarded_price_per_base_unit IS NOT NULL
               AND awarded_price_per_base_unit > 0
@@ -852,7 +915,7 @@ def analytics_product_regions(
             GROUP BY macroregion
             ORDER BY observations DESC, macroregion
             """,
-            [product_id],
+            parameters,
         )
         region_columns = [
             column[0] for column in region_cursor.description
@@ -869,12 +932,16 @@ def analytics_product_regions(
         "states": states,
     }
 
-
-
 def analytics_product_suppliers(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     limit: int = 20,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -887,27 +954,38 @@ def analytics_product_suppliers(
         raise ValueError("offset não pode ser negativo")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         total_awards = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not total_awards:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         total_suppliers = connection.execute(
             f"""
             SELECT COUNT(DISTINCT supplier_document)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND supplier_document IS NOT NULL
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
 
         cursor = connection.execute(
@@ -934,13 +1012,13 @@ def analytics_product_suppliers(
                     2
                 ) AS sample_share_percent
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND supplier_document IS NOT NULL
             GROUP BY supplier_document
             ORDER BY award_count DESC, supplier_name
             LIMIT ? OFFSET ?
             """,
-            [total_awards, product_id, limit, offset],
+            [total_awards, *parameters, limit, offset],
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -956,11 +1034,16 @@ def analytics_product_suppliers(
         "offset": offset,
     }
 
-
 def analytics_product_buyers(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     limit: int = 20,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -973,18 +1056,29 @@ def analytics_product_buyers(
         raise ValueError("offset não pode ser negativo")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         exists = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         total_buyers = connection.execute(
             f"""
@@ -994,7 +1088,7 @@ def analytics_product_buyers(
                     organization_cnpj,
                     buyer_unit_code
                 FROM silver_awards
-                WHERE {identity} = ?
+                WHERE {where_sql}
                   AND (
                       organization_cnpj IS NOT NULL
                       OR buyer_unit_code IS NOT NULL
@@ -1002,7 +1096,7 @@ def analytics_product_buyers(
                 GROUP BY organization_cnpj, buyer_unit_code
             )
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
 
         cursor = connection.execute(
@@ -1030,7 +1124,7 @@ def analytics_product_buyers(
                       AND awarded_price_per_base_unit > 0
                 ) AS priced_observation_count
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND (
                   organization_cnpj IS NOT NULL
                   OR buyer_unit_code IS NOT NULL
@@ -1039,7 +1133,7 @@ def analytics_product_buyers(
             ORDER BY procurement_count DESC, award_count DESC, organization_name
             LIMIT ? OFFSET ?
             """,
-            [product_id, limit, offset],
+            [*parameters, limit, offset],
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -1054,14 +1148,6 @@ def analytics_product_buyers(
         "limit": limit,
         "offset": offset,
     }
-
-
-_SIGNAL_DISCLAIMER = (
-    "Um sinal estatístico indica apenas que o preço está distante da "
-    "distribuição observada para produtos comparáveis. Isso não constitui "
-    "prova de irregularidade."
-)
-
 
 def _pncp_procurement_url(procurement_key: str | None) -> str | None:
     if not procurement_key or not procurement_key.startswith("pncp:"):
@@ -1080,6 +1166,12 @@ def analytics_product_signals(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -1092,6 +1184,17 @@ def analytics_product_signals(
         raise ValueError("offset não pode ser negativo")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         tables = {
@@ -1118,21 +1221,21 @@ def analytics_product_signals(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not exists:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         total = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM gold_price_signals
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND is_price_signal
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
 
         cursor = connection.execute(
@@ -1164,7 +1267,7 @@ def analytics_product_signals(
                 item_source_sha256,
                 result_source_sha256
             FROM gold_price_signals
-            WHERE {identity} = ?
+            WHERE {where_sql}
               AND is_price_signal
             ORDER BY
                 ABS(COALESCE(modified_z_score, 0)) DESC,
@@ -1172,7 +1275,7 @@ def analytics_product_signals(
                 award_key
             LIMIT ? OFFSET ?
             """,
-            [product_id, limit, offset],
+            [*parameters, limit, offset],
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -1192,11 +1295,16 @@ def analytics_product_signals(
         "disclaimer": _SIGNAL_DISCLAIMER,
     }
 
-
 def analytics_product_records(
     database_path: str | Path,
     *,
     product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -1209,18 +1317,29 @@ def analytics_product_records(
         raise ValueError("offset não pode ser negativo")
 
     identity = _product_identity_expression()
+    filter_clauses, parameters = _award_filter_sql(
+        identity=identity,
+        product_id=product_id,
+        state_code=state_code,
+        macroregion=macroregion,
+        supplier=supplier,
+        buyer=buyer,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    where_sql = " AND ".join(filter_clauses)
 
     with duckdb.connect(str(path), read_only=True) as connection:
         total = connection.execute(
             f"""
             SELECT COUNT(*)
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             """,
-            [product_id],
+            parameters,
         ).fetchone()[0]
         if not total:
-            raise LookupError("Produto não encontrado na base analítica")
+            raise LookupError("Nenhum registro encontrado para os filtros informados")
 
         cursor = connection.execute(
             f"""
@@ -1269,7 +1388,7 @@ def analytics_product_records(
                 item_source_sha256,
                 result_source_sha256
             FROM silver_awards
-            WHERE {identity} = ?
+            WHERE {where_sql}
             ORDER BY
                 analysis_date DESC NULLS LAST,
                 procurement_key,
@@ -1277,7 +1396,7 @@ def analytics_product_records(
                 award_key
             LIMIT ? OFFSET ?
             """,
-            [product_id, limit, offset],
+            [*parameters, limit, offset],
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -1295,3 +1414,4 @@ def analytics_product_records(
         "limit": limit,
         "offset": offset,
     }
+
