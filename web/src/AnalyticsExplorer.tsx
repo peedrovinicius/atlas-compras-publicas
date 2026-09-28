@@ -34,6 +34,11 @@ function date(value: string | null | undefined): string {
   }).format(parsed);
 }
 
+function shortHash(value: string | null | undefined): string {
+  if (!value) return "hash não informado";
+  return `${value.slice(0, 10)}…${value.slice(-8)}`;
+}
+
 function percent(value: number | null | undefined): string {
   if (value === null || value === undefined) return "Sem referência";
   const numeric = Number(value);
@@ -294,7 +299,7 @@ export default function AnalyticsExplorer() {
                   {bundle.suppliers.items.map((supplier) => (
                     <div key={supplier.supplier_document}>
                       <span><strong>{supplier.supplier_name ?? "Fornecedor sem nome"}</strong><small>{number(supplier.procurement_count)} compras</small></span>
-                      <span><strong>{money(supplier.median_price)}</strong><small>{percent(supplier.sample_share_percent)} da amostra</small></span>
+                      <span><strong>{money(supplier.median_price)}</strong><small>{Number(supplier.sample_share_percent).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% da amostra</small></span>
                     </div>
                   ))}
                 </div>
@@ -353,6 +358,8 @@ export default function AnalyticsExplorer() {
                       <p>{record.original_description}</p>
                       <span>
                         <small>{record.supplier_name ?? "Fornecedor não informado"}</small>
+                        <small>item {shortHash(record.item_source_sha256)}</small>
+                        <small>resultado {shortHash(record.result_source_sha256)}</small>
                         {record.pncp_url && <a href={record.pncp_url} target="_blank" rel="noreferrer">Abrir no PNCP</a>}
                       </span>
                     </div>
