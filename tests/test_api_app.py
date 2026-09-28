@@ -1,6 +1,7 @@
 import pytest
 
 from dental_procurement_intelligence import __version__
+from dental_procurement_intelligence.api import app as api_app
 from dental_procurement_intelligence.api.app import create_app
 from dental_procurement_intelligence.identity.models import ProductCategory
 
@@ -276,3 +277,53 @@ def test_records_csv_returns_downloadable_utf8_file(
     assert "attachment;" in response.headers["content-disposition"]
     assert "award_key" in response.text
     assert "Fornecedor Alfa" in response.text
+
+
+
+def test_bootstrap_demo_database_uses_generated_database(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    target = tmp_path / "demo" / "atlas-demo.duckdb"
+    generated = target
+    generated.parent.mkdir(parents=True, exist_ok=True)
+
+    class FakeClient:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+    monkeypatch.setenv("ATLAS_BOOTSTRAP_DEMO", "1")
+    monkeypatch.setattr(
+        "dental_procurement_intelligence.pncp.PNCPClient",
+        FakeClient,
+    )
+
+    def build_demo_stub(client, output_root):
+        generated.touch()
+        return type("Result", (), {"database_path": str(generated)})()
+
+    monkeypatch.setattr(
+        "dental_procurement_intelligence.analytics.demo_data.build_demo_data",
+        build_demo_stub,
+    )
+
+    resolved = api_app._bootstrap_demo_database(target)
+
+    assert resolved == target
+    assert target.exists()
+
+
+def test_bootstrap_demo_database_is_disabled_by_default(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    target = tmp_path / "missing.duckdb"
+    monkeypatch.delenv("ATLAS_BOOTSTRAP_DEMO", raising=False)
+
+    resolved = api_app._bootstrap_demo_database(target)
+
+    assert resolved == target
+    assert not target.exists()
