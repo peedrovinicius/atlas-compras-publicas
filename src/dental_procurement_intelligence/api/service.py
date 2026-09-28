@@ -286,6 +286,7 @@ def analytics_product_search(
     buyer: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    sort: str = "coverage",
     limit: int = 20,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -297,6 +298,8 @@ def analytics_product_search(
         raise ValueError("limit deve estar entre 1 e 100")
     if offset < 0:
         raise ValueError("offset não pode ser negativo")
+    if sort not in {"coverage", "procurements", "latest", "name"}:
+        raise ValueError("sort inválido")
 
     tokens = [token.casefold() for token in cleaned.split()]
     search_text = """
@@ -382,14 +385,18 @@ def analytics_product_search(
                 MIN(original_description) AS sample_description
             {base_sql}
             ORDER BY
-                priced_observation_count DESC,
-                procurement_count DESC,
+                CASE WHEN ? = 'coverage' THEN priced_observation_count END DESC,
+                CASE WHEN ? = 'coverage' THEN procurement_count END DESC,
+                CASE WHEN ? = 'procurements' THEN procurement_count END DESC,
+                CASE WHEN ? = 'latest' THEN latest_date END DESC NULLS LAST,
+                CASE WHEN ? = 'name' THEN product_category END ASC,
+                CASE WHEN ? = 'name' THEN shade END ASC NULLS LAST,
                 award_count DESC,
                 product_category,
                 shade
             LIMIT ? OFFSET ?
             """,
-            [*parameters, limit, offset],
+            [*parameters, sort, sort, sort, sort, sort, sort, limit, offset],
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -410,6 +417,7 @@ def analytics_product_search(
 
     return {
         "query": cleaned,
+        "sort": sort,
         "filters": {
             "state_code": state_code,
             "macroregion": macroregion,
