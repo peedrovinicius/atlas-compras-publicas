@@ -280,13 +280,12 @@ class DuckDBWarehouse:
             ]
 
 
-def build_analytics(
-    raw_path: str | Path,
+def _publish_analytics_frame(
+    frame: pl.DataFrame,
+    source_sha256: str,
     parquet_path: str | Path,
     database_path: str | Path,
 ) -> AnalyticsBuildResult:
-    items, source_sha256 = load_raw_items(raw_path)
-    frame = build_item_frame(items, source_sha256=source_sha256)
     parquet = write_parquet(frame, parquet_path)
 
     warehouse = DuckDBWarehouse(database_path)
@@ -312,4 +311,53 @@ def build_analytics(
         average_quality_score=average_quality,
         parquet_path=parquet.as_posix(),
         database_path=Path(database_path).as_posix(),
+    )
+
+
+def build_analytics_dataset(
+    raw_paths: list[str | Path],
+    parquet_path: str | Path,
+    database_path: str | Path,
+) -> AnalyticsBuildResult:
+    if not raw_paths:
+        raise ValueError("Nenhuma página bruta de itens foi informada")
+
+    frames: list[pl.DataFrame] = []
+    source_hashes: list[str] = []
+
+    for raw_path in raw_paths:
+        items, source_sha256 = load_raw_items(raw_path)
+        source_hashes.append(source_sha256)
+        frames.append(
+            build_item_frame(items, source_sha256=source_sha256)
+        )
+
+    frame = pl.concat(frames, how="vertical")
+    if frame.height:
+        unique_items = frame.select(pl.col("item_number").n_unique()).item()
+        if unique_items != frame.height:
+            raise ValueError("Dataset de itens contém item_number duplicado")
+
+    frame = frame.sort("item_number")
+    dataset_sha256 = hashlib.sha256(
+        "".join(source_hashes).encode("ascii")
+    ).hexdigest()
+
+    return _publish_analytics_frame(
+        frame,
+        dataset_sha256,
+        parquet_path,
+        database_path,
+    )
+
+
+def build_analytics(
+    raw_path: str | Path,
+    parquet_path: str | Path,
+    database_path: str | Path,
+) -> AnalyticsBuildResult:
+    return build_analytics_dataset(
+        [raw_path],
+        parquet_path,
+        database_path,
     )
