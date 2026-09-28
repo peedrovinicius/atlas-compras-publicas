@@ -2,6 +2,15 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.70.0
+
+- busca de produtos passa a expor preço mínimo, P25, mediana, P75 e preço máximo para cada grupo comparável;
+- resultados do Explorador mostram a faixa central de referência diretamente no cartão;
+- comparador lado a lado passa a incluir faixa central P25–P75 e faixa total observada;
+- estatísticas usam somente preços com normalização defensável e valor positivo, preservando o mesmo recorte metodológico da mediana;
+- regressão adicionada para validar mínimo, quartis, mediana e máximo no endpoint de busca;
+- pacote e frontend sincronizados em 1.70.0.
+
 ## 1.69.0
 
 - resultados do Explorador passam a permitir seleção para comparação;
