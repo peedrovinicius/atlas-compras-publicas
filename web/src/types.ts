@@ -1,3 +1,5 @@
+export type ProductSort = "coverage" | "procurements" | "latest" | "name";
+
 export type AnalyticsFilters = {
   state_code: string;
   macroregion: string;
@@ -69,6 +71,7 @@ export type ProductSearchItem = {
 
 export type ProductSearchResponse = {
   query: string;
+  sort: ProductSort;
   filters: {
     state_code: string | null;
     macroregion: string | null;
