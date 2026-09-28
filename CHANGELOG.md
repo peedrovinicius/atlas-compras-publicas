@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.52.0
+
+- ordenação pública por cobertura de preços, quantidade de compras, atualização mais recente ou nome;
+- exportação CSV de todos os registros do recorte filtrado, com UTF-8 BOM e metadados de origem;
+- estado da exploração serializado na URL para compartilhar pesquisa, filtros, ordenação, página e produto selecionado;
+- ação de copiar link da análise diretamente na interface;
+- histórico visual nativo com mediana e faixa interquartil, sem dependência adicional de gráficos;
+- testes de regressão para ordenação, paginação interna da exportação e resposta CSV;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.52.0.
+
 ## 1.51.0
 
 - filtros compartilhados por período, macrorregião, UF, fornecedor e órgão/unidade compradora;
