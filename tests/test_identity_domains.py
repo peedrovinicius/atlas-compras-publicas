@@ -20,16 +20,16 @@ def test_multidomain_registry_exposes_dental_and_medications() -> None:
     ]
 
 
-def test_dental_is_active_and_medications_require_benchmark() -> None:
+def test_dental_is_active_and_medications_are_experimental() -> None:
     dental = get_domain(IdentityDomain.DENTAL)
     medications = get_domain(IdentityDomain.MEDICATIONS)
 
     assert dental.status == DomainStatus.ACTIVE
     assert dental.benchmark_required is False
 
-    assert medications.status == DomainStatus.BENCHMARK_REQUIRED
-    assert medications.benchmark_required is True
-    assert MEDICATIONS_DOMAIN.status == DomainStatus.BENCHMARK_REQUIRED
+    assert medications.status == DomainStatus.EXPERIMENTAL
+    assert medications.benchmark_required is False
+    assert MEDICATIONS_DOMAIN.status == DomainStatus.EXPERIMENTAL
     assert MEDICATION_CATEGORY_SPECS == ()
 
 
