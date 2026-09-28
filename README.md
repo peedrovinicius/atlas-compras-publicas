@@ -6,7 +6,7 @@
 
 O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas (PNCP) em informação comparável, rastreável e explicável. O projeto combina engenharia de dados, normalização de produtos, análise de preços e validação quantitativa para apoiar a exploração de compras públicas em diferentes regiões e períodos.
 
-A odontologia é a primeira vertical implementada e funciona como um domínio de alta complexidade para validar o núcleo analítico. O domínio de medicamentos já possui benchmarks independentes próprios, mas permanece separado da produção até novo holdout pós-tuning.
+A odontologia é a primeira vertical implementada e funciona como um domínio de alta complexidade para validar o núcleo analítico. O domínio de medicamentos já possui quatro benchmarks independentes próprios, mas permanece separado da produção enquanto o campo de princípio ativo segue em validação metodológica.
 
 ## O que o projeto entrega
 
@@ -194,15 +194,16 @@ A arquitetura multidomínio já possui uma taxonomia inicial de medicamentos, ma
 | medicamentos v1 | v1.40.0 | 48 | 192 | 168 | 87,50% |
 | medicamentos v2 | v1.44.0 | 48 | 192 | 153 | 79,69% |
 | medicamentos v3 | v1.46.0 | 48 | 192 | 173 | 90,10% |
-| **Total ponderado** | — | **144** | **576** | **494** | **85,76%** |
+| medicamentos v4 | pós-v1.48 vigente | 48 | 192 | 189 | 98,44% |
+| **Total ponderado** | — | **192** | **768** | **683** | **88,93%** |
 
-Após tuning controlado, os conjuntos congelados v1, v2 e v3 atingiram 192/192 campos corretos nos respectivos ciclos pós-ajuste. Esses resultados pós-tuning não substituem as baselines independentes.
+Após tuning controlado, os conjuntos congelados v1, v2 e v3 atingiram 192/192 campos corretos nos respectivos ciclos pós-ajuste. Esses resultados pós-tuning não substituem as baselines independentes. O v4 ainda não possui pós-tuning e sua baseline independente permanece preservada.
 
-O principal gargalo consolidado é o princípio ativo, com 65,28% de acurácia ponderada entre v1 e v3. Concentração, forma farmacêutica e via ficam acima de 90% no acumulado.
+O principal gargalo consolidado ainda é o princípio ativo, com 73,44% de acurácia ponderada entre v1 e v4. Concentração, forma farmacêutica e via ficam acima de 92% no acumulado.
 
 ~~~bash
-dpi evaluate-medications --dataset data/evaluation/medications-v1.jsonl
-dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
+dpi evaluate-medications --dataset data/evaluation/medications-v4.jsonl
+dpi medication-errors --dataset data/evaluation/medications-v4.jsonl
 ~~~
 
 - [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
@@ -211,15 +212,17 @@ dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 - [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
 - [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
 - [Medicamentos v3 pós-tuning v1.48](docs/benchmark-medications-v3-post-tuning.md)
-- [Consolidação dos benchmarks de medicamentos v1–v3](docs/benchmark-medications-consolidated-v1-v3.md)
+- [Benchmark independente de medicamentos v4](docs/benchmark-medications-v4.md)
+- [Congelamento do holdout de medicamentos v4](docs/medications-v4-freeze.md)
+- [Consolidação dos benchmarks de medicamentos v1–v4](docs/benchmark-medications-consolidated-v1-v4.md)
 
-O domínio permanece em `benchmark_required` até um novo holdout independente pós-tuning.
+O domínio permanece em `benchmark_required` até que a estabilidade do princípio ativo seja confirmada em novos ciclos ou por tuning pontual validado sem regressão.
 
 ## Snapshot real
 
 ![Snapshot real de qualidade e benchmarks](docs/assets/dashboard-quality-snapshot.svg)
 
-O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 144 exemplos de medicamentos e 576 campos de medicamentos.
+O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 192 exemplos de medicamentos e 768 campos de medicamentos.
 
 - [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
 - [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
@@ -271,7 +274,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 - [Benchmark de medicamentos v1](docs/benchmark-medications-v1.md)
 - [Benchmark de medicamentos v2](docs/benchmark-medications-v2.md)
 - [Benchmark de medicamentos v3](docs/benchmark-medications-v3.md)
-- [Consolidação de medicamentos v1–v3](docs/benchmark-medications-consolidated-v1-v3.md)
+- [Benchmark de medicamentos v4](docs/benchmark-medications-v4.md)
+- [Consolidação de medicamentos v1–v4](docs/benchmark-medications-consolidated-v1-v4.md)
 - [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
@@ -282,7 +286,7 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- congelar um holdout independente de medicamentos v4 antes de qualquer novo ajuste do parser;
+- avaliar se vale um tuning pontual para `geléia` tópica e prefixos numéricos compostos;
 - consolidar uma base DuckDB real para os painéis de preços e homologações.
 
 ## Fonte dos dados
