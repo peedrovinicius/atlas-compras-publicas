@@ -162,7 +162,9 @@ A experiência pública possui duas áreas.
 - exportação CSV dos registros filtrados;
 - histórico visual com mediana e faixa interquartil, mantendo a tabela detalhada;
 - descoberta guiada por categorias que realmente existem na base, com contagem de grupos e preços;
-- interpretação de termos comuns em português, como `adesivo odontológico`, `ionômero de vidro`, `resina flow`, `anestésico local` e `flúor`.
+- interpretação de termos comuns em português, como `adesivo odontológico`, `ionômero de vidro`, `resina flow`, `anestésico local` e `flúor`;
+- autocomplete com produtos reais da base a partir de 2 caracteres;
+- tolerância conservadora a pequenos erros de digitação em nomes de categorias conhecidas.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
@@ -257,6 +259,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.54.0](docs/release-v1.54.0.md)
 - [Release v1.53.0](docs/release-v1.53.0.md)
 - [Release v1.52.0](docs/release-v1.52.0.md)
 - [Release v1.51.0](docs/release-v1.51.0.md)
