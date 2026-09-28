@@ -33,6 +33,7 @@ A documentação OpenAPI é fornecida pelo FastAPI em `/docs`.
 
 ### Inteligência por produto
 
+- `GET /api/v1/products/discovery`
 - `GET /api/v1/products/search?q=...`
 - `GET /api/v1/products/{product_id}`
 - `GET /api/v1/products/{product_id}/distribution`
@@ -52,6 +53,16 @@ A documentação OpenAPI é fornecida pelo FastAPI em `/docs`.
 - `GET /api/v1/awards`
 - `GET /api/v1/anomalies`
 - `GET /api/v1/unrecognized`
+
+## Descoberta guiada de produtos
+
+`/api/v1/products/discovery` lista somente categorias presentes na base analítica publicada. Cada item informa o nome amigável, quantidade de identidades comparáveis, homologações e observações com preço defensável.
+
+A interface usa essa resposta para mostrar atalhos clicáveis antes da pesquisa. Assim o usuário pode chegar a uma categoria sem conhecer a nomenclatura interna nem a forma exata usada no PNCP.
+
+A busca também interpreta aliases comuns em português. Expressões como `adesivo odontológico`, `ionômero de vidro`, `resina flow`, `anestésico local` e `flúor` são resolvidas para a categoria correspondente antes de aplicar os demais termos da consulta.
+
+Buscas genéricas continuam amplas. Por exemplo, `resina` não é forçada para uma única categoria.
 
 ## Pesquisa e identidade de produto
 
