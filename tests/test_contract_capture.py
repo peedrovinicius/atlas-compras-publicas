@@ -38,10 +38,12 @@ def test_capture_contract_collects_metadata_items_and_results(
                     {
                         "numeroItem": 1,
                         "descricao": "RESINA COMPOSTA A2 SERINGA 4G",
+                        "temResultado": True,
                     },
                     {
                         "numeroItem": 2,
                         "descricao": "ADESIVO DENTAL FRASCO 5ML",
+                        "temResultado": False,
                     },
                 ],
             )
@@ -62,9 +64,6 @@ def test_capture_contract_collects_metadata_items_and_results(
                     }
                 ).encode(),
             )
-
-        if path.endswith("/itens/2/resultados"):
-            return httpx.Response(204, content=b"")
 
         raise AssertionError(f"Rota inesperada: {path}")
 
@@ -87,8 +86,9 @@ def test_capture_contract_collects_metadata_items_and_results(
     assert result.procurement_key == "pncp:10000000000003:2021:1"
     assert Path(result.bundle_manifest_path).exists()
     assert result.item_count == 2
-    assert result.result_response_count == 2
+    assert result.result_response_count == 1
     assert result.result_count == 1
-    assert len(result.result_evidence) == 2
+    assert len(result.result_evidence) == 1
+    assert result.item_page_evidence == ()
     assert Path(result.contract_evidence.object_path).exists()
     assert Path(result.item_evidence.object_path).exists()
