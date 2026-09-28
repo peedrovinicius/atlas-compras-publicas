@@ -15,6 +15,7 @@ from dental_procurement_intelligence.analytics import (
     unrecognized_items,
 )
 from dental_procurement_intelligence.api.catalog import (
+    normalize_product_search_text,
     parser_category_label,
     resolve_product_search_query,
 )
@@ -346,10 +347,10 @@ def analytics_product_search(
     tokens = (
         residual_tokens
         if interpreted_category is not None
-        else [token.casefold() for token in cleaned.split()]
+        else normalize_product_search_text(cleaned).split()
     )
     search_text = """
-        LOWER(CONCAT_WS(
+        LOWER(STRIP_ACCENTS(CONCAT_WS(
             ' ',
             original_description,
             product_category,
@@ -363,7 +364,7 @@ def analytics_product_search(
             fluoride_formulation,
             anesthetic_active_ingredient,
             anesthetic_vasoconstrictor
-        ))
+        )))
     """
     search_clauses = ["product_category <> 'unknown'"]
     search_parameters: list[Any] = []
