@@ -156,7 +156,11 @@ A experiência pública possui duas áreas.
 - sinais estatísticos com aviso metodológico explícito;
 - cartões de evidência com contexto da compra, status da normalização, hashes de origem e link para o PNCP;
 - filtros por período, região, UF, fornecedor e órgão/unidade, aplicados de forma consistente em toda a análise;
-- paginação da pesquisa de produtos, preservando o total de grupos compatíveis.
+- paginação da pesquisa de produtos, preservando o total de grupos compatíveis;
+- ordenação por cobertura, número de compras, atualização recente ou nome;
+- compartilhamento de análises por URL com filtros, ordenação, página e produto selecionado;
+- exportação CSV dos registros filtrados;
+- histórico visual com mediana e faixa interquartil, mantendo a tabela detalhada.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
@@ -172,6 +176,7 @@ GET /api/v1/products/{product_id}/suppliers
 GET /api/v1/products/{product_id}/buyers
 GET /api/v1/products/{product_id}/signals
 GET /api/v1/products/{product_id}/records
+GET /api/v1/products/{product_id}/records.csv
 ```
 
 ## Quickstart
@@ -247,6 +252,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.52.0](docs/release-v1.52.0.md)
 - [Release v1.51.0](docs/release-v1.51.0.md)
 - [Índice técnico](docs/README.md)
 - [Arquitetura](docs/architecture.md)
