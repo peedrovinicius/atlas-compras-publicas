@@ -627,3 +627,189 @@ def analytics_product_regions(
         "regions": regions,
         "states": states,
     }
+
+
+
+def analytics_product_suppliers(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    limit: int = 20,
+    offset: int = 0,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+    if limit < 1 or limit > 100:
+        raise ValueError("limit deve estar entre 1 e 100")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        total_awards = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not total_awards:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        total_suppliers = connection.execute(
+            f"""
+            SELECT COUNT(DISTINCT supplier_document)
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND supplier_document IS NOT NULL
+            """,
+            [product_id],
+        ).fetchone()[0]
+
+        cursor = connection.execute(
+            f"""
+            SELECT
+                supplier_document,
+                MIN(supplier_name) AS supplier_name,
+                COUNT(*) AS award_count,
+                COUNT(DISTINCT procurement_key) AS procurement_count,
+                MEDIAN(
+                    awarded_price_per_base_unit
+                ) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS median_price,
+                COUNT(*) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS priced_observation_count,
+                ROUND(
+                    100.0 * COUNT(*) / ?,
+                    2
+                ) AS sample_share_percent
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND supplier_document IS NOT NULL
+            GROUP BY supplier_document
+            ORDER BY award_count DESC, supplier_name
+            LIMIT ? OFFSET ?
+            """,
+            [total_awards, product_id, limit, offset],
+        )
+        columns = [column[0] for column in cursor.description]
+        rows = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+    return {
+        "product_id": product_id,
+        "items": rows,
+        "total": total_suppliers,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+def analytics_product_buyers(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    limit: int = 20,
+    offset: int = 0,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+    if limit < 1 or limit > 100:
+        raise ValueError("limit deve estar entre 1 e 100")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        exists = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not exists:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        total_buyers = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM (
+                SELECT
+                    organization_cnpj,
+                    buyer_unit_code
+                FROM silver_awards
+                WHERE {identity} = ?
+                  AND (
+                      organization_cnpj IS NOT NULL
+                      OR buyer_unit_code IS NOT NULL
+                  )
+                GROUP BY organization_cnpj, buyer_unit_code
+            )
+            """,
+            [product_id],
+        ).fetchone()[0]
+
+        cursor = connection.execute(
+            f"""
+            SELECT
+                organization_cnpj,
+                MIN(organization_name) AS organization_name,
+                buyer_unit_code,
+                MIN(buyer_unit_name) AS buyer_unit_name,
+                MIN(state_code) AS state_code,
+                MIN(macroregion) AS macroregion,
+                COUNT(*) AS award_count,
+                COUNT(DISTINCT procurement_key) AS procurement_count,
+                SUM(awarded_total_value) AS awarded_total_value,
+                MEDIAN(
+                    awarded_price_per_base_unit
+                ) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS median_price,
+                COUNT(*) FILTER (
+                    WHERE price_normalization_status = 'defensible'
+                      AND awarded_price_per_base_unit IS NOT NULL
+                      AND awarded_price_per_base_unit > 0
+                ) AS priced_observation_count
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND (
+                  organization_cnpj IS NOT NULL
+                  OR buyer_unit_code IS NOT NULL
+              )
+            GROUP BY organization_cnpj, buyer_unit_code
+            ORDER BY procurement_count DESC, award_count DESC, organization_name
+            LIMIT ? OFFSET ?
+            """,
+            [product_id, limit, offset],
+        )
+        columns = [column[0] for column in cursor.description]
+        rows = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+    return {
+        "product_id": product_id,
+        "items": rows,
+        "total": total_buyers,
+        "limit": limit,
+        "offset": offset,
+    }
