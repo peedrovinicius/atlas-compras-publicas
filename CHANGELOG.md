@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.61.0
+
+- home do Explorador deixa de executar busca automática por `resina`;
+- resultados só aparecem após pesquisa, categoria ou link compartilhado;
+- primeira dobra fica focada em proposta de valor, busca e categorias;
+- botões de pesquisa e aplicação de filtros só habilitam com termo válido;
+- limpar filtros na home vazia não dispara erro de busca;
+- URLs compartilhadas continuam restaurando pesquisa e produto normalmente;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.61.0.
+
 ## 1.60.0
 
 - visão geral passa a abrir com resumo executivo em vez de seis cards equivalentes;
