@@ -1430,3 +1430,40 @@ def analytics_product_records(
         "offset": offset,
     }
 
+def analytics_product_records_export(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    state_code: str | None = None,
+    macroregion: str | None = None,
+    supplier: str | None = None,
+    buyer: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    offset = 0
+
+    while True:
+        page = analytics_product_records(
+            database_path,
+            product_id=product_id,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
+            limit=100,
+            offset=offset,
+        )
+        page_items = page["items"]
+        items.extend(page_items)
+
+        if len(items) >= page["total"] or not page_items:
+            break
+        offset += len(page_items)
+
+    return items
+
+
