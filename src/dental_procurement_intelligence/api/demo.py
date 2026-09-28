@@ -425,7 +425,8 @@ const presentationLabels = {
 
 function setText(id, value) {
   const node = document.getElementById(id);
-  node.textContent = value === null || value === undefined || value === "" ? "Não identificado" : value;
+  const isEmpty = value === null || value === undefined || value === "";
+  node.textContent = isEmpty ? "Não identificado" : value;
 }
 
 function formatQuantity(quantity) {
