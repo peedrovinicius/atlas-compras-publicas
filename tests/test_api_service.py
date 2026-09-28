@@ -200,7 +200,7 @@ def test_product_search_groups_awards_by_technical_identity(
                         'p1', 'a1', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
-                        NULL, NULL, 1, 4.0, 'g',
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
                         '111', 'CE', DATE '2026-05-10',
                         'defensible', 10.00
                     ),
@@ -208,7 +208,7 @@ def test_product_search_groups_awards_by_technical_identity(
                         'p2', 'a2', 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
-                        NULL, NULL, 1, 4.0, 'g',
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
                         '222', 'MG', DATE '2026-06-10',
                         'defensible', 12.00
                     ),
@@ -216,7 +216,7 @@ def test_product_search_groups_awards_by_technical_identity(
                         'p3', 'a3', 'IONOMERO DE VIDRO 10G',
                         'glass_ionomer', 'powder', NULL, NULL,
                         NULL, NULL, NULL, NULL, NULL,
-                        NULL, NULL, 1, 10.0, 'g',
+                        NULL, NULL, 1, 10.0, 'g', NULL, NULL,
                         '333', 'PR', DATE '2026-06-11',
                         'review', NULL
                     )
@@ -238,6 +238,8 @@ def test_product_search_groups_awards_by_technical_identity(
                 package_count,
                 unit_quantity_value,
                 unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
                 supplier_document,
                 state_code,
                 analysis_date,
