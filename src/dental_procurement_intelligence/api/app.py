@@ -96,7 +96,15 @@ button {
   background: #e6edf3;
   color: #0d1117;
 }
-pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #0d1117; border-radius: 10px; padding: 16px; min-height: 88px; color: #c9d1d9; }
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #0d1117;
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 88px;
+  color: #c9d1d9;
+}
 .meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 14px; }
 a { color: #58a6ff; }
 .note { color: #8b949e; font-size: 13px; line-height: 1.55; margin-top: 18px; }
