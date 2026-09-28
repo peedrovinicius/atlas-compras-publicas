@@ -1,0 +1,288 @@
+{
+  "dataset": "data/evaluation/medications-v2.jsonl",
+  "dataset_version": "medications-v2",
+  "frozen_dataset_commit": "28ba1d69ac0f518d1aa170c9a99e70a482cdf7b7",
+  "dataset_git_blob_sha": "9be1808d58f53c6e09a3ba753ec5fc92ddd84be9",
+  "parser_commit": "bb76bc8acc2fb79067fd11f5c901f0280e6cc5da",
+  "parser_git_blob_sha": "a41aa07629637b74a9ebd0853e0534bd72a19f0e",
+  "parser_version": "1.44.0",
+  "measurement_method": "deterministic_mirror_of_v1.44_parser_validated_against_medications_v1_post_tuning",
+  "sample_count": 48,
+  "evaluated_field_count": 192,
+  "correct_field_count": 153,
+  "micro_accuracy": 0.7969,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 39,
+  "per_field": {
+    "active_ingredient": {
+      "evaluated_count": 48,
+      "correct_count": 28,
+      "accuracy": 0.5833,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 20
+    },
+    "strength": {
+      "evaluated_count": 48,
+      "correct_count": 47,
+      "accuracy": 0.9792,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 1
+    },
+    "dosage_form": {
+      "evaluated_count": 48,
+      "correct_count": 39,
+      "accuracy": 0.8125,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 9
+    },
+    "route": {
+      "evaluated_count": 48,
+      "correct_count": 39,
+      "accuracy": 0.8125,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 9
+    }
+  },
+  "errors": [
+    {
+      "id": "med2-fort-001",
+      "field": "active_ingredient",
+      "expected": "ALFAEPOETINA",
+      "predicted": "ALFAEPOETINA, FRASCO/AMPOLA 1ML"
+    },
+    {
+      "id": "med2-fort-003",
+      "field": "active_ingredient",
+      "expected": "ATROPINA SULFATO",
+      "predicted": "ATROPINA SULFATO, 1%"
+    },
+    {
+      "id": "med2-fort-004",
+      "field": "active_ingredient",
+      "expected": "BETAMETASONA + DEXCLORFENIRAMINA MALEATO",
+      "predicted": "BETAMETASONA DEXCLORFENIRAMINA MALEATO"
+    },
+    {
+      "id": "med2-fort-007",
+      "field": "active_ingredient",
+      "expected": "CETOCONAZOL + BETAMETASONA",
+      "predicted": "CETOCONAZOL"
+    },
+    {
+      "id": "med2-fort-011",
+      "field": "dosage_form",
+      "expected": "oral_liquid",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-fort-011",
+      "field": "route",
+      "expected": "oral",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-apa-005",
+      "field": "active_ingredient",
+      "expected": "ADENOSINA FOSFATO",
+      "predicted": "ADENOSINA, FOSFATO"
+    },
+    {
+      "id": "med2-apa-009",
+      "field": "active_ingredient",
+      "expected": "AMIODARONA CLORIDRATO",
+      "predicted": "AMIODARONA, CLORIDRATO"
+    },
+    {
+      "id": "med2-apa-010",
+      "field": "active_ingredient",
+      "expected": "AMPICILINA + SULBACTAM SODICO",
+      "predicted": "AMPICILINA SULBACTAM SODICO"
+    },
+    {
+      "id": "med2-apa-017",
+      "field": "active_ingredient",
+      "expected": "BENZILPENICILINA POTASSICA + PROCAINA",
+      "predicted": "BENZILPENICILINA POTASSICA PROCAINA"
+    },
+    {
+      "id": "med2-apa-020",
+      "field": "active_ingredient",
+      "expected": "BIPERIDENO LACTATO",
+      "predicted": "BIPERIDENO, LACTATO"
+    },
+    {
+      "id": "med2-gra-005",
+      "field": "active_ingredient",
+      "expected": "AMOXICILINA + CLAVULANATO DE POTASSIO",
+      "predicted": "AMOXICILINA"
+    },
+    {
+      "id": "med2-gra-005",
+      "field": "dosage_form",
+      "expected": "oral_liquid",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-gra-005",
+      "field": "route",
+      "expected": "oral",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-gra-013",
+      "field": "dosage_form",
+      "expected": "topical",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-gra-013",
+      "field": "route",
+      "expected": "topical",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-gra-014",
+      "field": "active_ingredient",
+      "expected": "NEOMICINA + BACITRACINA",
+      "predicted": "NEOMICINA"
+    },
+    {
+      "id": "med2-gra-017",
+      "field": "active_ingredient",
+      "expected": "SULFAMETOXAZOL + TRIMETOPRIMA",
+      "predicted": "SULFAMETOXAZOL"
+    },
+    {
+      "id": "med2-gra-017",
+      "field": "strength",
+      "expected": "200 mg/5 ml",
+      "predicted": "200 mg"
+    },
+    {
+      "id": "med2-gra-017",
+      "field": "dosage_form",
+      "expected": "oral_liquid",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-gra-017",
+      "field": "route",
+      "expected": "oral",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-gra-020",
+      "field": "active_ingredient",
+      "expected": "BENZILPENICILINA PROCAINA + BENZILPENICILINA POTASSICA",
+      "predicted": "BENZILPENICILINA PROCAINA"
+    },
+    {
+      "id": "med2-sap-001",
+      "field": "active_ingredient",
+      "expected": "ACIDOS GRAXOS ESSENCIAIS + RETINOL + RACEALFATOCOFEROL",
+      "predicted": "ACIDOS GRAXOS ESSENCIAIS RETINOL RACEALFATOCOFEROL"
+    },
+    {
+      "id": "med2-sap-001",
+      "field": "dosage_form",
+      "expected": "topical",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-sap-001",
+      "field": "route",
+      "expected": "topical",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-sap-003",
+      "field": "active_ingredient",
+      "expected": "AMIODARONA CLORIDRATO",
+      "predicted": "AMIODARONA, CLORIDRATO"
+    },
+    {
+      "id": "med2-fei-028",
+      "field": "dosage_form",
+      "expected": "capsule",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-fei-028",
+      "field": "route",
+      "expected": "oral",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-fei-039",
+      "field": "active_ingredient",
+      "expected": "ATROPINA",
+      "predicted": "ATROPINA SOL. OFTALMICA 1% 5ML"
+    },
+    {
+      "id": "med2-fei-050",
+      "field": "dosage_form",
+      "expected": "injectable",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-fei-063",
+      "field": "dosage_form",
+      "expected": "oral_liquid",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-fei-063",
+      "field": "route",
+      "expected": "oral",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-vol-006",
+      "field": "active_ingredient",
+      "expected": "AMBROXOL CLORIDRATO",
+      "predicted": "AMBROXOL"
+    },
+    {
+      "id": "med2-ter-006",
+      "field": "active_ingredient",
+      "expected": "FENTANILA CITRATO",
+      "predicted": "FENTANILA"
+    },
+    {
+      "id": "med2-cri-001",
+      "field": "dosage_form",
+      "expected": "oral_liquid",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-cri-001",
+      "field": "route",
+      "expected": "oral",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med2-cri-002",
+      "field": "active_ingredient",
+      "expected": "ACETATO DE BETAMETASONA + FOSFATO DISSODICO DE BETAMETASONA",
+      "predicted": "ACETATO DE BETAMETASONA"
+    },
+    {
+      "id": "med2-cri-006",
+      "field": "active_ingredient",
+      "expected": "ACIDO ACETICO",
+      "predicted": "ACIDOACETICO3%,USOTOPICO.FRASCO1LITRO"
+    },
+    {
+      "id": "med2-cri-006",
+      "field": "route",
+      "expected": "topical",
+      "predicted": "unknown"
+    }
+  ],
+  "interpretation": "Independent medications v2 baseline frozen before any v2 tuning. The v1.44 parser was first validated at 192/192 fields on medications-v1. No v2 error is corrected in v1.45."
+}

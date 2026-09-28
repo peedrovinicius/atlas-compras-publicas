@@ -509,3 +509,30 @@ Após o tuning controlado:
 O resultado está salvo em `medications-v1-post-v1.44.json`.
 
 Esse resultado não substitui a baseline independente de 87,50%.
+
+
+## Medicamentos v2
+
+O arquivo `medications-v2.jsonl` foi congelado após o tuning da v1.44 e antes da primeira medição.
+
+Resultado independente:
+
+- 48 exemplos;
+- 8 novas contratações;
+- 192 campos avaliados;
+- 153 campos corretos;
+- micro accuracy de 79,69%;
+- 0 falsos positivos;
+- 0 falsos negativos;
+- 39 mismatches.
+
+Por campo:
+
+- ingrediente ativo: 58,33%;
+- concentração: 97,92%;
+- forma farmacêutica: 81,25%;
+- via: 81,25%.
+
+A baseline está preservada em `medications-v2-baseline.json`.
+
+Nenhuma lacuna do v2 é corrigida na v1.45.
