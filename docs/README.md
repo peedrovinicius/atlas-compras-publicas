@@ -6,6 +6,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 
 - [Arquitetura](architecture.md)
 - [Arquitetura multidomínio](multidomain-architecture.md)
+- [Fronteiras dos domínios de saúde](architecture-health-domains.md)
 - [API e dashboard](api-dashboard.md)
 - [Contrato do warehouse v1](warehouse-v1.md)
 - [Dataset multi-contratação](multi-contratacao.md)
@@ -28,7 +29,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 
 ### Domínio experimental de saúde
 
-O agrupamento histórico `medications` é usado para testar generalização além da odontologia e está em revisão arquitetural na [issue #30](https://github.com/peedrovinicius/atlas-compras-publicas/issues/30).
+O domínio histórico `medications` testa a generalização além da odontologia. A auditoria da issue #30 concluiu que os holdouts v1-v4 são farmacêuticos e devem permanecer separados de materiais, dispositivos e outros produtos de saúde.
 
 - [Consolidação histórica v1-v4](benchmark-medications-consolidated-v1-v4.md)
 - [Benchmark independente v4](benchmark-medications-v4.md)
