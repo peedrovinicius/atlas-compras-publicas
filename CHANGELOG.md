@@ -2,6 +2,18 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.63.0
+
+- Laboratório deixa de carregar e analisar um exemplo automaticamente ao abrir o site;
+- entrada do parser passa a iniciar vazia e focada na ação do usuário;
+- seção de resultados só aparece após uma análise;
+- aviso de cold start/plano gratuito removido da interface pública;
+- botão de análise desabilitado quando não há entrada válida ou quando o limite de 20 descrições é excedido;
+- hero, painéis, categorias e resultados do Laboratório alinhados ao sistema visual do Explorador;
+- alturas fixas removidas dos painéis do Laboratório;
+- categorias e resultados técnicos ficam mais compactos em desktop e mobile;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.63.0.
+
 ## 1.62.0
 
 - atalho `/` ou `Ctrl/Cmd+K` foca e seleciona o campo principal de busca;
