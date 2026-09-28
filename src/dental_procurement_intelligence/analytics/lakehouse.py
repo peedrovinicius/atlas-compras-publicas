@@ -19,7 +19,6 @@ from dental_procurement_intelligence.identity import (
 )
 from dental_procurement_intelligence.pncp import PNCPItem
 
-
 ANALYTICAL_SCHEMA: dict[str, pl.DataType] = {
     "source_sha256": pl.String,
     "item_number": pl.Int64,
