@@ -36,7 +36,7 @@ class MedicationIdentity:
 
 
 _LEADING_CODE = re.compile(
-    r"^(?:(?:BR\d+|\d+)\s*(?:-\s*)?)+"
+    r"^(?:(?:BR\d+|\d+(?:\.\d+)*)\s*(?:-\s*)?)+"
 )
 _STRENGTH = re.compile(
     r"(?P<value>(?:\d{1,3}(?:\.\d{3})+|\d+(?:[.,]\d+)?))\s*"
@@ -211,6 +211,7 @@ def _clean_active_ingredient(text: str) -> str | None:
         " POMADA",
         " CREME",
         " GEL",
+        " GELEIA",
         " GEL VAGINAL",
         " TUBETE",
         " USO TOPICO",
@@ -315,6 +316,7 @@ def _dosage_form(text: str) -> MedicationDosageForm:
         or "CREME" in text
         or "GEL VAGINAL" in text
         or re.search(r"\bGEL\b", text)
+        or "GELEIA" in text
         or "LOCAO OLEOSA" in text
     ):
         return MedicationDosageForm.TOPICAL
