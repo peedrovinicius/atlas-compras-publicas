@@ -445,6 +445,138 @@ def analytics_product_summary(
 
 
 
+def analytics_product_distribution(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    bin_count: int = 10,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+    if bin_count < 5 or bin_count > 40:
+        raise ValueError("bin_count deve estar entre 5 e 40")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        exists = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not exists:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        row = connection.execute(
+            f"""
+            SELECT
+                COUNT(*) AS observations,
+                MIN(CAST(awarded_price_per_base_unit AS DOUBLE)) AS min_price,
+                MAX(CAST(awarded_price_per_base_unit AS DOUBLE)) AS max_price
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND price_normalization_status = 'defensible'
+              AND awarded_price_per_base_unit IS NOT NULL
+              AND awarded_price_per_base_unit > 0
+            """,
+            [product_id],
+        ).fetchone()
+
+        observations = int(row[0])
+        min_price = row[1]
+        max_price = row[2]
+
+        if observations == 0 or min_price is None or max_price is None:
+            return {
+                "product_id": product_id,
+                "observations": 0,
+                "bin_count": bin_count,
+                "min_price": None,
+                "max_price": None,
+                "bins": [],
+            }
+
+        if min_price == max_price:
+            return {
+                "product_id": product_id,
+                "observations": observations,
+                "bin_count": 1,
+                "min_price": min_price,
+                "max_price": max_price,
+                "bins": [
+                    {
+                        "index": 0,
+                        "lower": min_price,
+                        "upper": max_price,
+                        "count": observations,
+                    }
+                ],
+            }
+
+        cursor = connection.execute(
+            f"""
+            SELECT
+                LEAST(
+                    ?,
+                    CAST(
+                        FLOOR(
+                            (
+                                CAST(awarded_price_per_base_unit AS DOUBLE) - ?
+                            ) / (? - ?) * ?
+                        ) AS INTEGER
+                    )
+                ) AS bucket_index,
+                COUNT(*) AS bucket_count
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND price_normalization_status = 'defensible'
+              AND awarded_price_per_base_unit IS NOT NULL
+              AND awarded_price_per_base_unit > 0
+            GROUP BY 1
+            ORDER BY 1
+            """,
+            [
+                bin_count - 1,
+                min_price,
+                max_price,
+                min_price,
+                bin_count,
+                product_id,
+            ],
+        )
+        counts = {
+            int(bucket_index): int(bucket_count)
+            for bucket_index, bucket_count in cursor.fetchall()
+        }
+
+    width = (max_price - min_price) / bin_count
+    bins = []
+    for index in range(bin_count):
+        lower = min_price + width * index
+        upper = max_price if index == bin_count - 1 else min_price + width * (index + 1)
+        bins.append(
+            {
+                "index": index,
+                "lower": lower,
+                "upper": upper,
+                "count": counts.get(index, 0),
+            }
+        )
+
+    return {
+        "product_id": product_id,
+        "observations": observations,
+        "bin_count": bin_count,
+        "min_price": min_price,
+        "max_price": max_price,
+        "bins": bins,
+    }
+
+
 def analytics_product_history(
     database_path: str | Path,
     *,
