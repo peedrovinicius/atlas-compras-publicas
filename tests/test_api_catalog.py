@@ -1,4 +1,6 @@
 from dental_procurement_intelligence.api.catalog import (
+    product_presentation_label,
+    resolve_product_presentation_token,
     resolve_product_search_query,
 )
 
@@ -53,3 +55,21 @@ def test_common_dental_terms_resolve_to_known_categories() -> None:
 
         assert category == expected_category
         assert residual == []
+
+
+
+def test_presentation_aliases_resolve_to_structured_values() -> None:
+    cases = {
+        "seringa": "syringe",
+        "frasco": "bottle",
+        "tubete": "cartridge",
+        "carpule": "cartridge",
+        "ampola": "ampoule",
+        "pote": "jar",
+    }
+
+    for token, expected in cases.items():
+        assert resolve_product_presentation_token(token) == expected
+
+    assert product_presentation_label("cartridge") == "Tubete"
+    assert resolve_product_presentation_token("inexistente") is None
