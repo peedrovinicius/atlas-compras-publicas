@@ -6,7 +6,6 @@ from typing import Any
 
 from .models import PNCPContract, PNCPItemResult
 
-
 _CONTROL_NUMBER_PATTERN = re.compile(
     r"^(?P<cnpj>\d{14})-\d+-(?P<sequence>\d+)/(?P<year>\d{4})$"
 )
