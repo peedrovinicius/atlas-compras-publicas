@@ -12,23 +12,23 @@ Engenharia de dados e análise auditável de compras públicas brasileiras a par
 
 </div>
 
-O projeto transforma dados públicos do Portal Nacional de Contratações Públicas (PNCP) em conjuntos comparáveis e rastreáveis. A cadeia cobre captura, preservação da evidência original, normalização de produtos, consolidação de preços e detecção estatística de sinais.
+O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas em conjuntos comparáveis, rastreáveis e auditáveis. A cadeia cobre captura, preservação da evidência original, normalização de produtos, consolidação analítica e detecção estatística de sinais.
 
-A odontologia é a primeira vertical em produção. Medicamentos permanecem em validação independente enquanto o campo de princípio ativo segue em avaliação metodológica.
+A odontologia é a primeira vertical em produção. Medicamentos permanecem em validação independente porque a evolução do domínio separa baseline congelada, pós-tuning e promoção metodológica.
 
 ## O que o projeto entrega
 
 | Camada | Capacidade |
 | --- | --- |
 | Coleta | Captura de contratações, itens e resultados diretamente do PNCP |
-| Rastreabilidade | Evidências imutáveis com SHA-256 e manifestos de proveniência |
-| Consolidação | Múltiplas contratações com chaves estáveis, deduplicação e reconstrução idempotente |
+| Rastreabilidade | Evidências com SHA-256 e manifestos de proveniência |
+| Consolidação | Múltiplas contratações com chaves estáveis e reconstrução idempotente |
 | Normalização | Padronização de descrições, apresentações, medidas e atributos técnicos |
-| Identidade | Product Identity Engine com atributos técnicos específicos por categoria |
-| Preço físico | Base defensável e valores financeiros preservados em decimal |
+| Identidade | Product Identity Engine com atributos específicos por categoria |
+| Preço físico | Conversão defensável por unidade física quando a descrição permite |
 | Análise | Comparação de preços com contexto geográfico e temporal |
-| Qualidade | Score determinístico, cobertura semântica e cobertura de atributos técnicos |
-| Sinais | Detecção estatística com MAD e IQR, sem tratar sinal como prova de irregularidade |
+| Qualidade | Benchmarks congelados, regressões pós-tuning e snapshot auditável |
+| Sinais | MAD e IQR como sinais estatísticos, sem tratar sinal como prova |
 
 ## Arquitetura
 
@@ -48,13 +48,7 @@ flowchart LR
 
 A cadeia de rastreabilidade segue o princípio:
 
-`sinal → grupo comparável → homologação → item → contratação → SHA-256 → resposta original → PNCP`
-
-## Integração contínua
-
-O repositório possui um CI enxuto em GitHub Actions para `ruff`, `pytest`, consistência de versão, proteção de artefatos congelados e validação do snapshot.
-
-- [Detalhes do CI](docs/ci.md)
+`sinal -> grupo comparável -> homologação -> item -> contratação -> SHA-256 -> resposta original -> PNCP`
 
 ## Stack
 
@@ -67,9 +61,9 @@ O repositório possui um CI enxuto em GitHub Actions para `ruff`, `pytest`, cons
 - Ruff
 - Parquet
 
-## Validação
+## Validação principal
 
-A taxonomia é avaliada com datasets manuais versionados e fontes públicas separadas entre ciclos de desenvolvimento.
+A taxonomia odontológica possui ciclos independentes de benchmark. O v5 permanece como holdout não ajustado e preserva uma referência independente antes de novas alterações.
 
 | Benchmark | Amostras | Acurácia independente |
 | --- | ---: | ---: |
@@ -78,81 +72,71 @@ A taxonomia é avaliada com datasets manuais versionados e fontes públicas sepa
 | v4 | 48 | 85,42% |
 | v5 holdout | 48 | 79,17% |
 
-O **v5 permanece como holdout não ajustado**, preservando uma referência independente antes de novas alterações na taxonomia. Resultados pós-tuning dos ciclos anteriores são mantidos separadamente e não substituem suas baselines originais.
+## Atributos técnicos
 
-A extração de atributos técnicos possui benchmark independente próprio:
+A extração de atributos técnicos possui 12 ciclos independentes. O snapshot consolidado atual resume:
 
-| Benchmark técnico | Exemplos | Campos revisados | Micro accuracy |
-| --- | ---: | ---: | ---: |
-| atributos técnicos v1 | 33 | 61 | 85,25% |
-| atributos técnicos v2 | 41 | 77 | 93,51% |
-| atributos técnicos v3 | 45 | 86 | 94,19% |
-| atributos técnicos v4 | 45 | 87 | 88,51% |
-| atributos técnicos v5 | 48 | 92 | 86,96% |
-| atributos técnicos v6 | 48 | 90 | 93,33% |
-| atributos técnicos v7 | 48 | 83 | 91,57% |
-| atributos técnicos v8 | 48 | 83 | 90,36% |
-| atributos técnicos v9 | 48 | 84 | 96,43% |
-| atributos técnicos v10 | 48 | 84 | 95,24% |
-| atributos técnicos v11 | 48 | 80 | 92,50% |
-| atributos técnicos v12 | 48 | 77 | 87,01% |
+| Grupo | Exemplos | Campos | Campos corretos | Micro accuracy ponderada |
+| --- | ---: | ---: | ---: | ---: |
+| Atributos técnicos v1-v12 | 548 | 984 | 899 | 91,36% |
 
-Os benchmarks técnicos preservam a diferença entre baseline independente e regressão pós-tuning. O v12 permanece como a referência técnica independente mais recente do ciclo atual.
+Documentos principais:
 
-Documentação completa:
-
-- [Benchmark v1](docs/benchmark-v1.md)
-- [Benchmark v2](docs/benchmark-v2.md)
-- [Benchmark v3](docs/benchmark-v3.md)
-- [Benchmark v4](docs/benchmark-v4.md)
-- [Benchmark v5](docs/benchmark-v5.md)
-- [Benchmark de atributos técnicos v1](docs/benchmark-technical-attributes-v1.md)
-- [Regressão técnica pós-tuning v1.14](docs/benchmark-technical-attributes-v1-post-tuning.md)
-- [Benchmark de atributos técnicos v2](docs/benchmark-technical-attributes-v2.md)
-- [Regressão técnica v2 pós-tuning v1.16](docs/benchmark-technical-attributes-v2-post-tuning.md)
-- [Benchmark de atributos técnicos v3](docs/benchmark-technical-attributes-v3.md)
-- [Regressão técnica v3 pós-tuning v1.18](docs/benchmark-technical-attributes-v3-post-tuning.md)
-- [Benchmark de atributos técnicos v4](docs/benchmark-technical-attributes-v4.md)
-- [Regressão técnica v4 pós-tuning v1.20](docs/benchmark-technical-attributes-v4-post-tuning.md)
-- [Benchmark de atributos técnicos v5](docs/benchmark-technical-attributes-v5.md)
-- [Regressão técnica v5 pós-tuning v1.22](docs/benchmark-technical-attributes-v5-post-tuning.md)
-- [Benchmark de atributos técnicos v6](docs/benchmark-technical-attributes-v6.md)
-- [Regressão técnica v6 pós-tuning v1.24](docs/benchmark-technical-attributes-v6-post-tuning.md)
-- [Benchmark de atributos técnicos v7](docs/benchmark-technical-attributes-v7.md)
-- [Regressão técnica v7 pós-tuning v1.26](docs/benchmark-technical-attributes-v7-post-tuning.md)
-- [Benchmark de atributos técnicos v8](docs/benchmark-technical-attributes-v8.md)
-- [Regressão técnica v8 pós-tuning v1.28](docs/benchmark-technical-attributes-v8-post-tuning.md)
-- [Benchmark de atributos técnicos v9](docs/benchmark-technical-attributes-v9.md)
-- [Regressão técnica v9 pós-tuning v1.30](docs/benchmark-technical-attributes-v9-post-tuning.md)
-- [Benchmark de atributos técnicos v10](docs/benchmark-technical-attributes-v10.md)
-- [Regressão técnica v10 pós-tuning v1.32](docs/benchmark-technical-attributes-v10-post-tuning.md)
-- [Benchmark de atributos técnicos v11](docs/benchmark-technical-attributes-v11.md)
-- [Regressão técnica v11 pós-tuning v1.34](docs/benchmark-technical-attributes-v11-post-tuning.md)
-- [Benchmark de atributos técnicos v12](docs/benchmark-technical-attributes-v12.md)
+- [Benchmark técnico v12](docs/benchmark-technical-attributes-v12.md)
 - [Regressão técnica v12 pós-tuning v1.37](docs/benchmark-technical-attributes-v12-post-tuning.md)
-- [Consolidação dos benchmarks técnicos v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
+- [Consolidação técnica v1-v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Revisão da arquitetura de regras e contextos](docs/architecture-rules-review.md)
 
-## Exemplo de normalização
+## Medicamentos
 
-Entrada:
+Medicamentos é um domínio separado da produção. As baselines independentes são preservadas e os resultados pós-tuning ficam em documentos próprios.
 
-~~~text
-RES FOTOP A2 C/2 SERINGAS 4G
+| Holdout | Parser medido | Exemplos | Campos | Corretos | Micro accuracy |
+| --- | --- | ---: | ---: | ---: | ---: |
+| medicamentos v1 | v1.40.0 | 48 | 192 | 168 | 87,50% |
+| medicamentos v2 | v1.44.0 | 48 | 192 | 153 | 79,69% |
+| medicamentos v3 | v1.46.0 | 48 | 192 | 173 | 90,10% |
+| medicamentos v4 | pós-v1.48 vigente | 48 | 192 | 189 | 98,44% |
+| **Total ponderado** |  | **192** | **768** | **683** | **88,93%** |
+
+Pós-tuning v1.49.0:
+
+| Conjunto | Resultado | Observação |
+| --- | ---: | --- |
+| medicamentos v4 pós-v1.49 | 192/192 | Regressão separada, sem substituir a baseline independente |
+
+O domínio permanece em `benchmark_required`. A baseline independente continua sendo o critério metodológico principal, e o pós-tuning serve apenas para validar correções pontuais.
+
+Comandos:
+
+~~~bash
+dpi evaluate-medications --dataset data/evaluation/medications-v4.jsonl
+dpi medication-errors --dataset data/evaluation/medications-v4.jsonl
 ~~~
 
-Saída estruturada:
+Documentos principais:
 
-~~~text
-categoria: composite_resin
-cor: A2
-apresentacao: syringe
-quantidade_embalagem: 2
-quantidade_unitaria: 4 g
-quantidade_total: 8 g
-~~~
+- [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
+- [Medicamentos v1 pós-tuning v1.44](docs/benchmark-medications-v1-post-tuning.md)
+- [Benchmark independente de medicamentos v2](docs/benchmark-medications-v2.md)
+- [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
+- [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
+- [Medicamentos v3 pós-tuning v1.48](docs/benchmark-medications-v3-post-tuning.md)
+- [Benchmark independente de medicamentos v4](docs/benchmark-medications-v4.md)
+- [Medicamentos v4 pós-tuning v1.49](docs/benchmark-medications-v4-post-tuning.md)
+- [Congelamento do holdout de medicamentos v4](docs/medications-v4-freeze.md)
+- [Consolidação de medicamentos v1-v4](docs/benchmark-medications-consolidated-v1-v4.md)
 
-Quando descrição, embalagem e medidas sustentam a conversão, o pipeline normaliza o preço pela quantidade física. Múltiplas medidas incompatíveis e kits heterogêneos ficam em `review` e não entram nos sinais estatísticos.
+## Snapshot real
+
+![Snapshot real de qualidade e benchmarks](docs/assets/dashboard-quality-snapshot.svg)
+
+O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 192 exemplos de medicamentos e 768 campos de medicamentos.
+
+- [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
+- [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
+
+O snapshot não simula preços, homologações ou sinais. Esses painéis só serão publicados quando existir uma base DuckDB analítica consolidada.
 
 ## Uso rápido
 
@@ -193,53 +177,7 @@ Gerar sinais estatísticos:
 dpi detect-anomalies --database data/analytics.duckdb
 ~~~
 
-## Domínio de medicamentos
-
-A arquitetura multidomínio já possui uma taxonomia inicial de medicamentos, mas ela ainda não está ativa em produção.
-
-| Holdout | Parser medido | Exemplos | Campos | Corretos | Micro accuracy |
-| --- | --- | ---: | ---: | ---: | ---: |
-| medicamentos v1 | v1.40.0 | 48 | 192 | 168 | 87,50% |
-| medicamentos v2 | v1.44.0 | 48 | 192 | 153 | 79,69% |
-| medicamentos v3 | v1.46.0 | 48 | 192 | 173 | 90,10% |
-| medicamentos v4 | pós-v1.48 vigente | 48 | 192 | 189 | 98,44% |
-| **Total ponderado** | — | **192** | **768** | **683** | **88,93%** |
-
-Após tuning controlado, os conjuntos congelados v1, v2 e v3 atingiram 192/192 campos corretos nos respectivos ciclos pós-ajuste. Esses resultados pós-tuning não substituem as baselines independentes. O v4 ainda não possui pós-tuning e sua baseline independente permanece preservada.
-
-O principal gargalo consolidado ainda é o princípio ativo, com 73,44% de acurácia ponderada entre v1 e v4. Concentração, forma farmacêutica e via ficam acima de 92% no acumulado.
-
-~~~bash
-dpi evaluate-medications --dataset data/evaluation/medications-v4.jsonl
-dpi medication-errors --dataset data/evaluation/medications-v4.jsonl
-~~~
-
-- [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
-- [Medicamentos v1 pós-tuning v1.44](docs/benchmark-medications-v1-post-tuning.md)
-- [Benchmark independente de medicamentos v2](docs/benchmark-medications-v2.md)
-- [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
-- [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
-- [Medicamentos v3 pós-tuning v1.48](docs/benchmark-medications-v3-post-tuning.md)
-- [Benchmark independente de medicamentos v4](docs/benchmark-medications-v4.md)
-- [Congelamento do holdout de medicamentos v4](docs/medications-v4-freeze.md)
-- [Consolidação dos benchmarks de medicamentos v1–v4](docs/benchmark-medications-consolidated-v1-v4.md)
-
-O domínio permanece em `benchmark_required` até que a estabilidade do princípio ativo seja confirmada em novos ciclos ou por tuning pontual validado sem regressão.
-
-## Snapshot real
-
-![Snapshot real de qualidade e benchmarks](docs/assets/dashboard-quality-snapshot.svg)
-
-O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 192 exemplos de medicamentos e 768 campos de medicamentos.
-
-- [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
-- [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
-
-O snapshot não simula preços, homologações ou sinais. Esses painéis só serão publicados quando existir uma base DuckDB analítica consolidada.
-
 ## API e dashboard
-
-A camada analítica pode ser exposta por API HTTP ou por um dashboard HTML estático, ambos alimentados pelo mesmo DuckDB.
 
 ~~~bash
 pip install -e ".[api]"
@@ -248,10 +186,6 @@ dpi build-dashboard --database data/analytics.duckdb --output docs/dashboard.htm
 ~~~
 
 - [Documentação da API e dashboard](docs/api-dashboard.md)
-
-Nenhum valor é fixado no dashboard. O snapshot é gerado a partir da base analítica informada no comando.
-
-A API v1 oferece paginação por `limit`/`offset` e filtros por categoria, macroregião, ano e escopo, conforme a coleção.
 
 ## Estrutura
 
@@ -275,30 +209,15 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 ## Documentação técnica
 
 - [Arquitetura](docs/architecture.md)
-- [Revisão do motor de regras](docs/architecture-rules-review.md)
-- [Refatoração declarativa do motor de regras v1.36](docs/rule-engine-refactor-v1.36.md)
 - [Arquitetura multidomínio](docs/multidomain-architecture.md)
 - [API e dashboard analítico](docs/api-dashboard.md)
-- [Benchmark de medicamentos v1](docs/benchmark-medications-v1.md)
-- [Benchmark de medicamentos v2](docs/benchmark-medications-v2.md)
-- [Benchmark de medicamentos v3](docs/benchmark-medications-v3.md)
-- [Benchmark de medicamentos v4](docs/benchmark-medications-v4.md)
-- [Consolidação de medicamentos v1–v4](docs/benchmark-medications-consolidated-v1-v4.md)
-- [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
 - [Precisão monetária](docs/precisao-monetaria.md)
-- [Atributos técnicos](docs/atributos-tecnicos.md)
 - [Qualidade do normalizador](docs/qualidade-normalizador.md)
-- [Benchmarks e validação](docs/benchmark-v5.md)
-
-## Próximos passos
-
-- avaliar se vale um tuning pontual para `geléia` tópica e prefixos numéricos compostos;
-- consolidar uma base DuckDB real para os painéis de preços e homologações.
+- [Release v1.49.0](docs/release-v1.49.0.md)
+- [Auditoria v1.49.0](docs/audit-v1.49.0.md)
 
 ## Fonte dos dados
 
-Os dados são obtidos da API pública do **Portal Nacional de Contratações Públicas (PNCP)**.
-
-O projeto preserva a evidência de origem e separa dados brutos, transformações analíticas e resultados derivados para permitir auditoria e reprodução.
+Os dados são obtidos da API pública do Portal Nacional de Contratações Públicas. O projeto preserva dados brutos, transformações e resultados derivados para permitir auditoria e reprodução.
