@@ -64,7 +64,7 @@ def test_capture_contract_collects_metadata_items_and_results(
             )
 
         if path.endswith("/itens/2/resultados"):
-            return httpx.Response(200, json={"listaResultados": []})
+            return httpx.Response(204, content=b"")
 
         raise AssertionError(f"Rota inesperada: {path}")
 
