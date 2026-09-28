@@ -69,19 +69,40 @@
     }
   },
   "medications": {
-    "sample_count": 48,
-    "evaluated_field_count": 192,
-    "correct_field_count": 168,
-    "micro_accuracy": 0.875,
+    "sample_count": 144,
+    "evaluated_field_count": 576,
+    "correct_field_count": 494,
+    "weighted_micro_accuracy": 0.8576,
+    "holdouts": {
+      "v1": {
+        "sample_count": 48,
+        "evaluated_field_count": 192,
+        "correct_field_count": 168,
+        "micro_accuracy": 0.875
+      },
+      "v2": {
+        "sample_count": 48,
+        "evaluated_field_count": 192,
+        "correct_field_count": 153,
+        "micro_accuracy": 0.7969
+      },
+      "v3": {
+        "sample_count": 48,
+        "evaluated_field_count": 192,
+        "correct_field_count": 173,
+        "micro_accuracy": 0.901
+      }
+    },
     "per_field": {
-      "active_ingredient": 0.6458,
-      "strength": 0.8958,
-      "dosage_form": 0.9792,
-      "route": 0.9792
+      "active_ingredient": 0.6528,
+      "strength": 0.9514,
+      "dosage_form": 0.9167,
+      "route": 0.9097
     }
   },
   "limitations": [
     "This snapshot summarizes frozen evaluation artifacts, not live procurement prices.",
+    "Post-tuning perfect regressions are documented separately and do not replace independent baselines.",
     "Price and award panels require a consolidated DuckDB analytics database."
   ]
 }
