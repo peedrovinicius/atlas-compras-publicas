@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="760" viewBox="0 0 980 760" role="img" aria-labelledby="title desc">
 <title id="title">Atlas de Compras Públicas, snapshot real de qualidade</title>
-<desc id="desc">Micro accuracy das baselines técnicas v1 a v12 e baseline do domínio de medicamentos.</desc>
+<desc id="desc">Micro accuracy das baselines técnicas v1 a v12 e baselines independentes de medicamentos v1 a v3.</desc>
 <style>
   .bg{fill:#0d1117}.panel{fill:#161b22;stroke:#30363d;stroke-width:1}
   .title{fill:#f0f6fc;font:700 30px system-ui,sans-serif}
@@ -11,7 +11,7 @@
   .track{fill:#21262d}.bar{fill:#58a6ff}.value{fill:#c9d1d9;font:12px system-ui,sans-serif}
   .med{fill:#3fb950}.note{fill:#8b949e;font:12px system-ui,sans-serif}
 </style>
-<rect width="980" height="720" class="bg"/>
+<rect width="980" height="760" class="bg"/>
 <text x="32" y="50" class="title">Atlas de Compras Públicas</text>
 <text x="32" y="76" class="sub">Snapshot real de qualidade, gerado das baselines congeladas do repositório</text>
 
@@ -25,11 +25,11 @@
 
 <rect x="480" y="104" width="210" height="74" rx="10" class="panel"/>
 <text x="496" y="128" class="cardl">Medicamentos</text>
-<text x="496" y="160" class="cardn">48 / 192</text>
+<text x="496" y="160" class="cardn">144 / 576</text>
 
 <rect x="704" y="104" width="244" height="74" rx="10" class="panel"/>
 <text x="720" y="128" class="cardl">Baseline medicamentos</text>
-<text x="720" y="160" class="cardn">87,50%</text>
+<text x="720" y="160" class="cardn">85,76%</text>
 
 <text x="32" y="205" class="sub">Micro accuracy independente por holdout técnico</text>
 <text x="32" y="225" class="axis">v1</text>
@@ -81,9 +81,19 @@
 <rect x="80" y="584" width="505" height="20" rx="4" class="bar"/>
 <text x="675" y="599" class="value">87,01%</text>
 
-<rect x="32" y="624" width="916" height="64" rx="10" class="panel"/>
-<rect x="48" y="643" width="507" height="14" rx="4" class="track"/>
-<rect x="48" y="643" width="444" height="14" rx="4" class="med"/>
-<text x="570" y="655" class="axis">Medicamentos v1: 87,50%</text>
-<text x="48" y="678" class="note">Ingrediente 64,58% · Concentração 89,58% · Forma 97,92% · Via 97,92%</text>
+<rect x="32" y="624" width="916" height="104" rx="10" class="panel"/>
+<text x="48" y="649" class="sub">Medicamentos: baselines independentes v1–v3</text>
+<rect x="48" y="668" width="245" height="14" rx="4" class="track"/>
+<rect x="48" y="668" width="214" height="14" rx="4" class="med"/>
+<text x="310" y="680" class="axis">v1: 87,50%</text>
+<rect x="48" y="692" width="245" height="14" rx="4" class="track"/>
+<rect x="48" y="692" width="195" height="14" rx="4" class="med"/>
+<text x="310" y="704" class="axis">v2: 79,69%</text>
+<rect x="480" y="668" width="245" height="14" rx="4" class="track"/>
+<rect x="480" y="668" width="221" height="14" rx="4" class="med"/>
+<text x="742" y="680" class="axis">v3: 90,10%</text>
+<rect x="480" y="692" width="245" height="14" rx="4" class="track"/>
+<rect x="480" y="692" width="210" height="14" rx="4" class="med"/>
+<text x="742" y="704" class="axis">Total: 85,76%</text>
+<text x="48" y="722" class="note">Campo mais frágil no acumulado: ingrediente ativo, 65,28%.</text>
 </svg>
