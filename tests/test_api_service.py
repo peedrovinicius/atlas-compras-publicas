@@ -831,3 +831,89 @@ def test_product_signals_and_records_preserve_traceability(
     assert record["pncp_url"] == (
         "https://pncp.gov.br/app/editais/15126437000305/2026/212"
     )
+
+
+
+def test_product_distribution_bins_defensible_prices(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'defensible', 10.0
+                    ),
+                    (
+                        'p2', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'defensible', 12.0
+                    ),
+                    (
+                        'p3', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'defensible', 30.0
+                    ),
+                    (
+                        'p4', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        'review', 999.0
+                    )
+            ) AS t(
+                procurement_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    search = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+    )
+    product_id = search["items"][0]["product_id"]
+
+    result = service.analytics_product_distribution(
+        database,
+        product_id=product_id,
+        bin_count=5,
+    )
+
+    assert result["observations"] == 3
+    assert result["bin_count"] == 5
+    assert result["min_price"] == 10.0
+    assert result["max_price"] == 30.0
+    assert len(result["bins"]) == 5
+    assert sum(item["count"] for item in result["bins"]) == 3
+    assert result["bins"][0]["count"] == 2
+    assert result["bins"][-1]["count"] == 1
