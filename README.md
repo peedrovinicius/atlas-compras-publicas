@@ -239,7 +239,6 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 Os dados são obtidos da API pública do Portal Nacional de Contratações Públicas. O projeto preserva dados brutos, transformações e resultados derivados para permitir auditoria e reprodução.
 
-
 ## Contribuindo
 
 Contribuições externas são bem-vindas quando preservam rastreabilidade, baselines independentes e metodologia documentada. Consulte [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir um Pull Request.
