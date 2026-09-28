@@ -75,6 +75,7 @@ def build_demo_data(
     year: int | None = None,
     sequence: int | None = None,
     procurements: tuple[DemoProcurement, ...] | None = None,
+    max_result_requests_per_procurement: int | None = None,
 ) -> DemoDataBuildResult:
     """Reconstrói a amostra analítica pública a partir do PNCP."""
 
@@ -123,6 +124,7 @@ def build_demo_data(
                 year=procurement.year,
                 sequence=procurement.sequence,
                 skip_result_transport_errors=True,
+                max_result_requests=max_result_requests_per_procurement,
             )
         except httpx.HTTPError:
             continue
