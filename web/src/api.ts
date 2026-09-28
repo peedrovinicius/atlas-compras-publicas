@@ -48,12 +48,16 @@ export async function normalizeDescriptions(
   return body.items;
 }
 
-export async function checkHealth(): Promise<boolean> {
+export async function checkHealth(): Promise<{ok: boolean; version: string | null}> {
   try {
     const response = await fetch(`${API_BASE_URL}/health`);
-    return response.ok;
+    if (!response.ok) {
+      return {ok: false, version: null};
+    }
+    const body = (await response.json()) as {version?: string};
+    return {ok: true, version: body.version ?? null};
   } catch {
-    return false;
+    return {ok: false, version: null};
   }
 }
 
