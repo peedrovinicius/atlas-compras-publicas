@@ -10,8 +10,14 @@ def test_award_frame_adds_geographic_and_temporal_context() -> None:
             "sequencialCompra": 1,
             "modalidadeNome": "Pregão - Eletrônico",
             "dataPublicacaoPncp": "2026-07-01",
-            "orgaoEntidade": {"esferaId": "M"},
+            "orgaoEntidade": {
+                "cnpj": "12345678000190",
+                "razaoSocial": "Secretaria Municipal de Saúde",
+                "esferaId": "M",
+            },
             "unidadeOrgao": {
+                "codigoUnidade": "UASG-001",
+                "nomeUnidade": "Coordenação de Saúde Bucal",
                 "municipioId": 2304400,
                 "municipioNome": "Fortaleza",
                 "ufSigla": "CE",
@@ -49,6 +55,10 @@ def test_award_frame_adds_geographic_and_temporal_context() -> None:
     assert row["contract_source_sha256"] == "contracthash"
     assert row["analysis_year"] == 2026
     assert row["analysis_quarter"] == "2026-T3"
+    assert row["organization_cnpj"] == "12345678000190"
+    assert row["organization_name"] == "Secretaria Municipal de Saúde"
+    assert row["buyer_unit_code"] == "UASG-001"
+    assert row["buyer_unit_name"] == "Coordenação de Saúde Bucal"
     assert row["municipality_ibge"] == "2304400"
     assert row["municipality_name"] == "Fortaleza"
     assert row["state_code"] == "CE"
