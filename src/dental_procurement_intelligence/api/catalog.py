@@ -55,12 +55,16 @@ _CATEGORY_SEARCH_ALIASES = {
         "adesivo odontologico",
         "adesivo dental",
         "adesivo",
+        "bonding",
         "bond",
     ),
     ProductCategory.GLASS_IONOMER: (
         "ionomero de vidro",
+        "cimento de ionomero de vidro",
         "cimento ionomero",
+        "cimento de vidro",
         "ionomero",
+        "civ",
     ),
     ProductCategory.PHOSPHORIC_ACID: (
         "acido fosforico",
@@ -103,6 +107,7 @@ _CATEGORY_SEARCH_ALIASES = {
     ProductCategory.LOCAL_ANESTHETIC: (
         "anestesico local",
         "anestesico odontologico",
+        "anestesia local",
         "anestesico",
     ),
 }
