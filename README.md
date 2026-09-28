@@ -89,6 +89,13 @@ As consultas SQL do portfólio são executadas no CI contra um schema DuckDB com
 - [Cobertura da normalização](sql/04_normalization_coverage.sql)
 - [Rastreabilidade de um sinal](sql/05_signal_trace.sql)
 - [Contrato do warehouse v1](docs/warehouse-v1.md)
+- [Como reconstruir a amostra analítica](data/demo/README.md)
+
+Para reconstruir a base local usada na evolução analítica:
+
+```bash
+atlas build-demo-data
+```
 
 ## Arquitetura e rastreabilidade
 
