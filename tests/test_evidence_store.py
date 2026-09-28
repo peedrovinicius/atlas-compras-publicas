@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -16,7 +16,7 @@ def test_capture_is_content_addressed_and_writes_manifest(tmp_path: Path) -> Non
         content_type="application/json",
         content=body,
     )
-    retrieved_at = datetime(2026, 9, 26, 12, 0, tzinfo=timezone.utc)
+    retrieved_at = datetime(2026, 9, 26, 12, 0, tzinfo=UTC)
 
     record = EvidenceStore(tmp_path).capture(raw, retrieved_at=retrieved_at)
 
