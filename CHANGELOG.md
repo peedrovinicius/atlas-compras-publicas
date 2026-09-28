@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## Em desenvolvimento
+
+- busca pública por produtos comparáveis na base analítica;
+- resumo de preços com mediana, percentis, dispersão e controle de suficiência da amostra;
+- histórico temporal e comparação por região e UF;
+- visões de fornecedores e órgãos compradores;
+- sinais estatísticos com aviso interpretativo;
+- rastreabilidade dos registros até hashes de origem e PNCP;
+- interface React reorganizada em Explorar preços e Laboratório;
+- documentação da API atualizada para refletir as novas rotas públicas.
+
 ## 1.49.0
 
 - congelamento do holdout independente de medicamentos v4 com 48 exemplos e 192 campos;
