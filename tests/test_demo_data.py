@@ -29,7 +29,10 @@ def test_build_demo_data_orchestrates_existing_pipeline(
         procurement_key="pncp:01612541000133:2026:47",
         item_count=3,
         result_count=2,
-        item_evidence=SimpleNamespace(object_path="items.json"),
+        all_item_evidence=(
+            SimpleNamespace(object_path="items-page-1.json"),
+            SimpleNamespace(object_path="items-page-2.json"),
+        ),
     )
 
     monkeypatch.setattr(
@@ -39,7 +42,7 @@ def test_build_demo_data_orchestrates_existing_pipeline(
     )
     monkeypatch.setattr(
         demo_data,
-        "build_analytics",
+        "build_analytics_dataset",
         lambda raw, parquet, database: (
             calls.append(("items", (raw, parquet, database)))
             or SimpleNamespace(row_count=3)
