@@ -9,6 +9,7 @@ class IdentityDomain(StrEnum):
 
 class DomainStatus(StrEnum):
     ACTIVE = "active"
+    EXPERIMENTAL = "experimental"
     BENCHMARK_REQUIRED = "benchmark_required"
 
 
@@ -35,11 +36,11 @@ _MEDICATIONS = DomainDescriptor(
     domain=IdentityDomain.MEDICATIONS,
     label="Medicamentos",
     rule_namespace="medications",
-    status=DomainStatus.BENCHMARK_REQUIRED,
-    benchmark_required=True,
+    status=DomainStatus.EXPERIMENTAL,
+    benchmark_required=False,
     notes=(
-        "Próximo domínio planejado. Nenhuma regra de classificação é ativada "
-        "antes de taxonomia e benchmark independentes."
+        "Parser farmacêutico avaliado em quatro holdouts congelados. "
+        "Permanece experimental e isolado do classificador odontológico principal."
     ),
 )
 
