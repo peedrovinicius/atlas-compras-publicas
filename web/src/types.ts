@@ -10,7 +10,7 @@ export type ProductDiscoveryResponse = {
   items: ProductDiscoveryItem[];
 };
 
-export type ProductSort = "coverage" | "procurements" | "latest" | "name";
+export type ProductSort = "relevance" | "coverage" | "procurements" | "latest" | "name";
 
 export type AnalyticsFilters = {
   state_code: string;
@@ -80,6 +80,8 @@ export type ProductSearchItem = {
   latest_date: string | null;
   sample_description: string;
   display_name: string;
+  relevance_score: number;
+  match_reasons: string[];
 };
 
 export type ProductSearchFacetItem = {
