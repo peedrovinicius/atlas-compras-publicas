@@ -18,15 +18,15 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Medicamentos v4 pós-tuning | documentado separadamente |
 | Snapshot v1-v4 | atualizado |
 | Teste de snapshot v1-v4 | atualizado |
-| CI | falhou sem logs úteis |
+| CI | aprovado: Ruff + 173 testes |
 | Auditoria textual inicial | concluída |
 | Release notes sincronizadas | concluído |
 | Integridade dos holdouts v1-v4 | protegida por SHA |
 | Consolidação técnica v1-v12 | criada |
 | Links locais do README | 27 de 27 válidos |
 | Branch `release/v1.49.0` | sincronizada com a `main` auditada |
-| Reexecução do CI | mesma falha antes dos steps |
-| Padrão do CI | reproduzido em três commits independentes |
+| Reexecução do CI | aprovada após normalização |
+| Padrão do CI | falha histórica encerrada após abertura pública |
 | Guia local de qualidade | alinhado ao CI |
 | LICENSE | ausente, decisão do mantenedor |
 | SECURITY.md | presente |
@@ -47,6 +47,22 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Descrição do repositório | ausente |
 
 ## Achados
+
+## Resultado final do CI
+
+Com o repositório público, o workflow passou a executar normalmente no runner do GitHub. A execução `36417308455` concluiu com `success`.
+
+Resultado validado:
+
+| Verificação | Resultado |
+| --- | --- |
+| Instalação | aprovada |
+| Ruff | todos os checks aprovados |
+| Pytest | 173 aprovados |
+| Tempo do Pytest | 2,56 s |
+
+As falhas anteriores registradas abaixo permanecem no documento como histórico da auditoria. Elas ocorreram antes da normalização final e não representam o estado atual da `main`.
+
 
 ### 1. Baseline independente preservada
 
