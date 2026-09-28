@@ -107,6 +107,16 @@ function queryFacetValue(value: string): string {
   return value.replaceAll("_", " ");
 }
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.tagName === "INPUT"
+    || target.tagName === "TEXTAREA"
+    || target.tagName === "SELECT"
+    || target.isContentEditable
+  );
+}
+
 function normalizeDiscoveryText(value: string): string {
   return value
     .normalize("NFD")
@@ -294,6 +304,7 @@ export default function AnalyticsExplorer() {
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [detailView, setDetailView] = useState<DetailView>("overview");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLElement>(null);
   const detailRef = useRef<HTMLElement>(null);
   const suggestionRequestRef = useRef(0);
@@ -541,6 +552,25 @@ export default function AnalyticsExplorer() {
   }
 
   useEffect(() => {
+    function focusSearch(event: globalThis.KeyboardEvent) {
+      if (isEditableTarget(event.target)) return;
+
+      const shortcut =
+        event.key === "/"
+        || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k");
+
+      if (!shortcut) return;
+
+      event.preventDefault();
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }
+
+    window.addEventListener("keydown", focusSearch);
+    return () => window.removeEventListener("keydown", focusSearch);
+  }, []);
+
+  useEffect(() => {
     const cleaned = query.trim();
     if (cleaned.length < 2 || cleaned === appliedQuery) {
       setSuggestions([]);
@@ -679,6 +709,7 @@ export default function AnalyticsExplorer() {
           <div className="analytics-search-row">
             <div className="analytics-search-input-wrap">
               <input
+                ref={searchInputRef}
                 id="analytics-search"
                 value={query}
                 onChange={(event: { target: { value: string } }) => setQuery(event.target.value)}
@@ -694,6 +725,9 @@ export default function AnalyticsExplorer() {
                 }
                 onKeyDown={handleSearchKeyDown}
               />
+              <span className="analytics-search-shortcut" aria-hidden="true">
+                /
+              </span>
               {(suggesting || suggestions.length > 0) && (
                 <div
                   id="analytics-suggestions"
@@ -722,7 +756,7 @@ export default function AnalyticsExplorer() {
                       >
                         <span>
                           <strong>{item.display_name}</strong>
-                          <small>{item.sample_description}</small>
+                          <small className="analytics-result-description">{item.sample_description}</small>
                         </span>
                         <span>
                           {number(item.priced_observation_count)} preços
@@ -1053,7 +1087,7 @@ export default function AnalyticsExplorer() {
                       ? `mediana por ${item.normalized_quantity_unit}`
                       : "mediana normalizada"}
                   </small>
-                  <em>Abrir análise</em>
+                  <em>Ver análise</em>
                 </span>
               </button>
             ))}
