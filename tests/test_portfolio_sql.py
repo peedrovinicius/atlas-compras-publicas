@@ -3,7 +3,6 @@ from pathlib import Path
 import duckdb
 import pytest
 
-
 SQL_DIR = Path("sql")
 
 
