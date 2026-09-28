@@ -64,6 +64,14 @@ A busca também interpreta aliases comuns em português. Expressões como `adesi
 
 Buscas genéricas continuam amplas. Por exemplo, `resina` não é forçada para uma única categoria.
 
+## Autocomplete do Explorador
+
+A interface consulta a própria busca de produtos após 2 caracteres, com debounce de 250 ms e limite de seis sugestões.
+
+As sugestões respeitam os filtros atuais e são ordenadas por cobertura de preços comparáveis. Selecionar uma sugestão abre diretamente a análise correspondente.
+
+O resolvedor de aliases também aceita pequenas diferenças de digitação em expressões de categorias conhecidas. A aproximação é conservadora, exige similaridade alta e prefere expressões mais específicas. Termos sem correspondência suficiente continuam como busca textual normal, sem classificação forçada.
+
 ## Pesquisa e identidade de produto
 
 A busca pública opera sobre produtos já normalizados e exclui a categoria `unknown`.
