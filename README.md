@@ -269,6 +269,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.61.0](docs/release-v1.61.0.md)
 - [Release v1.60.0](docs/release-v1.60.0.md)
 - [Release v1.59.0](docs/release-v1.59.0.md)
 - [Release v1.58.0](docs/release-v1.58.0.md)
