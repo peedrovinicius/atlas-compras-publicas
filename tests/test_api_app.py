@@ -1,5 +1,6 @@
 import pytest
 
+from dental_procurement_intelligence import __version__
 from dental_procurement_intelligence.api.app import create_app
 from dental_procurement_intelligence.identity.models import ProductCategory
 
@@ -41,27 +42,23 @@ def test_public_demo_normalizes_real_example() -> None:
 
     response = client.get(
         "/api/v1/normalize",
-        params={"description": "RES FOTOP A2 C/2 SERINGAS 4G"},
+        params={"description": "PRIME ADESIVO FRASCO 4ML"},
     )
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["atlas_version"] == "1.49.0"
+    assert payload["atlas_version"] == __version__
     assert payload["classification_method"] == "deterministic_rules"
-    assert payload["category"] == "composite_resin"
-    assert payload["presentation"] == "syringe"
-    assert payload["shade"] == "A2"
-    assert payload["package_count"] == 2
+    assert payload["category"] == "dental_adhesive"
+    assert payload["presentation"] == "bottle"
+    assert payload["shade"] is None
+    assert payload["package_count"] is None
     assert payload["unit_quantity"] == {
         "value": "4",
-        "unit": "g",
-        "dimension": "mass",
+        "unit": "ml",
+        "dimension": "volume",
     }
-    assert payload["total_quantity"] == {
-        "value": "8",
-        "unit": "g",
-        "dimension": "mass",
-    }
+    assert payload["total_quantity"] is None
 
 
 def test_api_root_redirects_to_react_frontend() -> None:
@@ -85,7 +82,7 @@ def test_health_exposes_current_version() -> None:
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "1.49.0"}
+    assert response.json() == {"status": "ok", "version": __version__}
 
 
 @pytest.mark.parametrize("description", ["", "  "])
@@ -233,7 +230,7 @@ def test_meta_reports_configured_database(tmp_path, monkeypatch) -> None:
 
     assert response.status_code == 200
     assert response.json() == {
-        "version": "1.49.0",
+        "version": __version__,
         "database_available": True,
         "database_name": "atlas-demo.duckdb",
         "frontend_url": "https://atlas-compras-publicas-web.onrender.com",
