@@ -20,6 +20,7 @@ from dental_procurement_intelligence.identity import available_domains, parse_pr
 def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
     try:
         from fastapi import Body, FastAPI, HTTPException, Query, Request
+        from fastapi.middleware.cors import CORSMiddleware
         from fastapi.responses import HTMLResponse
     except ImportError as exc:
         raise RuntimeError(
