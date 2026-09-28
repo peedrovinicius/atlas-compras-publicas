@@ -1,3 +1,15 @@
+export type ProductDiscoveryItem = {
+  product_category: string;
+  label: string;
+  product_count: number;
+  award_count: number;
+  priced_observation_count: number;
+};
+
+export type ProductDiscoveryResponse = {
+  items: ProductDiscoveryItem[];
+};
+
 export type ProductSort = "coverage" | "procurements" | "latest" | "name";
 
 export type AnalyticsFilters = {
@@ -72,6 +84,8 @@ export type ProductSearchItem = {
 export type ProductSearchResponse = {
   query: string;
   sort: ProductSort;
+  interpreted_category: string | null;
+  interpreted_label: string | null;
   filters: {
     state_code: string | null;
     macroregion: string | null;
