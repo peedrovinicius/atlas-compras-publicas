@@ -301,7 +301,15 @@ def test_bootstrap_demo_database_uses_generated_database(
         FakeClient,
     )
 
-    def build_demo_stub(client, output_root):
+    captured: dict[str, object] = {}
+
+    def build_demo_stub(
+        client,
+        output_root,
+        *,
+        max_result_requests_per_procurement=None,
+    ):
+        captured["max_results"] = max_result_requests_per_procurement
         generated.touch()
         return type("Result", (), {"database_path": str(generated)})()
 
@@ -314,6 +322,7 @@ def test_bootstrap_demo_database_uses_generated_database(
 
     assert resolved == target
     assert target.exists()
+    assert captured["max_results"] == 8
 
 
 def test_bootstrap_demo_database_is_disabled_by_default(
