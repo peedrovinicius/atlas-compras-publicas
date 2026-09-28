@@ -444,7 +444,7 @@ def analytics_product_search(
             )
             relevance_parameters.append(f"%{normalized_token}%")
             relevance_parts.append(
-                "CASE WHEN LOWER(STRIP_ACCENTS(COALESCE(shade, ''))) = ? "
+                "CASE WHEN LOWER(STRIP_ACCENTS(COALESCE(CAST(shade AS VARCHAR), ''))) = ? "
                 "THEN 30 ELSE 0 END"
             )
             relevance_parameters.append(normalized_token)
