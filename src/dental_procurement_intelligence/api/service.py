@@ -830,3 +830,244 @@ def analytics_product_buyers(
         "limit": limit,
         "offset": offset,
     }
+
+
+_SIGNAL_DISCLAIMER = (
+    "Um sinal estatístico indica apenas que o preço está distante da "
+    "distribuição observada para produtos comparáveis. Isso não constitui "
+    "prova de irregularidade."
+)
+
+
+def _pncp_procurement_url(procurement_key: str | None) -> str | None:
+    if not procurement_key or not procurement_key.startswith("pncp:"):
+        return None
+    parts = procurement_key.split(":")
+    if len(parts) != 4:
+        return None
+    _, cnpj, year, sequence = parts
+    return (
+        "https://pncp.gov.br/app/editais/"
+        f"{cnpj}/{year}/{sequence}"
+    )
+
+
+def analytics_product_signals(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+    if limit < 1 or limit > 100:
+        raise ValueError("limit deve estar entre 1 e 100")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'main'
+                """
+            ).fetchall()
+        }
+        if "gold_price_signals" not in tables:
+            return {
+                "product_id": product_id,
+                "items": [],
+                "total": 0,
+                "limit": limit,
+                "offset": offset,
+                "disclaimer": _SIGNAL_DISCLAIMER,
+            }
+
+        exists = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not exists:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        total = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM gold_price_signals
+            WHERE {identity} = ?
+              AND is_price_signal
+            """,
+            [product_id],
+        ).fetchone()[0]
+
+        cursor = connection.execute(
+            f"""
+            SELECT
+                award_key,
+                procurement_key,
+                item_number,
+                original_description,
+                supplier_name,
+                supplier_document,
+                organization_name,
+                state_code,
+                analysis_date,
+                awarded_price_per_base_unit,
+                comparison_scope,
+                comparison_geography,
+                comparison_period,
+                scope_group_key,
+                group_size,
+                median_price,
+                q1_price,
+                q3_price,
+                mad_price,
+                modified_z_score,
+                detection_method,
+                is_price_signal,
+                contract_source_sha256,
+                item_source_sha256,
+                result_source_sha256
+            FROM gold_price_signals
+            WHERE {identity} = ?
+              AND is_price_signal
+            ORDER BY
+                ABS(COALESCE(modified_z_score, 0)) DESC,
+                analysis_date DESC NULLS LAST,
+                award_key
+            LIMIT ? OFFSET ?
+            """,
+            [product_id, limit, offset],
+        )
+        columns = [column[0] for column in cursor.description]
+        rows = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+    for row in rows:
+        row["pncp_url"] = _pncp_procurement_url(row.get("procurement_key"))
+
+    return {
+        "product_id": product_id,
+        "items": rows,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "disclaimer": _SIGNAL_DISCLAIMER,
+    }
+
+
+def analytics_product_records(
+    database_path: str | Path,
+    *,
+    product_id: str,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+    if limit < 1 or limit > 100:
+        raise ValueError("limit deve estar entre 1 e 100")
+    if offset < 0:
+        raise ValueError("offset não pode ser negativo")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        total = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not total:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        cursor = connection.execute(
+            f"""
+            SELECT
+                award_key,
+                procurement_key,
+                item_number,
+                result_sequence,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                procurement_unit,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_name,
+                supplier_document,
+                brand,
+                organization_cnpj,
+                organization_name,
+                buyer_unit_code,
+                buyer_unit_name,
+                municipality_name,
+                state_code,
+                macroregion,
+                modality,
+                analysis_date,
+                awarded_unit_value,
+                awarded_quantity,
+                awarded_total_value,
+                awarded_price_per_base_unit,
+                price_normalization_status,
+                price_normalization_reason,
+                contract_source_sha256,
+                item_source_sha256,
+                result_source_sha256
+            FROM silver_awards
+            WHERE {identity} = ?
+            ORDER BY
+                analysis_date DESC NULLS LAST,
+                procurement_key,
+                item_number,
+                award_key
+            LIMIT ? OFFSET ?
+            """,
+            [product_id, limit, offset],
+        )
+        columns = [column[0] for column in cursor.description]
+        rows = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+    for row in rows:
+        row["pncp_url"] = _pncp_procurement_url(row.get("procurement_key"))
+
+    return {
+        "product_id": product_id,
+        "items": rows,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
