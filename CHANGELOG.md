@@ -2,6 +2,18 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.64.0
+
+- ações secundárias da análise agrupadas em menu compacto;
+- copiar link e exportar CSV deixam de competir visualmente com status e atualização;
+- tabela mensal do histórico passa a ficar recolhida por padrão, mantendo o gráfico em destaque;
+- tabela de sinais estatísticos passa a ser exibida sob demanda;
+- quantidade de registros de evidência mostrada explicitamente no recorte;
+- descrições das evidências limitadas na visão fechada e expandidas ao abrir;
+- evidências passam para uma coluna em telas pequenas;
+- hashes e metadados de evidência reorganizados para mobile;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.64.0.
+
 ## 1.63.0
 
 - Laboratório deixa de carregar e analisar um exemplo automaticamente ao abrir o site;
