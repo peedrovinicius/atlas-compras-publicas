@@ -2,12 +2,13 @@
 
 Os arquivos analíticos desta pasta são gerados localmente e não são versionados.
 
-Fonte padrão da demonstração analítica:
+Fontes padrão da demonstração analítica:
 
-- CNPJ: `15126437000305`
-- ano: `2026`
-- sequencial PNCP: `212`
-- número de controle PNCP: `15126437000305-1-000212/2026`
+- `15126437000305-1-000212/2026` - CHC/UFPR, Curitiba/PR;
+- `18277947000100-1-000259/2026` - Município de Guarda-Mor/MG;
+- `39485412000102-1-000004/2026` - Município de Queimados/RJ.
+
+Todas são contratações públicas odontológicas. A inclusão no conjunto publicado depende de captura válida e resultados homologados disponíveis no PNCP.
 
 Reconstrução completa:
 
@@ -17,7 +18,7 @@ atlas build-demo-data
 
 O comando executa:
 
-1. captura da contratação, itens e resultados no PNCP;
+1. captura de cada contratação, seus itens e resultados no PNCP;
 2. persistência das respostas brutas com SHA-256 e manifestos;
 3. construção de `silver_items`;
 4. construção de `silver_awards`;
@@ -34,6 +35,6 @@ data/demo/
   atlas-demo.duckdb
 ```
 
-A captura consulta endpoints públicos do PNCP e só produz análises de preço quando existem resultados homologados disponíveis. A duração depende do tamanho da contratação e da disponibilidade do PNCP.
+A captura consulta endpoints públicos do PNCP e consolida as contratações em uma única base. `silver_items` usa a chave composta `(procurement_key, item_number)`, evitando colisões entre compras. Análises de preço só são produzidas quando existem resultados homologados e normalização de preço defensável.
 
 Os artefatos binários e a evidência bruta local são ignorados pelo Git. O repositório mantém apenas o código necessário para reconstruí-los.
