@@ -3,7 +3,7 @@ from pathlib import Path
 
 from dental_procurement_intelligence.analytics.anomalies import build_price_signals
 from dental_procurement_intelligence.analytics.awards import build_award_dataset
-from dental_procurement_intelligence.analytics.lakehouse import build_analytics
+from dental_procurement_intelligence.analytics.lakehouse import build_analytics_dataset
 from dental_procurement_intelligence.analytics.quality import build_quality_views
 from dental_procurement_intelligence.ingestion import (
     EvidenceStore,
@@ -57,8 +57,11 @@ def build_demo_data(
         sequence=sequence,
     )
 
-    items = build_analytics(
-        capture.item_evidence.object_path,
+    items = build_analytics_dataset(
+        [
+            evidence.object_path
+            for evidence in capture.all_item_evidence
+        ],
         items_parquet,
         database,
     )
