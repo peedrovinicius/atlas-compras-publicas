@@ -1,4 +1,4 @@
-"""Página pública simples da demo do Atlas."""
+"""Página pública simples e focada da demo do Atlas."""
 
 import json
 from html import escape
@@ -29,264 +29,457 @@ DEMO_HTML = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description"
-      content="Teste simples do normalizador do Atlas de Compras Públicas.">
-<title>Atlas | Teste do parser</title>
+      content="Teste o normalizador do Atlas de Compras Públicas com descrições do PNCP.">
+<title>Atlas | Testar normalização</title>
 <style>
 :root {
-  color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  --bg: #0d1117;
-  --panel: #161b22;
-  --border: #30363d;
-  --text: #e6edf3;
-  --muted: #9da7b3;
-  --link: #58a6ff;
-  --ok: #7ee787;
-  --error: #ff7b72;
+  color: #171717;
+  background: #f7f7f5;
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --text: #171717;
+  --muted: #6b6b6b;
+  --line: #deded9;
+  --soft: #f1f1ee;
+  --accent: #171717;
+  --ok: #237a3b;
+  --error: #b42318;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); }
-main {
-  width: min(760px, 92vw);
-  margin: 0 auto;
-  padding: 48px 0 64px;
-}
-h1 { margin: 0 0 12px; font-size: clamp(34px, 7vw, 56px); line-height: 1; }
-h2 { margin: 0 0 12px; font-size: 20px; }
-p { color: var(--muted); line-height: 1.6; }
-.card {
-  margin-top: 28px;
-  padding: 22px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--panel);
-}
-label { display: block; margin-bottom: 10px; font-weight: 700; }
-textarea {
-  width: 100%;
-  min-height: 100px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+body {
+  margin: 0;
   background: var(--bg);
   color: var(--text);
-  padding: 14px;
-  resize: vertical;
+}
+button,
+textarea {
   font: inherit;
 }
-button {
+a { color: inherit; }
+.shell {
+  width: min(1120px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 62px;
+}
+.brand {
+  font-weight: 750;
+  letter-spacing: -.02em;
+}
+.toplinks {
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.toplinks a {
+  text-decoration: none;
+}
+.toplinks a:hover {
+  color: var(--text);
+}
+.hero {
+  max-width: 760px;
+  margin-bottom: 34px;
+}
+.eyebrow {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(38px, 7vw, 68px);
+  line-height: .98;
+  letter-spacing: -.055em;
+  font-weight: 760;
+}
+.hero p {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.55;
+  max-width: 660px;
+}
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr);
+  gap: 18px;
+  align-items: start;
+}
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.test-panel {
+  padding: 26px;
+}
+.list-panel {
+  padding: 22px;
+}
+.panel-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+.panel-copy {
+  margin: 0 0 20px;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 14px;
+}
+label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 650;
+}
+textarea {
+  width: 100%;
+  min-height: 122px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfbfa;
+  color: var(--text);
+  padding: 14px 15px;
+  line-height: 1.45;
+}
+textarea:focus {
+  outline: 3px solid #e7e7e3;
+  border-color: #a5a5a0;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-top: 12px;
+}
+.primary {
   border: 0;
   border-radius: 10px;
-  background: var(--text);
-  color: var(--bg);
+  background: var(--accent);
+  color: white;
   padding: 11px 18px;
-  font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
-button[disabled] { opacity: .65; cursor: wait; }
+.primary[disabled] {
+  opacity: .55;
+  cursor: wait;
+}
 .status {
-  min-height: 22px;
-  margin-top: 12px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 .status[data-kind="ok"] { color: var(--ok); }
 .status[data-kind="error"] { color: var(--error); }
 .result {
-  margin-top: 16px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--bg);
-  font-size: 18px;
-  line-height: 1.55;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
 }
-.supported {
+.result-label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+.result-main {
+  font-size: 23px;
+  line-height: 1.35;
+  letter-spacing: -.025em;
+  font-weight: 700;
+}
+.result-meta {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
+  flex-wrap: wrap;
   margin-top: 14px;
 }
-.supported span {
-  border: 1px solid var(--border);
+.meta {
+  background: var(--soft);
   border-radius: 999px;
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: 12px;
+  color: #494949;
 }
-.supported span[data-unknown="true"] {
+.categories {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.categories li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ecece8;
+  font-size: 14px;
+}
+.categories li:last-child {
+  border-bottom: 0;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #92928c;
+  flex: 0 0 auto;
+}
+.categories li[data-fallback="true"] {
   color: var(--muted);
-  border-style: dashed;
+}
+.examples {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.examples-title {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.example-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.example-buttons button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.example-buttons button:hover {
+  background: var(--soft);
 }
 details {
   margin-top: 18px;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
 }
-summary { cursor: pointer; color: var(--link); }
-.examples {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-.examples button {
-  margin: 0;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg);
-  color: var(--text);
-  padding: 7px 10px;
+summary {
+  cursor: pointer;
+  color: var(--muted);
   font-size: 13px;
 }
-dl {
+.technical {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px 18px;
+  gap: 12px 20px;
+  margin-top: 16px;
 }
-dt { color: var(--muted); font-size: 12px; }
-dd { margin: 4px 0 0; overflow-wrap: anywhere; }
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
-  font-size: 14px;
+.technical dt {
+  color: var(--muted);
+  font-size: 11px;
 }
-a { color: var(--link); }
+.technical dd {
+  margin: 3px 0 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
 footer {
-  margin-top: 32px;
+  margin-top: 28px;
   color: var(--muted);
   font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
 }
-@media (max-width: 620px) {
-  main { padding-top: 32px; }
-  dl { grid-template-columns: 1fr; }
-  button#run { width: 100%; }
+footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+footer a:hover {
+  color: var(--text);
+}
+@media (max-width: 820px) {
+  .topbar {
+    margin-bottom: 42px;
+  }
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .list-panel {
+    order: 2;
+  }
+}
+@media (max-width: 560px) {
+  .shell {
+    width: min(100% - 20px, 1120px);
+    padding-top: 18px;
+  }
+  .toplinks {
+    gap: 10px;
+  }
+  .toplinks .optional {
+    display: none;
+  }
+  .test-panel,
+  .list-panel {
+    padding: 18px;
+  }
+  h1 {
+    font-size: 42px;
+  }
+  .hero p {
+    font-size: 16px;
+  }
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .primary {
+    width: 100%;
+  }
+  .technical {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 </head>
 <body>
-<main>
-  <h1>Teste o Atlas</h1>
-  <p>
-    Cole uma descrição de item do PNCP e veja o que o parser consegue identificar.
-  </p>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">Atlas</div>
+    <nav class="toplinks" aria-label="Links principais">
+      <a href="/docs">API</a>
+      <a class="optional"
+         href="https://github.com/peedrovinicius/atlas-compras-publicas">GitHub</a>
+    </nav>
+  </header>
 
-  <section class="card">
-    <label for="description">Descrição do item</label>
-    <textarea id="description" maxlength="2000">RES FOTOP A2 C/2 SERINGAS 4G</textarea>
-    <button id="run" type="button">Testar</button>
-
-    <div id="status" class="status" role="status" aria-live="polite">
-      Testando o exemplo inicial...
-    </div>
-
-    <div id="result" class="result">Carregando...</div>
-  </section>
-
-  <section class="card">
-    <h2>Tudo que o parser reconhece hoje</h2>
+  <section class="hero">
+    <div class="eyebrow">Normalizador de descrições do PNCP</div>
+    <h1>Teste uma descrição.</h1>
     <p>
-      Use esta lista para escolher o que testar. Se a descrição não corresponder a
-      nenhuma categoria suportada, o Atlas retorna “Não reconhecido”.
+      Cole o texto exatamente como aparece na compra pública. O Atlas mostra o que
+      conseguiu identificar e deixa explícito quando não reconhece o produto.
     </p>
-    <div class="supported" aria-label="Categorias suportadas">
-      __SUPPORTED_CATEGORIES__
-    </div>
+  </section>
 
-    <details>
-      <summary>Usar exemplos prontos</summary>
-      <div class="examples">
-        <button type="button" data-description="RES FOTOP A2 C/2 SERINGAS 4G">
-          Resina A2
-        </button>
-        <button type="button"
-                data-description="IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL LIQ 8ML">
-          Ionômero
-        </button>
-        <button type="button"
-                data-description="FLUORETO DE SODIO 2% GEL NEUTRO FRASCO 200ML">
-          Flúor gel
-        </button>
-        <button type="button" data-description="HIDROXIDO DE CALCIO P.A 10G">
-          Hidróxido de cálcio
-        </button>
-        <button type="button"
-                data-description="FIXADOR RADIOGRAFICO PRONTO PARA USO LIQUIDO 475ML">
-          Fixador
-        </button>
-        <button type="button" data-description="PRIME ADESIVO FRASCO 4ML">
-          Adesivo
-        </button>
-        <button type="button" data-description="CIMENTO ODONTOLOGICO">
-          Caso difícil
-        </button>
+  <div class="workspace">
+    <section class="panel test-panel" aria-labelledby="test-title">
+      <h2 id="test-title" class="panel-title">Testar agora</h2>
+      <p class="panel-copy">
+        Você pode apagar o exemplo e escrever qualquer outra descrição.
+      </p>
+
+      <label for="description">Descrição</label>
+      <textarea id="description" maxlength="2000">RES FOTOP A2 C/2 SERINGAS 4G</textarea>
+
+      <div class="actions">
+        <button id="run" class="primary" type="button">Analisar</button>
+        <div id="status" class="status" role="status" aria-live="polite">
+          Analisando o exemplo...
+        </div>
       </div>
-    </details>
-  </section>
 
-  <section class="card">
-    <details>
-      <summary>Ver detalhes técnicos do resultado</summary>
-      <dl>
-        <div>
-          <dt>Categoria interna</dt>
-          <dd id="category">...</dd>
-        </div>
-        <div>
-          <dt>Apresentação</dt>
-          <dd id="presentation">...</dd>
-        </div>
-        <div>
-          <dt>Cor</dt>
-          <dd id="shade">...</dd>
-        </div>
-        <div>
-          <dt>Concentração</dt>
-          <dd id="concentration">...</dd>
-        </div>
-        <div>
-          <dt>Quantidade por unidade</dt>
-          <dd id="unit-quantity">...</dd>
-        </div>
-        <div>
-          <dt>Embalagem</dt>
-          <dd id="package-count">...</dd>
-        </div>
-        <div>
-          <dt>Total físico</dt>
-          <dd id="total-quantity">...</dd>
-        </div>
-        <div>
-          <dt>Resolução da medida</dt>
-          <dd id="measurement-resolution">...</dd>
-        </div>
-        <div>
-          <dt>Termos reconhecidos</dt>
-          <dd id="matched-terms">...</dd>
-        </div>
-        <div>
-          <dt>Atributos técnicos</dt>
-          <dd id="technical-attributes">...</dd>
-        </div>
-      </dl>
-    </details>
-  </section>
+      <div class="result">
+        <div class="result-label">Resultado</div>
+        <div id="result-main" class="result-main">Carregando...</div>
+        <div id="result-meta" class="result-meta"></div>
+      </div>
 
-  <div class="links">
-    <a href="/docs">Swagger / OpenAPI</a>
-    <a href="https://github.com/peedrovinicius/atlas-compras-publicas">
-      Repositório
-    </a>
+      <div class="examples">
+        <div class="examples-title">Exemplos rápidos</div>
+        <div class="example-buttons">
+          <button type="button" data-description="RES FOTOP A2 C/2 SERINGAS 4G">
+            Resina A2
+          </button>
+          <button type="button"
+                  data-description="IONOMERO RESTAURADOR AUTOPOLIMERIZAVEL LIQ 8ML">
+            Ionômero
+          </button>
+          <button type="button"
+                  data-description="FLUORETO DE SODIO 2% GEL NEUTRO FRASCO 200ML">
+            Flúor gel
+          </button>
+          <button type="button" data-description="HIDROXIDO DE CALCIO P.A 10G">
+            Hidróxido de cálcio
+          </button>
+          <button type="button" data-description="CIMENTO ODONTOLOGICO">
+            Caso difícil
+          </button>
+        </div>
+      </div>
+
+      <details>
+        <summary>Ver detalhes técnicos</summary>
+        <dl class="technical">
+          <div>
+            <dt>Categoria interna</dt>
+            <dd id="category">...</dd>
+          </div>
+          <div>
+            <dt>Apresentação</dt>
+            <dd id="presentation">...</dd>
+          </div>
+          <div>
+            <dt>Cor</dt>
+            <dd id="shade">...</dd>
+          </div>
+          <div>
+            <dt>Concentração</dt>
+            <dd id="concentration">...</dd>
+          </div>
+          <div>
+            <dt>Quantidade por unidade</dt>
+            <dd id="unit-quantity">...</dd>
+          </div>
+          <div>
+            <dt>Embalagem</dt>
+            <dd id="package-count">...</dd>
+          </div>
+          <div>
+            <dt>Total físico</dt>
+            <dd id="total-quantity">...</dd>
+          </div>
+          <div>
+            <dt>Resolução da medida</dt>
+            <dd id="measurement-resolution">...</dd>
+          </div>
+          <div>
+            <dt>Termos reconhecidos</dt>
+            <dd id="matched-terms">...</dd>
+          </div>
+          <div>
+            <dt>Atributos técnicos</dt>
+            <dd id="technical-attributes">...</dd>
+          </div>
+        </dl>
+      </details>
+    </section>
+
+    <aside class="panel list-panel" aria-labelledby="list-title">
+      <h2 id="list-title" class="panel-title">O que reconhece hoje</h2>
+      <p class="panel-copy">
+        Esta lista vem diretamente do parser atual.
+      </p>
+      <ul class="categories">
+        __SUPPORTED_CATEGORIES__
+      </ul>
+    </aside>
   </div>
 
   <footer>
-    Atlas de Compras Públicas v__ATLAS_VERSION__.
-    Limite da demo: 60 normalizações por minuto por IP.
+    <span>Atlas de Compras Públicas v__ATLAS_VERSION__</span>
+    <span>60 análises/minuto por IP · até 2.000 caracteres</span>
   </footer>
-</main>
+</div>
 
 <script>
 "use strict";
@@ -294,15 +487,16 @@ footer {
 const input = document.getElementById("description");
 const button = document.getElementById("run");
 const statusNode = document.getElementById("status");
-
+const resultMain = document.getElementById("result-main");
+const resultMeta = document.getElementById("result-meta");
 const labels = __CATEGORY_LABELS__;
 
 const presentationLabels = {
-  syringe: "seringa",
-  tube: "tubo",
-  bottle: "frasco",
-  jar: "pote",
-  kit: "kit"
+  syringe: "Seringa",
+  tube: "Tubo",
+  bottle: "Frasco",
+  jar: "Pote",
+  kit: "Kit"
 };
 
 function text(id, value) {
@@ -316,7 +510,15 @@ function quantity(value) {
   return value.value + " " + value.unit;
 }
 
-function attributes(value) {
+function addMeta(value) {
+  if (!value) return;
+  const item = document.createElement("span");
+  item.className = "meta";
+  item.textContent = value;
+  resultMeta.appendChild(item);
+}
+
+function technicalAttributes(value) {
   const pairs = Object.entries(value || {}).filter(function (entry) {
     return entry[1] !== null && entry[1] !== undefined;
   });
@@ -329,18 +531,18 @@ function attributes(value) {
 function render(data) {
   const category = labels[data.category] || data.category;
   const presentation = presentationLabels[data.presentation] || data.presentation;
-  const pieces = [category];
 
-  if (data.shade) pieces.push("cor " + data.shade);
+  resultMain.textContent = category;
+  resultMeta.replaceChildren();
+
+  if (data.shade) addMeta("Cor " + data.shade);
   if (data.concentration_percent) {
-    pieces.push(data.concentration_percent + "%");
+    addMeta(data.concentration_percent + "%");
   }
-  if (presentation) pieces.push(presentation);
-  if (data.package_count) pieces.push(data.package_count + " un");
-  if (data.unit_quantity) pieces.push(quantity(data.unit_quantity) + "/un");
-  if (data.total_quantity) pieces.push(quantity(data.total_quantity) + " total");
-
-  document.getElementById("result").textContent = pieces.join(" | ");
+  if (presentation) addMeta(presentation);
+  if (data.package_count) addMeta(data.package_count + " un");
+  if (data.unit_quantity) addMeta(quantity(data.unit_quantity) + "/un");
+  if (data.total_quantity) addMeta(quantity(data.total_quantity) + " total");
 
   text("category", data.category);
   text("presentation", presentation);
@@ -351,7 +553,7 @@ function render(data) {
   text("total-quantity", quantity(data.total_quantity));
   text("measurement-resolution", data.measurement_resolution);
   text("matched-terms", (data.matched_terms || []).join(", ") || "Nenhum");
-  text("technical-attributes", attributes(data.technical_attributes));
+  text("technical-attributes", technicalAttributes(data.technical_attributes));
 }
 
 function status(message, kind) {
@@ -369,7 +571,7 @@ async function normalize() {
   }
 
   button.disabled = true;
-  button.textContent = "Testando...";
+  button.textContent = "Analisando...";
   status("Consultando o parser...", "");
 
   try {
@@ -378,7 +580,7 @@ async function normalize() {
     const data = await response.json();
 
     if (!response.ok) {
-      const detail = data.detail || "Não foi possível testar essa descrição.";
+      const detail = data.detail || "Não foi possível analisar essa descrição.";
       throw new Error(typeof detail === "string" ? detail : "Entrada inválida.");
     }
 
@@ -389,11 +591,11 @@ async function normalize() {
     status(message, "error");
   } finally {
     button.disabled = false;
-    button.textContent = "Testar";
+    button.textContent = "Analisar";
   }
 }
 
-document.querySelectorAll(".examples button").forEach(function (example) {
+document.querySelectorAll(".example-buttons button").forEach(function (example) {
   example.addEventListener("click", function () {
     input.value = example.dataset.description || "";
     normalize();
@@ -427,12 +629,11 @@ def render_demo(version: str) -> str:
     labels_json = json.dumps(labels, ensure_ascii=False)
     supported = "\n".join(
         (
-            '<span data-unknown="true">'
-            if item["fallback"]
-            else "<span>"
+            f'<li data-fallback="{str(item["fallback"]).lower()}">'
+            '<span class="dot" aria-hidden="true"></span>'
+            + escape(str(item["label"]))
+            + "</li>"
         )
-        + escape(str(item["label"]))
-        + "</span>"
         for item in parser_categories()
     )
     return (
