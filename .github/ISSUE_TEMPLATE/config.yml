@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentação
+    url: https://github.com/peedrovinicius/atlas-compras-publicas/tree/main/docs
+    about: Consulte arquitetura, metodologia, benchmarks e API antes de abrir uma issue.
+  - name: Suporte
+    url: https://github.com/peedrovinicius/atlas-compras-publicas/blob/main/SUPPORT.md
+    about: Veja onde registrar problemas, melhorias e dúvidas sobre o projeto.
+  - name: Segurança
+    url: https://github.com/peedrovinicius/atlas-compras-publicas/blob/main/SECURITY.md
+    about: Vulnerabilidades ainda não corrigidas não devem ser publicadas em issues.
