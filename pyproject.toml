@@ -35,6 +35,7 @@ dev = [
 ]
 
 [project.scripts]
+atlas = "dental_procurement_intelligence.cli:main"
 dpi = "dental_procurement_intelligence.cli:main"
 
 [tool.hatch.build.targets.wheel]
