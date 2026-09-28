@@ -2,211 +2,164 @@
 
 # Atlas de Compras Públicas
 
-Dados do PNCP transformados em pipeline auditável para normalização de itens, comparação de preços e detecção explicável de sinais.
+Transforma descrições do PNCP em produtos estruturados e comparáveis, preservando a evidência de origem para auditoria.
 
 [![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?logo=duckdb&logoColor=000)
 
-[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Documentação](docs/README.md) · [Changelog](CHANGELOG.md) · [Arquitetura](docs/architecture.md) · [Issues](https://github.com/peedrovinicius/atlas-compras-publicas/issues) · [Como contribuir](CONTRIBUTING.md)
+[Documentação](docs/README.md) · [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Arquitetura](docs/architecture.md) · [Changelog](CHANGELOG.md)
 
 </div>
 
-## Visão geral
+## Em 15 segundos
 
-O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas em conjuntos comparáveis, rastreáveis e auditáveis. A cadeia cobre captura, preservação da evidência original, normalização de produtos, consolidação analítica e detecção estatística de sinais.
+Dados de compras públicas chegam com descrições heterogêneas. O mesmo produto pode aparecer escrito de várias formas, o que dificulta comparar itens e preços sem misturar objetos incompatíveis.
 
-<table>
-<tr>
-<td align="center"><strong>548</strong><br/><sub>exemplos técnicos</sub></td>
-<td align="center"><strong>984</strong><br/><sub>campos técnicos avaliados</sub></td>
-<td align="center"><strong>91,36%</strong><br/><sub>micro accuracy técnica ponderada</sub></td>
-<td align="center"><strong>192</strong><br/><sub>exemplos de medicamentos</sub></td>
-</tr>
-</table>
+O Atlas captura contratações, itens e resultados do PNCP, preserva as respostas originais com SHA-256 e manifestos, normaliza descrições, extrai atributos técnicos e constrói identidades comparáveis.
 
-<p align="center">
-  <img src="docs/assets/dashboard-quality-snapshot.svg" alt="Snapshot real de qualidade do Atlas de Compras Públicas" width="100%" />
-</p>
+Hoje, a vertical odontológica possui 548 exemplos independentes e 984 campos técnicos avaliados, com micro accuracy ponderada de 91,36%.
 
-<sub>Snapshot gerado de baselines congeladas e versionadas. Resultados pós-tuning são documentados separadamente e não substituem as medições independentes.</sub>
+Painéis públicos de preços e sinais ainda não são publicados porque dependem de uma base DuckDB analítica consolidada.
 
-A odontologia é a primeira vertical em produção. Medicamentos permanecem em validação independente porque a evolução do domínio separa baseline congelada, pós-tuning e promoção metodológica.
+## Exemplo real: antes e depois
 
-## O que o projeto entrega
+Entrada:
 
-| Camada | Capacidade |
+```text
+RES FOTOP A2 C/2 SERINGAS 4G
+```
+
+Saída estruturada:
+
+```text
+resina composta | A2 | seringa | 2 un | 4 g/un | 8 g total
+```
+
+Esse tipo de transformação permite comparar itens pelo que eles representam, não apenas pelo texto bruto.
+
+## O problema
+
+Descrições do PNCP variam em abreviações, ordem das palavras, apresentação, unidade, quantidade e atributos técnicos. Uma comparação direta por texto pode aproximar produtos diferentes ou separar produtos equivalentes.
+
+O Atlas resolve essa etapa antes da análise de preços e mantém a trilha de evidência usada em cada transformação.
+
+## O que o Atlas já entrega
+
+| Camada | Entrega atual |
 | --- | --- |
-| Coleta | Captura de contratações, itens e resultados diretamente do PNCP |
-| Rastreabilidade | Evidências com SHA-256 e manifestos de proveniência |
-| Consolidação | Múltiplas contratações com chaves estáveis e reconstrução idempotente |
-| Normalização | Padronização de descrições, apresentações, medidas e atributos técnicos |
-| Identidade | Product Identity Engine com atributos específicos por categoria |
-| Preço físico | Conversão defensável por unidade física quando a descrição permite |
-| Análise | Comparação de preços com contexto geográfico e temporal |
-| Qualidade | Benchmarks congelados, regressões pós-tuning e snapshot auditável |
-| Sinais | MAD e IQR como sinais estatísticos, sem tratar sinal como prova |
+| Coleta | Captura de contratações, itens e resultados do PNCP |
+| Evidência | SHA-256 e manifestos para preservar a origem |
+| Normalização | Descrição, apresentação, medidas e atributos técnicos |
+| Identidade | Regras de comparação entre produtos estruturados |
+| Analítica | Parquet e DuckDB para consolidação local |
+| Qualidade | Benchmarks congelados, regressões e CI automatizado |
+| Sinais | MAD e IQR implementados como sinais estatísticos explicáveis |
 
-## Arquitetura
+Sinal estatístico não é tratado como prova de irregularidade.
 
-~~~mermaid
+## Resultado comprovado
+
+A extração de atributos técnicos possui 12 ciclos independentes de benchmark.
+
+| Métrica | Resultado |
+| --- | ---: |
+| Exemplos independentes | 548 |
+| Campos técnicos avaliados | 984 |
+| Campos corretos | 899 |
+| Micro accuracy ponderada | 91,36% |
+
+As baselines independentes são preservadas. Resultados pós-tuning são registrados separadamente e não substituem medições anteriores.
+
+[Ver consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
+
+## Arquitetura e rastreabilidade
+
+```mermaid
 flowchart LR
-    A[API PNCP] --> B[Evidência bruta]
+    A[API PNCP] --> B[Evidência original]
     B --> C[Validação]
     C --> D[Normalização]
-    D --> E[Qualidade]
-    D --> F[Preço normalizado]
-    F --> G[Contexto geográfico e temporal]
-    G --> H[Parquet + DuckDB]
-    H --> I[Grupos comparáveis]
-    I --> J[MAD / IQR]
-    J --> K[Sinais explicáveis]
-~~~
+    D --> E[Identidade do produto]
+    E --> F[Atributos técnicos]
+    F --> G[Parquet + DuckDB]
+    G --> H[Grupos comparáveis]
+    H --> I[MAD / IQR]
+    I --> J[Sinais explicáveis]
+```
 
-A cadeia de rastreabilidade segue o princípio:
+Cadeia de rastreabilidade:
 
-`sinal -> grupo comparável -> homologação -> item -> contratação -> SHA-256 -> resposta original -> PNCP`
+```text
+sinal -> grupo comparável -> homologação -> item -> contratação -> SHA-256 -> resposta original -> PNCP
+```
 
-## Stack
+[Arquitetura detalhada](docs/architecture.md)
 
-- Python 3.12+
-- Polars
-- DuckDB
-- Pydantic
-- httpx
-- pytest
-- Ruff
-- Parquet
+## Qualidade e validação
 
-## Validação principal
+O projeto usa:
 
-A taxonomia odontológica possui ciclos independentes de benchmark. O v5 permanece como holdout não ajustado e preserva uma referência independente antes de novas alterações.
+- `pytest` para testes automatizados;
+- `Ruff` para lint e consistência;
+- GitHub Actions como gate de CI;
+- datasets de avaliação versionados e congelados;
+- separação explícita entre baseline independente e pós-tuning;
+- hashes para proteger artefatos históricos de avaliação.
 
-| Benchmark | Amostras | Acurácia independente |
-| --- | ---: | ---: |
-| v2 | 48 | 72,92% |
-| v3 | 42 | 90,48% |
-| v4 | 48 | 85,42% |
-| v5 holdout | 48 | 79,17% |
+O CI atual executa `ruff check .` e `pytest -q`.
 
-## Atributos técnicos
+[Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Dados do snapshot](docs/dashboard-quality-snapshot.json)
 
-A extração de atributos técnicos possui 12 ciclos independentes. O snapshot consolidado atual resume:
+## Quickstart
 
-| Grupo | Exemplos | Campos | Campos corretos | Micro accuracy ponderada |
-| --- | ---: | ---: | ---: | ---: |
-| Atributos técnicos v1-v12 | 548 | 984 | 899 | 91,36% |
+Requer Python 3.12+.
 
-Documentos principais:
-
-- [Benchmark técnico v12](docs/benchmark-technical-attributes-v12.md)
-- [Regressão técnica v12 pós-tuning v1.37](docs/benchmark-technical-attributes-v12-post-tuning.md)
-- [Consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
-- [Revisão da arquitetura de regras e contextos](docs/architecture-rules-review.md)
-
-## Medicamentos
-
-Medicamentos é um domínio separado da produção. As baselines independentes são preservadas e os resultados pós-tuning ficam em documentos próprios.
-
-| Holdout | Parser medido | Exemplos | Campos | Corretos | Micro accuracy |
-| --- | --- | ---: | ---: | ---: | ---: |
-| medicamentos v1 | v1.40.0 | 48 | 192 | 168 | 87,50% |
-| medicamentos v2 | v1.44.0 | 48 | 192 | 153 | 79,69% |
-| medicamentos v3 | v1.46.0 | 48 | 192 | 173 | 90,10% |
-| medicamentos v4 | pós-v1.48 vigente | 48 | 192 | 189 | 98,44% |
-| **Total ponderado** |  | **192** | **768** | **683** | **88,93%** |
-
-Pós-tuning v1.49.0:
-
-| Conjunto | Resultado | Observação |
-| --- | ---: | --- |
-| medicamentos v4 pós-v1.49 | 192/192 | Regressão separada, sem substituir a baseline independente |
-
-O domínio permanece em `benchmark_required`. A baseline independente continua sendo o critério metodológico principal, e o pós-tuning serve apenas para validar correções pontuais.
-
-Comandos:
-
-~~~bash
-dpi evaluate-medications --dataset data/evaluation/medications-v4.jsonl
-dpi medication-errors --dataset data/evaluation/medications-v4.jsonl
-~~~
-
-Documentos principais:
-
-- [Benchmark independente de medicamentos v1](docs/benchmark-medications-v1.md)
-- [Medicamentos v1 pós-tuning v1.44](docs/benchmark-medications-v1-post-tuning.md)
-- [Benchmark independente de medicamentos v2](docs/benchmark-medications-v2.md)
-- [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
-- [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
-- [Medicamentos v3 pós-tuning v1.48](docs/benchmark-medications-v3-post-tuning.md)
-- [Benchmark independente de medicamentos v4](docs/benchmark-medications-v4.md)
-- [Medicamentos v4 pós-tuning v1.49](docs/benchmark-medications-v4-post-tuning.md)
-- [Congelamento do holdout de medicamentos v4](docs/medications-v4-freeze.md)
-- [Consolidação de medicamentos v1-v4](docs/benchmark-medications-consolidated-v1-v4.md)
-
-## Evidências de qualidade
-
-O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 192 exemplos de medicamentos e 768 campos de medicamentos.
-
-- [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
-- [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
-- [Consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
-- [Consolidação de medicamentos v1-v4](docs/benchmark-medications-consolidated-v1-v4.md)
-
-O snapshot não simula preços, homologações ou sinais. Esses painéis só serão publicados quando existir uma base DuckDB analítica consolidada.
-
-## Uso rápido
-
-Instalação em modo de desenvolvimento:
-
-~~~bash
+```bash
+git clone https://github.com/peedrovinicius/atlas-compras-publicas.git
+cd atlas-compras-publicas
 pip install -e ".[dev]"
-~~~
+dpi evaluate-taxonomy --dataset data/evaluation/v5.jsonl
+dpi capture-contract --cnpj 01612541000133 --year 2026 --sequence 47
+```
 
-Capturar uma contratação:
+O último comando usa uma contratação já referenciada no dataset congelado v5.
 
-~~~bash
-dpi capture-contract \
-  --cnpj <CNPJ> \
-  --year <ANO> \
-  --sequence <SEQUENCIAL>
-~~~
+## Stack e decisões técnicas
 
-Construir a camada analítica:
+| Tecnologia | Papel no projeto |
+| --- | --- |
+| Python 3.12+ | Pipeline, regras, CLI e integração das camadas |
+| Polars | Transformações colunares e processamento analítico |
+| DuckDB | Consulta e consolidação analítica local e reproduzível |
+| Parquet | Persistência colunar interoperável |
+| Pydantic | Validação tipada das estruturas do PNCP |
+| httpx | Cliente HTTP para a API do PNCP |
+| pytest | Regressão e proteção das regras |
+| Ruff | Lint e consistência de código |
 
-~~~bash
-dpi build-analytics \
-  --raw <ARQUIVO_DE_ITENS> \
-  --database data/analytics.duckdb
-~~~
+## Escopo
 
-Consolidar todas as contratações capturadas:
+**Odontologia é a vertical principal.**
 
-~~~bash
-dpi build-award-dataset \
-  --bundles-root data/raw/contracts \
-  --database data/analytics.duckdb
-~~~
+O domínio atualmente chamado `medications` foi criado como experimento de generalização para testar a arquitetura fora da vertical odontológica. Ele não representa o foco principal do produto.
 
-Gerar sinais estatísticos:
+A taxonomia desse domínio está em revisão porque pode reunir medicamentos, materiais, dispositivos e outros produtos de saúde. A reorganização está registrada na [issue #30](https://github.com/peedrovinicius/atlas-compras-publicas/issues/30).
 
-~~~bash
-dpi detect-anomalies --database data/analytics.duckdb
-~~~
+As baselines históricas serão preservadas durante qualquer migração.
 
-## API e dashboard
+## Limitações e próximos passos
 
-~~~bash
-pip install -e ".[api]"
-dpi serve-api --database data/analytics.duckdb
-dpi build-dashboard --database data/analytics.duckdb --output docs/dashboard.html
-~~~
+- não há painel público de preços e sinais neste momento;
+- a publicação desses painéis depende de uma base DuckDB analítica consolidada;
+- a taxonomia do domínio experimental de saúde ainda será reestruturada na issue #30;
+- o namespace Python `dental_procurement_intelligence` é histórico e será revisto somente após a reorganização dos domínios;
+- a proteção da branch `main` está registrada na issue #28;
+- metadados públicos e licença estão registrados na issue #29.
 
-- [Documentação da API e dashboard](docs/api-dashboard.md)
+## Estrutura do repositório
 
-## Estrutura
-
-~~~text
+```text
 src/dental_procurement_intelligence/
   pncp/             cliente e modelos do PNCP
   ingestion/        captura e evidências
@@ -216,31 +169,28 @@ src/dental_procurement_intelligence/
   analytics/        lakehouse, homologações e sinais
   cli.py            interface de linha de comando
 
-data/
-docs/
-tests/
-~~~
+data/evaluation/     datasets e baselines congeladas
+docs/                arquitetura, metodologia e histórico técnico
+tests/               testes automatizados
+```
 
-O namespace Python histórico é mantido por compatibilidade interna. O produto público é **Atlas de Compras Públicas**.
+## Documentação
 
-## Documentação técnica
-
+- [Índice técnico](docs/README.md)
 - [Arquitetura](docs/architecture.md)
-- [Arquitetura multidomínio](docs/multidomain-architecture.md)
-- [API e dashboard analítico](docs/api-dashboard.md)
-- [Dataset multi-contratação](docs/multi-contratacao.md)
-- [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
-- [Precisão monetária](docs/precisao-monetaria.md)
+- [Metodologia de sinais](docs/metodologia-anomalias.md)
+- [Consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
 - [Qualidade do normalizador](docs/qualidade-normalizador.md)
-- [Release v1.49.0](docs/release-v1.49.0.md)
-- [Auditoria v1.49.0](docs/audit-v1.49.0.md)
+- [Changelog](CHANGELOG.md)
 
 ## Fonte dos dados
 
 Os dados são obtidos da API pública do Portal Nacional de Contratações Públicas. O projeto preserva dados brutos, transformações e resultados derivados para permitir auditoria e reprodução.
 
-## Contribuindo
+## Contribuição e contato
 
-Contribuições externas são bem-vindas quando preservam rastreabilidade, baselines independentes e metodologia documentada. Consulte [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir um Pull Request.
+Contribuições devem preservar rastreabilidade, baselines independentes e metodologia documentada.
 
-Governança do repositório: [Segurança](SECURITY.md) · [Suporte](SUPPORT.md) · [Código de Conduta](CODE_OF_CONDUCT.md)
+[CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [SUPPORT.md](SUPPORT.md) · [Código de Conduta](CODE_OF_CONDUCT.md)
+
+Mantenedor: [Pedro Vinícius](https://github.com/peedrovinicius)
