@@ -86,6 +86,31 @@ No frontend, o autocomplete pode ser navegado com teclado:
 
 Quando uma pesquisa termina sem resultado, a interface oferece categorias existentes na própria base para recuperação rápida, em vez de encerrar a navegação em um estado vazio.
 
+## Refinamentos da pesquisa
+
+A resposta de `/api/v1/products/search` inclui `facets` calculadas sobre todo o conjunto compatível da pesquisa, antes da paginação.
+
+As facetas cobrem, quando disponíveis:
+
+- cor;
+- apresentação;
+- concentração;
+- tecnologia de resina;
+- modo de cura;
+- estratégia adesiva;
+- uso do ionômero;
+- formulação de flúor;
+- princípio ativo anestésico;
+- vasoconstrictor.
+
+Cada valor retorna a quantidade de grupos de produto compatíveis. O frontend transforma esses valores em botões de refinamento que acrescentam o atributo à consulta atual.
+
+## Pesquisas recentes
+
+O histórico de pesquisas recentes é uma conveniência exclusiva do frontend. Ele é armazenado em `localStorage`, limitado a seis consultas e pode ser limpo pelo usuário.
+
+Esse histórico não é enviado para a API nem persistido no servidor.
+
 ## Pesquisa e identidade de produto
 
 A busca pública opera sobre produtos já normalizados e exclui a categoria `unknown`.
