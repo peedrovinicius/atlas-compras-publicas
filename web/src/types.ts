@@ -100,6 +100,22 @@ export type ProductSummary = {
   price_stats: PriceStats;
 };
 
+export type DistributionBin = {
+  index: number;
+  lower: number;
+  upper: number;
+  count: number;
+};
+
+export type ProductDistribution = {
+  product_id: string;
+  observations: number;
+  bin_count: number;
+  min_price: number | null;
+  max_price: number | null;
+  bins: DistributionBin[];
+};
+
 export type HistoryPoint = {
   month: string;
   observations: number;
@@ -258,6 +274,7 @@ export type ProductRecords = {
 
 export type ProductAnalyticsBundle = {
   summary: ProductSummary;
+  distribution: ProductDistribution;
   history: ProductHistory;
   regions: ProductRegions;
   suppliers: ProductSuppliers;
