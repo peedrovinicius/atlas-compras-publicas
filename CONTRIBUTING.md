@@ -8,6 +8,18 @@ Contribuições são bem-vindas quando ajudam a melhorar a qualidade, a rastreab
 2. Para mudanças maiores, descreva primeiro o problema e o escopo em uma issue.
 3. Evite misturar correções de parser, mudanças metodológicas e refatorações no mesmo Pull Request.
 
+## Boas primeiras contribuições
+
+Mudanças pequenas e verificáveis são úteis quando preservam as baselines e a rastreabilidade. Bons pontos de entrada incluem:
+
+- documentação e exemplos de uso;
+- testes para regras já existentes;
+- mensagens de erro e validações de entrada;
+- casos de benchmark novos, desde que independentes dos conjuntos usados no tuning;
+- melhorias de legibilidade sem alterar a metodologia.
+
+Mudanças em parser, taxonomia ou critérios de sinal devem ser discutidas em uma issue antes da implementação.
+
 ## Ambiente local
 
 Instale o projeto em modo de desenvolvimento:
