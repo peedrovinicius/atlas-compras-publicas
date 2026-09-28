@@ -4,8 +4,6 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-
-
 def _coerce_date(value: object) -> object:
     if value is None:
         return None
@@ -73,6 +71,7 @@ class PNCPItem(PNCPBaseModel):
     unit: str | None = Field(default=None, alias="unidadeMedida")
     estimated_unit_value: Decimal | None = Field(default=None, alias="valorUnitarioEstimado")
     total_value: Decimal | None = Field(default=None, alias="valorTotal")
+    has_result: bool | None = Field(default=None, alias="temResultado")
 
 
 class PNCPItemResult(PNCPBaseModel):
