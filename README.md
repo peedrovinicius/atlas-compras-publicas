@@ -160,7 +160,9 @@ A experiência pública possui duas áreas.
 - ordenação por cobertura, número de compras, atualização recente ou nome;
 - compartilhamento de análises por URL com filtros, ordenação, página e produto selecionado;
 - exportação CSV dos registros filtrados;
-- histórico visual com mediana e faixa interquartil, mantendo a tabela detalhada.
+- histórico visual com mediana e faixa interquartil, mantendo a tabela detalhada;
+- descoberta guiada por categorias que realmente existem na base, com contagem de grupos e preços;
+- interpretação de termos comuns em português, como `adesivo odontológico`, `ionômero de vidro`, `resina flow`, `anestésico local` e `flúor`.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
@@ -169,6 +171,7 @@ O endereço da análise preserva o recorte atual, permitindo compartilhar a mesm
 Principais endpoints analíticos:
 
 ```text
+GET /api/v1/products/discovery
 GET /api/v1/products/search?q=...
 GET /api/v1/products/{product_id}
 GET /api/v1/products/{product_id}/distribution
@@ -254,6 +257,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.53.0](docs/release-v1.53.0.md)
 - [Release v1.52.0](docs/release-v1.52.0.md)
 - [Release v1.51.0](docs/release-v1.51.0.md)
 - [Índice técnico](docs/README.md)
