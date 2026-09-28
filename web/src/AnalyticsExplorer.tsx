@@ -14,6 +14,8 @@ const DEFAULT_QUERY = "resina";
 const PAGE_SIZE = 10;
 const RECENT_SEARCHES_KEY = "atlas:recent-searches";
 const RECENT_SEARCHES_LIMIT = 6;
+type DetailView = "overview" | "market" | "evidence";
+
 const DEFAULT_SORT: ProductSort = "coverage";
 const SORT_OPTIONS: Array<{ value: ProductSort; label: string }> = [
   { value: "coverage", label: "Mais preços comparáveis" },
@@ -298,6 +300,8 @@ export default function AnalyticsExplorer() {
   const [error, setError] = useState<string | null>(null);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [detailView, setDetailView] = useState<DetailView>("overview");
+  const resultsRef = useRef<HTMLElement>(null);
   const detailRef = useRef<HTMLElement>(null);
   const suggestionRequestRef = useRef(0);
 
@@ -412,6 +416,7 @@ export default function AnalyticsExplorer() {
     nextOffset = offset,
   ) {
     setSelectedId(productId);
+    setDetailView("overview");
     setLoading(true);
     setError(null);
 
@@ -912,7 +917,7 @@ export default function AnalyticsExplorer() {
         {error && <p className="analytics-error">{error}</p>}
       </section>
 
-      <section className="analytics-results">
+      <section ref={resultsRef} className="analytics-results">
         <div className="results-header">
           <div>
             <span className="section-kicker">Resultados compatíveis</span>
@@ -1120,13 +1125,57 @@ export default function AnalyticsExplorer() {
               </div>
             </div>
 
+            <div className="analytics-detail-toolbar">
+              <button
+                type="button"
+                className="analytics-back-results"
+                onClick={() =>
+                  resultsRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  })
+                }
+              >
+                Voltar aos resultados
+              </button>
+              <div className="analytics-detail-tabs" role="tablist" aria-label="Seções da análise">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={detailView === "overview"}
+                  className={detailView === "overview" ? "active" : ""}
+                  onClick={() => setDetailView("overview")}
+                >
+                  Visão geral
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={detailView === "market"}
+                  className={detailView === "market" ? "active" : ""}
+                  onClick={() => setDetailView("market")}
+                >
+                  Mercado
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={detailView === "evidence"}
+                  className={detailView === "evidence" ? "active" : ""}
+                  onClick={() => setDetailView("evidence")}
+                >
+                  Evidências
+                </button>
+              </div>
+            </div>
+
             {!summary.sample_sufficient && (
               <p className="sample-warning">
                 A amostra está abaixo do mínimo metodológico de {number(summary.minimum_sample_size)} observações de preço. Interprete as estatísticas com cautela.
               </p>
             )}
 
-            <div className="analytics-metrics">
+            <div className="analytics-metrics" hidden={detailView !== "overview"}>
               <Metric label="Mediana" value={money(stats.median_price)} note={summary.price_unit ?? "preço normalizado"} />
               <Metric label="Faixa central" value={`${money(stats.percentile_25)} a ${money(stats.percentile_75)}`} note="25º ao 75º percentil" />
               <Metric label="Compras" value={number(summary.procurement_count)} note="processos distintos" />
@@ -1136,7 +1185,7 @@ export default function AnalyticsExplorer() {
             </div>
 
             <div className="analytics-grid">
-              <article className="analytics-card analytics-card-wide">
+              <article className="analytics-card analytics-card-wide" hidden={detailView !== "overview"}>
                 <span className="section-kicker">Distribuição</span>
                 <h3>Distribuição dos preços comparáveis</h3>
                 {bundle.distribution.bins.length === 0 ? (
@@ -1166,7 +1215,7 @@ export default function AnalyticsExplorer() {
                 )}
               </article>
 
-              <article className="analytics-card analytics-card-wide">
+              <article className="analytics-card analytics-card-wide" hidden={detailView !== "overview"}>
                 <span className="section-kicker">Evolução</span>
                 <h3>Histórico de preços</h3>
                 {bundle.history.points.length === 0 ? (
@@ -1193,7 +1242,7 @@ export default function AnalyticsExplorer() {
                 )}
               </article>
 
-              <article className="analytics-card">
+              <article className="analytics-card" hidden={detailView !== "market"}>
                 <span className="section-kicker">Geografia</span>
                 <h3>Comparação por UF</h3>
                 <div className="analytics-rank-list">
@@ -1206,7 +1255,7 @@ export default function AnalyticsExplorer() {
                 </div>
               </article>
 
-              <article className="analytics-card">
+              <article className="analytics-card" hidden={detailView !== "market"}>
                 <span className="section-kicker">Mercado</span>
                 <h3>Fornecedores</h3>
                 <div className="analytics-rank-list">
@@ -1219,7 +1268,7 @@ export default function AnalyticsExplorer() {
                 </div>
               </article>
 
-              <article className="analytics-card">
+              <article className="analytics-card" hidden={detailView !== "market"}>
                 <span className="section-kicker">Demanda pública</span>
                 <h3>Órgãos compradores</h3>
                 <div className="analytics-rank-list">
@@ -1232,7 +1281,7 @@ export default function AnalyticsExplorer() {
                 </div>
               </article>
 
-              <article className="analytics-card analytics-card-wide">
+              <article className="analytics-card analytics-card-wide" hidden={detailView !== "evidence"}>
                 <span className="section-kicker">Sinais estatísticos</span>
                 <h3>Preços fora da distribuição observada</h3>
                 <p className="analytics-note">{bundle.signals.disclaimer}</p>
@@ -1259,7 +1308,7 @@ export default function AnalyticsExplorer() {
                 )}
               </article>
 
-              <article className="analytics-card analytics-card-wide">
+              <article className="analytics-card analytics-card-wide" hidden={detailView !== "evidence"}>
                 <span className="section-kicker">Rastreabilidade</span>
                 <h3>Registros que sustentam a análise</h3>
                 <div className="analytics-records">
