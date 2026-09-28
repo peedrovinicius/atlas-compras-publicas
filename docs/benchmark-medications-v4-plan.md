@@ -4,7 +4,7 @@
 
 Construir o quarto holdout independente do domínio de medicamentos sem reutilizar processos, itens ou descrições dos benchmarks v1, v2 e v3.
 
-O v4 deve medir a generalização do parser após a v1.48, antes de qualquer novo ajuste de regras. A baseline v4 só será válida se o dataset for congelado antes da primeira execução.
+O v4 mede a generalização do parser após a v1.48, antes de qualquer novo ajuste de regras. A baseline v4 só será válida porque o dataset foi congelado antes da primeira execução.
 
 ## Estado de partida
 
@@ -16,9 +16,9 @@ O v4 deve medir a generalização do parser após a v1.48, antes de qualquer nov
 
 ## Regra principal
 
-Nenhuma correção do parser pode ser feita durante a construção do v4.
+Nenhuma correção do parser foi feita durante a construção do v4.
 
-A ordem metodológica é obrigatória:
+A ordem metodológica aplicada foi:
 
 1. selecionar fontes públicas independentes;
 2. checar colisão contra v1, v2 e v3;
@@ -29,39 +29,33 @@ A ordem metodológica é obrigatória:
 7. documentar a baseline independente;
 8. só depois decidir se haverá tuning posterior.
 
-## Inventário, colisão e triagem
+Os itens 1 a 5 estão concluídos. Os itens 6 a 8 pertencem à próxima etapa.
 
-O levantamento inicial de fontes candidatas está em:
+## Inventário, colisão e congelamento
+
+Documentos da trilha metodológica:
 
 - [Pré-candidatos de fontes para medicamentos v4](medications-v4-candidate-sources.md)
-
-A primeira checagem formal de colisão por número de controle está em:
-
 - [Checagem de colisão do holdout de medicamentos v4](medications-v4-collision-check.md)
-
-A primeira triagem item a item está em:
-
-- [Triagem preliminar de itens para medicamentos v4](medications-v4-item-triage.md)
-
-Esses arquivos não congelam o dataset. Eles servem como fila auditável de triagem antes da seleção final dos 48 exemplos.
+- [Triagem de itens para medicamentos v4](medications-v4-item-triage.md)
+- [Congelamento do holdout de medicamentos v4](medications-v4-freeze.md)
 
 ## Critérios de independência
 
-Um candidato ao v4 deve ser excluído se:
+Um candidato ao v4 foi excluído quando:
 
-- usar o mesmo número de controle PNCP de v1, v2 ou v3;
-- reutilizar item já amostrado nos ciclos anteriores;
-- repetir descrição idêntica ou praticamente idêntica a exemplo anterior;
-- depender de normalização manual feita em ciclo anterior;
-- vier de fonte secundária sem rastreabilidade mínima até a contratação pública.
+- usava o mesmo número de controle PNCP de v1, v2 ou v3;
+- reutilizava item já amostrado nos ciclos anteriores;
+- repetia descrição idêntica ou praticamente idêntica a exemplo anterior;
+- dependia de normalização manual feita em ciclo anterior;
+- vinha de fonte sem descrição pública mínima para revisão.
 
-## Tamanho planejado
+## Composição final
 
-O v4 deve manter o padrão dos ciclos anteriores:
+O v4 foi congelado com:
 
 - 48 exemplos;
-- 8 contratações inéditas;
-- 6 itens por contratação;
+- 8 fontes públicas;
 - 192 campos avaliados;
 - 4 campos por exemplo:
   - princípio ativo;
@@ -69,24 +63,29 @@ O v4 deve manter o padrão dos ciclos anteriores:
   - forma farmacêutica;
   - via de administração.
 
-## Prioridades de amostragem
+## Decisão sobre distribuição
 
-O v4 deve aumentar a pressão nos pontos que ainda diferenciam baseline de regressão perfeita:
+O desenho inicial previa 8 contratações com 6 itens por contratação. Durante a triagem, a distribuição foi ajustada para preservar somente descrições verificáveis nas fontes públicas abertas.
 
-- associações com três ou mais princípios ativos;
+A composição final mantém 48 exemplos e 192 campos, mas com distribuição desigual entre fontes. Essa decisão foi registrada para evitar preenchimento artificial de exemplos e preservar a auditabilidade do holdout.
+
+## Prioridades de amostragem preservadas
+
+O v4 mantém pressão sobre os pontos que diferenciam baseline de regressão perfeita:
+
+- associações de princípios ativos;
 - sais e qualificadores após vírgula;
 - composições descritas em campos semiestruturados;
 - abreviações reais de forma farmacêutica;
 - formas ambíguas entre oral, tópico, oftálmico e injetável;
 - concentração sem unidade explícita;
-- erros reais de grafia;
 - descrições curtas com pouca redundância;
 - descrições longas com repetição do produto;
 - medicamentos com apresentação explícita, mas sem via direta.
 
 ## Campos mínimos do JSONL
 
-Cada linha do v4 deve manter o contrato usado nos ciclos anteriores:
+Cada linha do v4 mantém o contrato usado nos ciclos anteriores:
 
 ```json
 {
@@ -112,25 +111,18 @@ Cada linha do v4 deve manter o contrato usado nos ciclos anteriores:
 }
 ```
 
-## Status da triagem
+## Checklist antes do benchmark
 
-- Itens pré-selecionados com descrição suficiente: 4.
-- Itens citados, mas pendentes de descrição completa: 4.
-- Contratações ainda sem lista detalhada: 4.
-- Dataset `medications-v4.jsonl`: ainda não criado.
-
-## Checklist antes do congelamento
-
-- [ ] 8 contratações inéditas selecionadas.
+- [x] Fontes públicas selecionadas.
 - [x] Colisão por número de controle contra `medications-v1.jsonl` verificada.
 - [x] Colisão por número de controle contra `medications-v2.jsonl` verificada.
 - [x] Colisão por número de controle contra `medications-v3.jsonl` verificada.
-- [ ] Triagem item a item iniciada.
-- [ ] Colisão por descrição contra v1, v2 e v3 verificada.
-- [ ] 48 exemplos revisados.
-- [ ] 192 campos esperados revisados.
-- [ ] Nenhum tuning aplicado antes da primeira medição.
-- [ ] Dataset congelado com commit e blob SHA.
+- [x] Triagem item a item concluída.
+- [x] `data/evaluation/medications-v4.jsonl` criado.
+- [x] 48 exemplos revisados.
+- [x] 192 campos esperados revisados.
+- [x] Nenhum tuning aplicado antes da primeira medição.
+- [x] Dataset congelado com commit e blob SHA.
 - [ ] Baseline v4 registrada em JSON.
 - [ ] Documento `docs/benchmark-medications-v4.md` criado após a medição.
 
