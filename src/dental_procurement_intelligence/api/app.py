@@ -315,7 +315,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
         q: str = Query(min_length=2, max_length=200),
         limit: int = Query(default=20, ge=1, le=100),
         offset: int = Query(default=0, ge=0),
-        sort: str = Query(default="coverage"),
+        sort: str = Query(default="relevance"),
         state_code: str | None = None,
         macroregion: str | None = None,
         supplier: str | None = None,
