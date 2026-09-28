@@ -290,6 +290,7 @@ export default function AnalyticsExplorer() {
   const [suggesting, setSuggesting] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
+  const [comparisonItems, setComparisonItems] = useState<ProductSearchItem[]>([]);
   const [facets, setFacets] = useState<ProductSearchFacets>({});
   const [hasSearched, setHasSearched] = useState(
     initialState.query.trim().length >= 2 || Boolean(initialState.productId),
@@ -321,6 +322,19 @@ export default function AnalyticsExplorer() {
     if (cleaned.length < 2) {
       setError("Digite pelo menos 2 caracteres para pesquisar.");
       return;
+    }
+
+    const filtersChanged = Object.entries(nextFilters).some(
+      ([key, value]) =>
+        value !== appliedFilters[key as keyof AnalyticsFilters],
+    );
+    const searchContextChanged =
+      cleaned !== appliedQuery
+      || nextSort !== appliedSort
+      || filtersChanged;
+
+    if (nextOffset === 0 && searchContextChanged) {
+      setComparisonItems([]);
     }
 
     setHasSearched(true);
@@ -453,6 +467,40 @@ export default function AnalyticsExplorer() {
 
   async function selectProduct(item: ProductSearchItem) {
     await loadProduct(item.product_id);
+  }
+
+  function toggleComparison(item: ProductSearchItem) {
+    const selected = comparisonItems.some(
+      (candidate) => candidate.product_id === item.product_id,
+    );
+    if (selected) {
+      setComparisonItems((current) =>
+        current.filter((candidate) => candidate.product_id !== item.product_id),
+      );
+      return;
+    }
+
+    if (comparisonItems.length >= 3) {
+      setError("Você pode comparar até 3 produtos por vez.");
+      return;
+    }
+
+    const reference = comparisonItems[0];
+    if (
+      reference
+      && (
+        reference.product_category !== item.product_category
+        || reference.normalized_quantity_unit !== item.normalized_quantity_unit
+      )
+    ) {
+      setError(
+        "Para comparar preços com segurança, selecione produtos da mesma categoria e unidade normalizada.",
+      );
+      return;
+    }
+
+    setError(null);
+    setComparisonItems((current) => [...current, item]);
   }
 
   async function copyShareLink() {
@@ -1096,47 +1144,169 @@ export default function AnalyticsExplorer() {
             )}
           </div>
         ) : (
-          <div className="analytics-result-list">
-            {results.map((item) => (
-              <button
-                type="button"
-                key={item.product_id}
-                className={
-                  selectedId === item.product_id
-                    ? "analytics-result analytics-result-selected"
-                    : "analytics-result"
-                }
-                onClick={() => void selectProduct(item)}
-              >
-                <span>
-                  <strong>{item.display_name}</strong>
-                  <small>{item.sample_description}</small>
-                  {item.match_reasons.length > 0 && (
-                    <span className="analytics-match-reasons" aria-label="Por que combinou">
-                      {item.match_reasons.map((reason) => (
-                        <span key={reason}>{reason}</span>
-                      ))}
-                    </span>
-                  )}
-                  <span className="analytics-result-facts">
-                    <span>{number(item.procurement_count)} compras</span>
-                    <span>{number(item.priced_observation_count)} preços</span>
-                    <span>{number(item.state_count)} UFs</span>
-                    {item.latest_date && <span>até {date(item.latest_date)}</span>}
-                  </span>
-                </span>
-                <span className="analytics-result-summary">
-                  <strong>{money(item.median_price)}</strong>
-                  <small>
-                    {item.normalized_quantity_unit
-                      ? `mediana por ${item.normalized_quantity_unit}`
-                      : "mediana normalizada"}
-                  </small>
-                  <em>Ver análise</em>
-                </span>
-              </button>
-            ))}
-          </div>
+          <>
+            <div className="analytics-result-list">
+              {results.map((item) => {
+                const compared = comparisonItems.some(
+                  (candidate) => candidate.product_id === item.product_id,
+                );
+
+                return (
+                  <article
+                    key={item.product_id}
+                    className={
+                      selectedId === item.product_id
+                        ? "analytics-result analytics-result-selected"
+                        : "analytics-result"
+                    }
+                  >
+                    <button
+                      type="button"
+                      className="analytics-result-main"
+                      onClick={() => void selectProduct(item)}
+                    >
+                      <span>
+                        <strong>{item.display_name}</strong>
+                        <small>{item.sample_description}</small>
+                        {item.match_reasons.length > 0 && (
+                          <span className="analytics-match-reasons" aria-label="Por que combinou">
+                            {item.match_reasons.map((reason) => (
+                              <span key={reason}>{reason}</span>
+                            ))}
+                          </span>
+                        )}
+                        <span className="analytics-result-facts">
+                          <span>{number(item.procurement_count)} compras</span>
+                          <span>{number(item.priced_observation_count)} preços</span>
+                          <span>{number(item.state_count)} UFs</span>
+                          {item.latest_date && <span>até {date(item.latest_date)}</span>}
+                        </span>
+                      </span>
+                      <span className="analytics-result-summary">
+                        <strong>{money(item.median_price)}</strong>
+                        <small>
+                          {item.normalized_quantity_unit
+                            ? `mediana por ${item.normalized_quantity_unit}`
+                            : "mediana normalizada"}
+                        </small>
+                        <em>Ver análise</em>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className={
+                        compared
+                          ? "analytics-compare-toggle active"
+                          : "analytics-compare-toggle"
+                      }
+                      aria-pressed={compared}
+                      onClick={() => toggleComparison(item)}
+                    >
+                      {compared ? "Remover" : "Comparar"}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+
+            {comparisonItems.length > 0 && (
+              <section className="analytics-comparison" aria-label="Comparação de produtos">
+                <div className="analytics-comparison-heading">
+                  <div>
+                    <span className="section-kicker">Comparação</span>
+                    <h3>
+                      {comparisonItems.length === 1
+                        ? "Selecione mais um produto"
+                        : `${comparisonItems.length} produtos lado a lado`}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setComparisonItems([])}
+                  >
+                    Limpar
+                  </button>
+                </div>
+
+                {comparisonItems.length >= 2 && (
+                  <>
+                    <p className="analytics-comparison-note">
+                      Comparação restrita à mesma categoria e unidade normalizada.
+                    </p>
+                    <div className="analytics-comparison-table-wrap">
+                      <table className="analytics-comparison-table">
+                        <thead>
+                          <tr>
+                            <th>Métrica</th>
+                            {comparisonItems.map((item) => (
+                              <th key={item.product_id}>{item.display_name}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th>Mediana</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                <strong>{money(item.median_price)}</strong>
+                                <small>
+                                  {item.normalized_quantity_unit
+                                    ? ` por ${item.normalized_quantity_unit}`
+                                    : ""}
+                                </small>
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>Preços comparáveis</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {number(item.priced_observation_count)}
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>Compras</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {number(item.procurement_count)}
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>UFs</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {number(item.state_count)}
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>Apresentação</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {item.presentation
+                                  ? formatFacetValue("presentation", item.presentation)
+                                  : "Não informada"}
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <th>Cor</th>
+                            {comparisonItems.map((item) => (
+                              <td key={item.product_id}>
+                                {item.shade ?? "Não informada"}
+                              </td>
+                            ))}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </section>
+            )}
+          </>
         )}
 
         {!searching && total > 0 && (
