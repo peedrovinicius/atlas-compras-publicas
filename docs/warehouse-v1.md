@@ -14,6 +14,13 @@ O warehouse v1 possui três camadas principais:
 
 Granularidade: um item de contratação.
 
+Chave lógica:
+
+- `procurement_key`;
+- `item_number`.
+
+O mesmo número de item pode existir em contratações diferentes sem colisão.
+
 Principais grupos de campos:
 
 - evidência: `source_sha256`;
