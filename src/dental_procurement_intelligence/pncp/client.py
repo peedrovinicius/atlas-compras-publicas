@@ -21,14 +21,14 @@ class PNCPRawResponse:
     content: bytes
 
 
-def _digits_only(value: str) -> str:
-    return "".join(character for character in value if character.isdigit())
-
-
-def _validate_cnpj(cnpj: str) -> str:
-    normalized = _digits_only(cnpj)
+def _normalize_cnpj(cnpj: str) -> str:
+    normalized = "".join(
+        character
+        for character in cnpj.upper()
+        if character.isascii() and character.isalnum()
+    )
     if len(normalized) != 14:
-        raise ValueError("CNPJ must contain exactly 14 digits")
+        raise ValueError("CNPJ must contain exactly 14 alphanumeric characters")
     return normalized
 
 
@@ -78,8 +78,12 @@ class PNCPClient:
         return payload
 
     def get_contract_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
-        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
-        return self._get_raw(path)
+        base_url = self.settings.pncp_query_base_url.rstrip("/")
+        url = (
+            f"{base_url}/v1/orgaos/{_normalize_cnpj(cnpj)}"
+            f"/compras/{year}/{sequence}"
+        )
+        return self._get_raw(url)
 
     def get_items_raw(
         self,
@@ -87,7 +91,7 @@ class PNCPClient:
         year: int,
         sequence: int,
     ) -> PNCPRawResponse:
-        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
+        path = f"/v1/orgaos/{_normalize_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
         return self._get_raw(path)
 
     def get_item_results_raw(
@@ -98,7 +102,7 @@ class PNCPClient:
         item_number: int,
     ) -> PNCPRawResponse:
         path = (
-            f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
+            f"/v1/orgaos/{_normalize_cnpj(cnpj)}/compras/{year}/{sequence}"
             f"/itens/{item_number}/resultados"
         )
         return self._get_raw(path)
