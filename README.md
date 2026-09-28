@@ -171,6 +171,7 @@ A experiência pública possui duas áreas.
 - resultados com mediana de preço, atualização e cobertura visíveis antes de abrir a análise;
 - motivos do match exibidos nos resultados quando categoria, cor ou apresentação contribuem para a correspondência;
 - aliases de apresentação como `seringa`, `frasco`, `tubete`, `carpule`, `ampola`, `pote`, `pacote` e `saco` reconhecidos na busca;
+- comparação lado a lado de até 3 produtos compatíveis, com mediana, cobertura, compras, UFs, apresentação e cor;
 - filtros aplicados exibidos como chips removíveis;
 - termos usuais como `CIV`, `cimento de vidro`, `bonding` e `anestesia local` reconhecidos diretamente;
 - refinamentos clicáveis por cor, apresentação e atributos técnicos, com contagem real de grupos compatíveis;
@@ -272,6 +273,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.69.0](docs/release-v1.69.0.md)
 - [Release v1.68.0](docs/release-v1.68.0.md)
 - [Release v1.67.0](docs/release-v1.67.0.md)
 - [Release v1.66.0](docs/release-v1.66.0.md)
