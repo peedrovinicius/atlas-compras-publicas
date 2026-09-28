@@ -138,7 +138,8 @@ Pontos mantidos:
 - revisão editorial do README;
 - ampliação do workflow de CI;
 - limitação real do Actions sem logs úteis;
-- status da auditoria textual inicial.
+- status da auditoria textual inicial;
+- link de referência para esta auditoria final.
 
 ## Checklist de auditoria
 
