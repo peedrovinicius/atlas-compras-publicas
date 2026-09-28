@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "atlas-compras-publicas"
-version = "1.47.0"
+version = "1.48.0"
 description = "Inteligência de dados auditável para compras públicas no Brasil."
 readme = "README.md"
 requires-python = ">=3.12"
