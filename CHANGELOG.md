@@ -2,6 +2,19 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.60.0
+
+- visão geral passa a abrir com resumo executivo em vez de seis cards equivalentes;
+- mediana do preço normalizado ganha destaque principal;
+- faixa central é apresentada como contexto direto da mediana;
+- compras, fornecedores, UFs e período passam a ocupar uma camada secundária;
+- data de atualização aparece no cabeçalho da análise;
+- Mercado e Evidências ganham textos de contexto próprios;
+- tabelas passam a ter cabeçalho fixo dentro da rolagem e realce de linha;
+- listas de ranking e cartões de evidência ganham estados de hover mais claros;
+- responsividade ajustada para o novo resumo executivo;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.60.0.
+
 ## 1.59.0
 
 - análise de produto dividida em Visão geral, Mercado e Evidências;
