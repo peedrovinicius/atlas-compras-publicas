@@ -1,38 +1,34 @@
-# Revisão do README para v1.49.0
+# Revisão do README v1.49.0
 
 ## Objetivo
 
-Registrar a revisão editorial do README após o fechamento do ciclo de medicamentos v4 e da release v1.49.0.
-
-## Resultado da revisão
-
-O README já estava alinhado com o v4 antes desta release:
-
-- inclui medicamentos v1–v4;
-- mostra 192 exemplos e 768 campos de medicamentos;
-- aponta para `docs/benchmark-medications-v4.md`;
-- aponta para `docs/benchmark-medications-consolidated-v1-v4.md`;
-- preserva a distinção entre baseline independente e pós-tuning;
-- mantém o domínio em `benchmark_required`.
+Registrar a revisão editorial do README após o fechamento da release v1.49.0 e o início da auditoria.
 
 ## Decisão editorial
 
-Não foi necessário inflar o README com todos os detalhes do pós-tuning v1.49.0.
+O README deve funcionar como vitrine técnica do projeto, não como histórico completo de implementação.
 
-A decisão foi manter o README como vitrine técnica objetiva e deixar os detalhes completos nos documentos especializados:
+Por isso, a versão revisada:
 
-- `docs/benchmark-medications-v4-post-tuning.md`;
-- `docs/benchmark-medications-consolidated-v1-v4.md`;
-- `docs/release-v1.49.0.md`.
+- apresenta o propósito do Atlas com linguagem direta;
+- mantém arquitetura, stack, validação, medicamentos, snapshot e uso rápido;
+- resume medicamentos v1-v4 sem transformar o README em relatório completo;
+- separa baseline independente e pós-tuning v1.49;
+- aponta os detalhes para documentos técnicos;
+- evita excesso de explicação operacional;
+- usa `->` na cadeia de rastreabilidade em vez de travessão.
 
-## Critérios conferidos
+## Correções feitas
 
-- Sem linguagem promocional excessiva.
-- Sem simular painel de preço ou homologação ainda não consolidado.
-- Sem substituir baseline independente por pós-tuning.
-- Sem evidenciar uso de IA.
-- Sem excesso de detalhe operacional no README principal.
+- Removido texto desatualizado que dizia que o v4 não possuía pós-tuning.
+- Incluído o resultado pós-tuning v1.49, 192/192.
+- Incluído link para `docs/benchmark-medications-v4-post-tuning.md`.
+- Mantida a baseline independente v4 como referência metodológica principal.
+- Mantido o domínio em `benchmark_required`.
+- Reduzida a lista de documentos no README para os links essenciais.
 
-## Próxima revisão sugerida
+## Estado recomendado
 
-Revisar o README novamente quando houver base DuckDB real consolidada para painel de preços, homologações e sinais estatísticos.
+A versão atual está adequada para apresentação pública técnica.
+
+Próximas melhorias devem ser pontuais e visuais, não aumento de texto.
