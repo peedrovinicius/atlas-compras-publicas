@@ -47,3 +47,19 @@ def test_frozen_medications_v2_is_perfect_after_tuning() -> None:
     assert report.false_positive_count == 0
     assert report.false_negative_count == 0
     assert report.mismatch_count == 0
+
+
+def test_frozen_medications_v3_preserves_independent_baseline() -> None:
+    baseline = json.loads(
+        Path("data/evaluation/medications-v3-baseline.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert baseline["sample_count"] == 48
+    assert baseline["evaluated_field_count"] == 192
+    assert baseline["correct_field_count"] == 173
+    assert baseline["micro_accuracy"] == 0.901
+    assert baseline["false_positive_count"] == 0
+    assert baseline["false_negative_count"] == 5
+    assert baseline["mismatch_count"] == 14
