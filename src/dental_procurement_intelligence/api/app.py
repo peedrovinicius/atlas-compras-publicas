@@ -5,7 +5,7 @@ from time import monotonic
 from typing import Any
 
 from dental_procurement_intelligence import __version__
-from dental_procurement_intelligence.api.demo import render_demo
+from dental_procurement_intelligence.api.demo import parser_categories, render_demo
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
     analytics_awards,
@@ -140,6 +140,10 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
             }
             for descriptor in available_domains()
         ]
+
+    @app.get("/api/v1/parser/categories")
+    def supported_parser_categories() -> list[dict[str, str | bool]]:
+        return parser_categories()
 
     @app.get("/api/v1/overview")
     def overview() -> dict[str, Any]:
