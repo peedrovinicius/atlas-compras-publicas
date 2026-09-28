@@ -138,10 +138,12 @@ def create_app(database_path: str | Path = "data/analytics.duckdb") -> Any:
         enforce_normalization_rate_limit(request)
         return serialize_description(description)
 
+    batch_descriptions_body = Body(min_length=1, max_length=20)
+
     @app.post("/api/v1/normalize/batch")
     def normalize_batch(
         request: Request,
-        descriptions: list[str] = Body(min_length=1, max_length=20),
+        descriptions: list[str] = batch_descriptions_body,
     ) -> dict[str, Any]:
         enforce_normalization_rate_limit(request)
         cleaned = [description.strip() for description in descriptions if description.strip()]
