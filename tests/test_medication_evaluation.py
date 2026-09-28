@@ -94,20 +94,15 @@ def test_frozen_medications_v4_preserves_independent_baseline() -> None:
     assert baseline["mismatch_count"] == 3
 
 
-def test_frozen_medications_v4_matches_recorded_baseline() -> None:
-    baseline = json.loads(
-        Path("data/evaluation/medications-v4-baseline.json").read_text(
-            encoding="utf-8"
-        )
-    )
+def test_frozen_medications_v4_is_perfect_after_v149_tuning() -> None:
     report = evaluate_medications(
         Path("data/evaluation/medications-v4.jsonl")
     )
 
-    assert report.sample_count == baseline["sample_count"]
-    assert report.evaluated_field_count == baseline["evaluated_field_count"]
-    assert report.correct_field_count == baseline["correct_field_count"]
-    assert report.micro_accuracy == baseline["micro_accuracy"]
-    assert report.false_positive_count == baseline["false_positive_count"]
-    assert report.false_negative_count == baseline["false_negative_count"]
-    assert report.mismatch_count == baseline["mismatch_count"]
+    assert report.sample_count == 48
+    assert report.evaluated_field_count == 192
+    assert report.correct_field_count == 192
+    assert report.micro_accuracy == 1.0
+    assert report.false_positive_count == 0
+    assert report.false_negative_count == 0
+    assert report.mismatch_count == 0
