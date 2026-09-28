@@ -142,14 +142,13 @@ def resolve_product_search_query(
             ):
                 exact_match = (category, normalized_alias)
 
-    if exact_match is not None:
-        category, alias = exact_match
-        residual = " ".join(
-            f" {normalized} ".replace(f" {alias} ", " ").split()
-        )
-        return category.value, residual.split(), _CATEGORY_LABELS[category]
+    exact_size = (
+        len(exact_match[1].split())
+        if exact_match is not None
+        else 0
+    )
+    fuzzy_match: tuple[ProductCategory, int, int, float, int] | None = None
 
-    fuzzy_match: tuple[ProductCategory, int, int, float] | None = None
     for category, aliases in _CATEGORY_SEARCH_ALIASES.items():
         for alias in aliases:
             normalized_alias = _normalize_search_text(alias)
@@ -157,6 +156,8 @@ def resolve_product_search_query(
             size = len(alias_tokens)
 
             if size == 0 or size > len(query_tokens):
+                continue
+            if exact_match is not None and size <= exact_size:
                 continue
 
             for start in range(len(query_tokens) - size + 1):
@@ -171,20 +172,35 @@ def resolve_product_search_query(
                 if ratio < 0.88:
                     continue
 
-                if fuzzy_match is None or ratio > fuzzy_match[3]:
+                if (
+                    fuzzy_match is None
+                    or size > fuzzy_match[4]
+                    or (
+                        size == fuzzy_match[4]
+                        and ratio > fuzzy_match[3]
+                    )
+                ):
                     fuzzy_match = (
                         category,
                         start,
                         start + size,
                         ratio,
+                        size,
                     )
 
-    if fuzzy_match is None:
-        return None, query_tokens, None
+    if fuzzy_match is not None:
+        category, start, end, _, _ = fuzzy_match
+        residual_tokens = query_tokens[:start] + query_tokens[end:]
+        return category.value, residual_tokens, _CATEGORY_LABELS[category]
 
-    category, start, end, _ = fuzzy_match
-    residual_tokens = query_tokens[:start] + query_tokens[end:]
-    return category.value, residual_tokens, _CATEGORY_LABELS[category]
+    if exact_match is not None:
+        category, alias = exact_match
+        residual = " ".join(
+            f" {normalized} ".replace(f" {alias} ", " ").split()
+        )
+        return category.value, residual.split(), _CATEGORY_LABELS[category]
+
+    return None, query_tokens, None
 
 
 def product_search_shortcuts() -> list[dict[str, str]]:
