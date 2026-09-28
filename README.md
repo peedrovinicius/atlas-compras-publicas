@@ -12,8 +12,6 @@ Transforma descrições do PNCP em produtos estruturados e comparáveis, preserv
 
 </div>
 
-## Em 15 segundos
-
 Dados de compras públicas chegam com descrições heterogêneas. O mesmo produto pode aparecer escrito de várias formas, o que dificulta comparar itens e preços sem misturar objetos incompatíveis.
 
 O Atlas captura contratações, itens e resultados do PNCP, preserva as respostas originais com SHA-256 e manifestos, normaliza descrições, extrai atributos técnicos e constrói identidades comparáveis.
