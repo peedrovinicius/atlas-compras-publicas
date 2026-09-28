@@ -33,3 +33,17 @@ def test_frozen_medications_v2_preserves_independent_baseline() -> None:
     assert baseline["false_positive_count"] == 0
     assert baseline["false_negative_count"] == 0
     assert baseline["mismatch_count"] == 39
+
+
+def test_frozen_medications_v2_is_perfect_after_tuning() -> None:
+    report = evaluate_medications(
+        Path("data/evaluation/medications-v2.jsonl")
+    )
+
+    assert report.sample_count == 48
+    assert report.evaluated_field_count == 192
+    assert report.correct_field_count == 192
+    assert report.micro_accuracy == 1.0
+    assert report.false_positive_count == 0
+    assert report.false_negative_count == 0
+    assert report.mismatch_count == 0

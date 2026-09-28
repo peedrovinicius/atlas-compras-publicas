@@ -536,3 +536,10 @@ Por campo:
 A baseline está preservada em `medications-v2-baseline.json`.
 
 Nenhuma lacuna do v2 é corrigida na v1.45.
+
+
+### Resultado pós-tuning v1.46
+
+Após tuning controlado, o medicamentos v2 atingiu 192/192 campos corretos e 100% de micro accuracy.
+
+A baseline independente de 79,69% permanece imutável. O resultado pós-tuning está em `medications-v2-post-v1.46.json`.
