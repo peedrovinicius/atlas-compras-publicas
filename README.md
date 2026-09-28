@@ -73,6 +73,23 @@ As baselines independentes são preservadas. Resultados pós-tuning são registr
 
 [Ver consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
 
+## SQL e modelo analítico
+
+O warehouse atual usa DuckDB e expõe três camadas principais:
+
+- `silver_items`: itens normalizados e qualidade da estruturação;
+- `silver_awards`: resultados homologados com contexto, preços e hashes de origem;
+- `gold_price_signals`: grupos comparáveis, MAD/IQR e sinais explicáveis.
+
+As consultas SQL do portfólio são executadas no CI contra um schema DuckDB compatível com o contrato atual.
+
+- [Evolução mensal de preços](sql/01_price_evolution.sql)
+- [Dispersão por grupo comparável](sql/02_group_dispersion.sql)
+- [Diferença regional para a mediana nacional](sql/03_regional_gap.sql)
+- [Cobertura da normalização](sql/04_normalization_coverage.sql)
+- [Rastreabilidade de um sinal](sql/05_signal_trace.sql)
+- [Contrato do warehouse v1](docs/warehouse-v1.md)
+
 ## Arquitetura e rastreabilidade
 
 ```mermaid
