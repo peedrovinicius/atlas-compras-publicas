@@ -68,6 +68,16 @@ def _matches(value: Any, expected: Any) -> bool:
     return value == expected
 
 
+def _table_columns(
+    connection: duckdb.DuckDBPyConnection,
+    table_name: str,
+) -> set[str]:
+    rows = connection.execute(
+        f"PRAGMA table_info('{table_name}')"
+    ).fetchall()
+    return {str(row[1]) for row in rows}
+
+
 def _paginate(
     rows: list[dict[str, Any]],
     *,
@@ -252,6 +262,13 @@ def analytics_product_search(
     parameters = [f"%{token}%" for token in tokens]
 
     with duckdb.connect(str(path), read_only=True) as connection:
+        available_columns = _table_columns(connection, "silver_awards")
+        latest_date_expression = (
+            "MAX(analysis_date)"
+            if "analysis_date" in available_columns
+            else "NULL"
+        )
+
         total = connection.execute(
             f"""
             SELECT COUNT(*)
@@ -277,7 +294,7 @@ def analytics_product_search(
                       AND awarded_price_per_base_unit IS NOT NULL
                       AND awarded_price_per_base_unit > 0
                 ) AS priced_observation_count,
-                MAX(analysis_date) AS latest_date,
+                {latest_date_expression} AS latest_date,
                 MIN(original_description) AS sample_description
             {base_sql}
             ORDER BY
