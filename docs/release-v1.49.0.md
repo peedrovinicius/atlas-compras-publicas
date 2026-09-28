@@ -76,4 +76,4 @@ Portanto, esta release fica tecnicamente documentada e preparada, mas o CI ainda
 
 ## Estado da auditoria
 
-A auditoria textual inicial foi concluída. Os únicos pontos ainda externos ao conector são a leitura visual do erro do Actions e a execução local da suíte.
+A auditoria textual inicial foi concluída e está registrada em `docs/audit-v1.49.0.md`. Os únicos pontos ainda externos ao conector são a leitura visual do erro do Actions e a execução local da suíte.
