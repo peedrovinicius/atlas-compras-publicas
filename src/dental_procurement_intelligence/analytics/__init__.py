@@ -15,9 +15,11 @@ from .awards import (
 )
 from .demo_data import (
     DEMO_CNPJ,
+    DEMO_PROCUREMENTS,
     DEMO_SEQUENCE,
     DEMO_YEAR,
     DemoDataBuildResult,
+    DemoProcurement,
     build_demo_data,
 )
 from .lakehouse import (
@@ -40,6 +42,8 @@ from .quality import (
 __all__ = [
     "AnalyticsBuildResult",
     "DEMO_CNPJ",
+    "DemoProcurement",
+    "DEMO_PROCUREMENTS",
     "DEMO_SEQUENCE",
     "DEMO_YEAR",
     "AwardBuildResult",
