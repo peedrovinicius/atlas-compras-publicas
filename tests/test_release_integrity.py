@@ -18,6 +18,18 @@ _FROZEN_GIT_BLOBS = {
         "2428e3d39a11ef11ef35bb1e87619e7c7596c27d",
     "data/evaluation/medications-v1-baseline.json":
         "0279f2e86d0b9901a84d49f9e41f2acdc263f84b",
+    "data/evaluation/medications-v2.jsonl":
+        "9be1808d58f53c6e09a3ba753ec5fc92ddd84be9",
+    "data/evaluation/medications-v2-baseline.json":
+        "d66b488a35effa3cedccdfb99292b15b27d99b41",
+    "data/evaluation/medications-v3.jsonl":
+        "3de9b933654f19e5e782861985c68fddb44ed9e7",
+    "data/evaluation/medications-v3-baseline.json":
+        "0f95cb10bb69b0509c7c2ed890a017bfe8fa201c",
+    "data/evaluation/medications-v4.jsonl":
+        "ef7561d060cdf578529690391da184ac55a02143",
+    "data/evaluation/medications-v4-baseline.json":
+        "9cd0b39675fd3992ebae956b3074ad26b7e0ff98",
 }
 
 
