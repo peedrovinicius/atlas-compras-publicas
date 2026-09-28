@@ -34,6 +34,8 @@ def test_public_demo_normalizes_real_example() -> None:
 
     assert response.status_code == 200
     payload = response.json()
+    assert payload["atlas_version"] == "1.49.0"
+    assert payload["classification_method"] == "deterministic_rules"
     assert payload["category"] == "composite_resin"
     assert payload["presentation"] == "syringe"
     assert payload["shade"] == "A2"
@@ -58,5 +60,64 @@ def test_public_demo_root_is_available_without_analytics_database() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "Demo pública" in response.text
-    assert "não simula preços" in response.text
+    assert "Normalizador ao vivo" in response.text
+    assert "91,36%" in response.text
+    assert "CIMENTO ODONTOLOGICO" in response.text
+    assert "DOMContentLoaded" in response.text
+    assert "Atlas de Compras Públicas v1.49.0" in response.text
+    assert "não simula" in response.text
+
+
+def test_health_exposes_current_version() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "version": "1.49.0"}
+
+
+@pytest.mark.parametrize("description", ["", "  "])
+def test_normalize_rejects_empty_or_blank_input(description: str) -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.get(
+        "/api/v1/normalize",
+        params={"description": description},
+    )
+
+    assert response.status_code == 422
+
+
+def test_normalize_rejects_oversized_input() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    response = client.get(
+        "/api/v1/normalize",
+        params={"description": "A" * 2001},
+    )
+
+    assert response.status_code == 422
+
+
+def test_normalize_rate_limit_is_enforced() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    params = {"description": "RESINA COMPOSTA A2 SERINGA 4G"}
+
+    for _ in range(60):
+        response = client.get("/api/v1/normalize", params=params)
+        assert response.status_code == 200
+
+    response = client.get("/api/v1/normalize", params=params)
+
+    assert response.status_code == 429
+    assert response.headers["retry-after"] == "60"
