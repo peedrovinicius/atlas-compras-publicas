@@ -191,6 +191,8 @@ _PRODUCT_IDENTITY_FIELDS = (
     "package_count",
     "unit_quantity_value",
     "unit_quantity_unit",
+    "normalized_quantity_value",
+    "normalized_quantity_unit",
 )
 
 
