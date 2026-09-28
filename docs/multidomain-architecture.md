@@ -13,7 +13,7 @@ Domínios atuais:
 | Domínio | Status | Regras ativas |
 | --- | --- | --- |
 | Odontologia | active | sim |
-| Medicamentos | benchmark_required | não |
+| Medicamentos | experimental | não |
 
 ## Regra de ativação
 
@@ -28,11 +28,11 @@ Um novo domínio só pode passar para `active` depois de:
 
 ## Medicamentos
 
-Medicamentos foi escolhido como o próximo domínio por ter forte presença em compras públicas e atributos próprios, como princípio ativo, concentração, forma farmacêutica e apresentação.
+O domínio farmacêutico possui parser próprio e quatro holdouts independentes congelados, v1-v4, com regressões preservadas.
 
-A v1.38 cria apenas o namespace e o registro do domínio.
+Ele permanece como `experimental` porque ainda não participa do classificador principal de produtos do Atlas. O objetivo é validar generalização da arquitetura sem misturar regras odontológicas e farmacêuticas.
 
-Nenhum alias ou classificador de medicamentos foi ativado nesta release. Isso é intencional: o projeto não deve inferir uma taxonomia não validada apenas para aparentar cobertura multidomínio.
+A auditoria da issue #30 confirmou que os 192 exemplos históricos pertencem ao escopo farmacêutico. Materiais, dispositivos e outros produtos de saúde deverão entrar em domínios próprios.
 
 ## Isolamento
 
@@ -50,4 +50,6 @@ Esse isolamento permite que, futuramente, cada domínio tenha:
 
 ## Próximo passo do domínio de medicamentos
 
-Criar uma taxonomia inicial e um benchmark independente antes de ativar qualquer classificação.
+Manter o histórico v1-v4 preservado e só promover o domínio para `active` quando houver integração explícita com o motor multidomínio, regras de precedência e contrato público estável.
+
+A fronteira completa está documentada em [Arquitetura de domínios de saúde](architecture-health-domains.md).
