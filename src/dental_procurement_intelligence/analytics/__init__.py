@@ -1,3 +1,4 @@
+from .demo_data import DemoDataBuildResult, build_demo_data
 from .anomalies import (
     PriceSignalBuildResult,
     anomaly_summary,
@@ -34,10 +35,12 @@ __all__ = [
     "AwardBuildResult",
     "AwardDatasetBuildResult",
     "DuckDBWarehouse",
+    "DemoDataBuildResult",
     "PriceSignalBuildResult",
     "anomaly_summary",
     "award_summary",
     "build_analytics",
+    "build_demo_data",
     "build_award_dataset",
     "build_award_frame",
     "build_awards",
