@@ -17,7 +17,7 @@ A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, p�
 - README alinhado com a consolidação de medicamentos v1-v4 e com o pós-tuning v1.49.
 - Revisão editorial do README atualizada em `docs/readme-review-v1.49.0.md`.
 - Workflow de CI ampliado para cobrir README e snapshot visual.
-- Auditoria inicial registrada em `docs/audit-v1.49.0.md`.
+- Auditoria inicial registrada e fechada em `docs/audit-v1.49.0.md`.
 
 ## Arquivos novos
 
@@ -73,3 +73,7 @@ Portanto, esta release fica tecnicamente documentada e preparada, mas o CI ainda
 - conferência visual na aba Actions do GitHub;
 - execução local de `ruff check .` e `pytest -q`;
 - nova execução do Actions quando o runner estiver disponível.
+
+## Estado da auditoria
+
+A auditoria textual inicial foi concluída. Os únicos pontos ainda externos ao conector são a leitura visual do erro do Actions e a execução local da suíte.
