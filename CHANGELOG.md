@@ -2,6 +2,21 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.58.0
+
+- reforma visual ampla da interface pública;
+- cabeçalho simplificado com navegação focada em Preços e Laboratório;
+- hero mais compacto e orientado à proposta de valor;
+- busca principal ampliada e visualmente priorizada;
+- categorias convertidas em atalhos compactos;
+- filtros avançados recolhidos por padrão;
+- remoção de exemplos redundantes que competiam com autocomplete e categorias;
+- cards de resultado com menos ruído visual e maior destaque para preço mediano;
+- área analítica com sombras reduzidas, espaçamento mais consistente e melhor hierarquia;
+- novos estados de carregamento em skeleton;
+- título e metadados públicos atualizados;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.58.0.
+
 ## 1.57.0
 
 - busca passa a devolver facetas de refinamento calculadas sobre todo o conjunto compatível;
