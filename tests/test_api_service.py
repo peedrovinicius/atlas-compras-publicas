@@ -919,3 +919,218 @@ def test_product_distribution_bins_defensible_prices(
     assert sum(item["count"] for item in result["bins"]) == 3
     assert result["bins"][0]["count"] == 2
     assert result["bins"][-1]["count"] == 1
+
+
+
+def test_product_search_filters_and_paginates(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '111', 'Fornecedor Alfa', 'CE', 'Nordeste',
+                        '100', 'Hospital Alfa', 'U1', 'Unidade Central',
+                        DATE '2026-05-10', 'defensible', 10.0
+                    ),
+                    (
+                        'p2', 'RESINA COMPOSTA A3 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A3', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '222', 'Fornecedor Beta', 'MG', 'Sudeste',
+                        '200', 'Hospital Beta', 'U2', 'Unidade Sul',
+                        DATE '2026-06-10', 'defensible', 20.0
+                    ),
+                    (
+                        'p3', 'RESINA COMPOSTA B1 SERINGA 4G',
+                        'composite_resin', 'syringe', 'B1', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '333', 'Fornecedor Gama', 'PR', 'Sul',
+                        '300', 'Clínica Escola', 'U3', 'Odontologia',
+                        DATE '2026-07-10', 'defensible', 30.0
+                    )
+            ) AS t(
+                procurement_key,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                supplier_name,
+                state_code,
+                macroregion,
+                organization_cnpj,
+                organization_name,
+                buyer_unit_code,
+                buyer_unit_name,
+                analysis_date,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    filtered = service.analytics_product_search(
+        database,
+        query="resina",
+        state_code="CE",
+        macroregion="Nordeste",
+        supplier="alfa",
+        buyer="hospital",
+        start_date="2026-05-01",
+        end_date="2026-05-31",
+        limit=10,
+        offset=0,
+    )
+
+    assert filtered["total"] == 1
+    assert filtered["items"][0]["shade"] == "A2"
+    assert filtered["filters"]["state_code"] == "CE"
+    assert filtered["filters"]["supplier"] == "alfa"
+
+    page = service.analytics_product_search(
+        database,
+        query="resina",
+        limit=1,
+        offset=1,
+    )
+
+    assert page["total"] == 3
+    assert page["limit"] == 1
+    assert page["offset"] == 1
+    assert len(page["items"]) == 1
+
+
+def test_product_filters_apply_to_summary_and_records(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'a1', 1, 1,
+                        'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 'UNIDADE', 1, 4.0, 'g', 4.0, 'g',
+                        'Fornecedor Alfa', '111', 'Marca A',
+                        '100', 'Hospital Alfa', 'U1', 'Unidade Central',
+                        'Fortaleza', 'CE', 'Nordeste', 'Pregão',
+                        DATE '2026-05-10', 10.0, 1.0, 10.0, 10.0,
+                        'defensible', 'base física identificada',
+                        'contract-1', 'item-1', 'result-1'
+                    ),
+                    (
+                        'p2', 'a2', 1, 1,
+                        'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 'UNIDADE', 1, 4.0, 'g', 4.0, 'g',
+                        'Fornecedor Beta', '222', 'Marca B',
+                        '200', 'Hospital Beta', 'U2', 'Unidade Sul',
+                        'Belo Horizonte', 'MG', 'Sudeste', 'Pregão',
+                        DATE '2026-06-10', 30.0, 1.0, 30.0, 30.0,
+                        'defensible', 'base física identificada',
+                        'contract-2', 'item-2', 'result-2'
+                    )
+            ) AS t(
+                procurement_key,
+                award_key,
+                item_number,
+                result_sequence,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                procurement_unit,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_name,
+                supplier_document,
+                brand,
+                organization_cnpj,
+                organization_name,
+                buyer_unit_code,
+                buyer_unit_name,
+                municipality_name,
+                state_code,
+                macroregion,
+                modality,
+                analysis_date,
+                awarded_unit_value,
+                awarded_quantity,
+                awarded_total_value,
+                awarded_price_per_base_unit,
+                price_normalization_status,
+                price_normalization_reason,
+                contract_source_sha256,
+                item_source_sha256,
+                result_source_sha256
+            )
+            """
+        )
+
+    search = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+    )
+    product_id = search["items"][0]["product_id"]
+
+    summary = service.analytics_product_summary(
+        database,
+        product_id=product_id,
+        state_code="CE",
+    )
+    records = service.analytics_product_records(
+        database,
+        product_id=product_id,
+        state_code="CE",
+    )
+    distribution = service.analytics_product_distribution(
+        database,
+        product_id=product_id,
+        state_code="CE",
+        bin_count=5,
+    )
+
+    assert summary["award_count"] == 1
+    assert float(summary["price_stats"]["median_price"]) == 10.0
+    assert records["total"] == 1
+    assert records["items"][0]["state_code"] == "CE"
+    assert distribution["observations"] == 1
+    assert distribution["min_price"] == 10.0
+    assert distribution["max_price"] == 10.0
