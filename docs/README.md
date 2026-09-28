@@ -9,6 +9,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 - [API e dashboard](api-dashboard.md)
 - [Dataset multi-contratação](multi-contratacao.md)
 - [Qualidade do normalizador](qualidade-normalizador.md)
+- [Exemplos de SQL no DuckDB](sql-examples.md)
 
 ## Metodologia
 
