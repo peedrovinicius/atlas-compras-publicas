@@ -29,7 +29,7 @@ A ordem metodológica é obrigatória:
 7. documentar a baseline independente;
 8. só depois decidir se haverá tuning posterior.
 
-## Inventário e colisão
+## Inventário, colisão e triagem
 
 O levantamento inicial de fontes candidatas está em:
 
@@ -39,7 +39,11 @@ A primeira checagem formal de colisão por número de controle está em:
 
 - [Checagem de colisão do holdout de medicamentos v4](medications-v4-collision-check.md)
 
-Esses arquivos não congelam o dataset. Eles servem como fila auditável de triagem antes da seleção dos itens.
+A primeira triagem item a item está em:
+
+- [Triagem preliminar de itens para medicamentos v4](medications-v4-item-triage.md)
+
+Esses arquivos não congelam o dataset. Eles servem como fila auditável de triagem antes da seleção final dos 48 exemplos.
 
 ## Critérios de independência
 
@@ -108,12 +112,20 @@ Cada linha do v4 deve manter o contrato usado nos ciclos anteriores:
 }
 ```
 
+## Status da triagem
+
+- Itens pré-selecionados com descrição suficiente: 4.
+- Itens citados, mas pendentes de descrição completa: 4.
+- Contratações ainda sem lista detalhada: 4.
+- Dataset `medications-v4.jsonl`: ainda não criado.
+
 ## Checklist antes do congelamento
 
 - [ ] 8 contratações inéditas selecionadas.
 - [x] Colisão por número de controle contra `medications-v1.jsonl` verificada.
 - [x] Colisão por número de controle contra `medications-v2.jsonl` verificada.
 - [x] Colisão por número de controle contra `medications-v3.jsonl` verificada.
+- [ ] Triagem item a item iniciada.
 - [ ] Colisão por descrição contra v1, v2 e v3 verificada.
 - [ ] 48 exemplos revisados.
 - [ ] 192 campos esperados revisados.
