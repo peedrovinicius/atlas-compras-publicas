@@ -566,3 +566,109 @@ def test_product_regions_compare_states_to_national_median(
     assert states["CE"]["difference_from_national_percent"] == -50.0
     assert states["MG"]["observations"] == 2
     assert states["MG"]["difference_from_national_percent"] == 25.0
+
+
+
+def test_product_suppliers_and_buyers_use_public_award_context(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '111', 'Fornecedor Alfa',
+                        '10000000000100', 'Órgão Alfa', 'U1', 'Unidade Alfa',
+                        'CE', 'Nordeste', 100.0, 'defensible', 10.00
+                    ),
+                    (
+                        'p2', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '111', 'Fornecedor Alfa',
+                        '20000000000100', 'Órgão Beta', 'U2', 'Unidade Beta',
+                        'MG', 'Sudeste', 240.0, 'defensible', 12.00
+                    ),
+                    (
+                        'p3', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '222', 'Fornecedor Beta',
+                        '20000000000100', 'Órgão Beta', 'U2', 'Unidade Beta',
+                        'MG', 'Sudeste', 130.0, 'defensible', 13.00
+                    )
+            ) AS t(
+                procurement_key,
+                item_number,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                supplier_name,
+                organization_cnpj,
+                organization_name,
+                buyer_unit_code,
+                buyer_unit_name,
+                state_code,
+                macroregion,
+                awarded_total_value,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    search = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+    )
+    product_id = search["items"][0]["product_id"]
+
+    suppliers = service.analytics_product_suppliers(
+        database,
+        product_id=product_id,
+    )
+    buyers = service.analytics_product_buyers(
+        database,
+        product_id=product_id,
+    )
+
+    assert suppliers["total"] == 2
+    assert suppliers["items"][0]["supplier_name"] == "Fornecedor Alfa"
+    assert suppliers["items"][0]["award_count"] == 2
+    assert suppliers["items"][0]["sample_share_percent"] == 66.67
+    assert float(suppliers["items"][0]["median_price"]) == 11.0
+
+    assert buyers["total"] == 2
+    beta = next(
+        row for row in buyers["items"]
+        if row["organization_name"] == "Órgão Beta"
+    )
+    assert beta["buyer_unit_name"] == "Unidade Beta"
+    assert beta["award_count"] == 2
+    assert beta["procurement_count"] == 2
+    assert float(beta["awarded_total_value"]) == 370.0
+    assert float(beta["median_price"]) == 12.5
