@@ -10,12 +10,13 @@ Para cada produto disponível, a aplicação pode apresentar:
 
 - mediana, média, mínimo, máximo e percentis de preço;
 - suficiência da amostra comparável;
+- distribuição dos preços normalizados por faixa;
 - histórico mensal;
 - comparação por macrorregião e UF;
 - fornecedores presentes na amostra;
 - órgãos e unidades compradoras;
 - sinais estatísticos;
-- registros de origem com hashes e link para o PNCP.
+- cartões de evidência expansíveis com contexto da compra, status da normalização, hashes de contratação, item e resultado e link para o PNCP.
 
 O parser interativo permanece disponível na área `Laboratório`.
 
