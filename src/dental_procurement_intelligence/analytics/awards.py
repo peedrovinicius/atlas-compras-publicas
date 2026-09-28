@@ -67,6 +67,10 @@ AWARD_SCHEMA: dict[str, pl.DataType] = {
     "analysis_date": pl.Date,
     "analysis_year": pl.Int64,
     "analysis_quarter": pl.String,
+    "organization_cnpj": pl.String,
+    "organization_name": pl.String,
+    "buyer_unit_code": pl.String,
+    "buyer_unit_name": pl.String,
     "municipality_ibge": pl.String,
     "municipality_name": pl.String,
     "state_code": pl.String,
@@ -307,6 +311,20 @@ def build_award_frame(
                     "analysis_date": analysis_date,
                     "analysis_year": analysis_date.year if analysis_date else None,
                     "analysis_quarter": _quarter(analysis_date),
+                    "organization_cnpj": (
+                        organization.cnpj if organization is not None else None
+                    ),
+                    "organization_name": (
+                        organization.legal_name
+                        if organization is not None
+                        else None
+                    ),
+                    "buyer_unit_code": (
+                        unit.unit_code if unit is not None else None
+                    ),
+                    "buyer_unit_name": (
+                        unit.unit_name if unit is not None else None
+                    ),
                     "municipality_ibge": (
                         str(unit.municipality_id)
                         if unit is not None and unit.municipality_id is not None
