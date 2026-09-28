@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
 
+import httpx
+
 from dental_procurement_intelligence.ingestion.bundle import (
     build_contract_bundle,
     write_contract_bundle,
@@ -43,6 +45,7 @@ def capture_contract(
     cnpj: str,
     year: int,
     sequence: int,
+    skip_result_transport_errors: bool = False,
 ) -> ContractCaptureResult:
     """Captura metadados, itens, resultados e manifesto estável da contratação."""
 
@@ -80,12 +83,18 @@ def capture_contract(
         if item.has_result is False:
             continue
 
-        raw_result = client.get_item_results_raw(
-            cnpj,
-            year,
-            sequence,
-            item.item_number,
-        )
+        try:
+            raw_result = client.get_item_results_raw(
+                cnpj,
+                year,
+                sequence,
+                item.item_number,
+            )
+        except httpx.TransportError:
+            if skip_result_transport_errors:
+                continue
+            raise
+
         result_count += _count_results(raw_result.content)
         result_evidence.append(store.capture(raw_result))
 
