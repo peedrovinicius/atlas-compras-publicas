@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+import httpx
+
 from dental_procurement_intelligence.analytics.anomalies import build_price_signals
 from dental_procurement_intelligence.analytics.awards import build_award_dataset
 from dental_procurement_intelligence.analytics.lakehouse import build_analytics_dataset
@@ -111,16 +113,29 @@ def build_demo_data(
     database = root / "atlas-demo.duckdb"
 
     store = EvidenceStore(raw_root)
-    captures = [
-        capture_contract(
-            client,
-            store,
-            cnpj=procurement.cnpj,
-            year=procurement.year,
-            sequence=procurement.sequence,
+    captures = []
+    for procurement in procurements:
+        try:
+            capture = capture_contract(
+                client,
+                store,
+                cnpj=procurement.cnpj,
+                year=procurement.year,
+                sequence=procurement.sequence,
+                skip_result_transport_errors=True,
+            )
+        except httpx.HTTPError:
+            continue
+        captures.append(capture)
+
+    if not captures:
+        raise RuntimeError(
+            "Nenhuma contratação da amostra pôde ser capturada no PNCP."
         )
-        for procurement in procurements
-    ]
+    if sum(capture.result_count for capture in captures) == 0:
+        raise RuntimeError(
+            "A amostra foi capturada, mas não retornou resultados homologados."
+        )
 
     item_paths: list[str] = []
     procurement_key_by_path: dict[str, str] = {}
