@@ -189,11 +189,20 @@ main {
   box-shadow: var(--shadow);
 }
 
+.composer-panel,
+.categories-panel {
+  height: 500px;
+}
+
 .composer-panel {
   padding: 26px;
 }
 
 .categories-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
   padding: 22px;
 }
 
@@ -348,6 +357,28 @@ textarea:focus {
 
 .category-list {
   display: grid;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-color: #b5bdc9 transparent;
+  scrollbar-width: thin;
+}
+
+.category-list::-webkit-scrollbar {
+  width: 7px;
+}
+
+.category-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b5bdc9;
+}
+
+.category-list::-webkit-scrollbar-thumb:hover {
+  background: #929dac;
 }
 
 .category-row {
@@ -541,7 +572,13 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .composer-panel,
   .categories-panel {
+    height: auto;
+  }
+
+  .categories-panel {
+    max-height: 430px;
     order: 2;
   }
 
