@@ -119,8 +119,8 @@ Requer Python 3.12+.
 git clone https://github.com/peedrovinicius/atlas-compras-publicas.git
 cd atlas-compras-publicas
 pip install -e ".[dev]"
-dpi evaluate-taxonomy --dataset data/evaluation/v5.jsonl
-dpi capture-contract --cnpj 01612541000133 --year 2026 --sequence 47
+atlas evaluate-taxonomy --dataset data/evaluation/v5.jsonl
+atlas capture-contract --cnpj 01612541000133 --year 2026 --sequence 47
 ```
 
 O último comando usa uma contratação já referenciada no dataset congelado v5.
@@ -153,7 +153,7 @@ As baselines históricas serão preservadas durante qualquer migração.
 - não há painel público de preços e sinais neste momento;
 - a publicação desses painéis depende de uma base DuckDB analítica consolidada;
 - a taxonomia do domínio experimental de saúde ainda será reestruturada na issue #30;
-- o namespace Python `dental_procurement_intelligence` é histórico e será revisto somente após a reorganização dos domínios;
+- o namespace Python `dental_procurement_intelligence` e o alias legado `dpi` são mantidos por compatibilidade; a CLI pública já pode ser chamada por `atlas`;
 - a proteção da branch `main` está registrada na issue #28;
 - metadados públicos e licença estão registrados na issue #29.
 
