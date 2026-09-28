@@ -4,7 +4,6 @@ from dental_procurement_intelligence.identity.domains import (
     IdentityDomain,
 )
 
-
 MEDICATIONS_DOMAIN = DomainDescriptor(
     domain=IdentityDomain.MEDICATIONS,
     label="Medicamentos",
