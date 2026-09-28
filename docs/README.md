@@ -8,6 +8,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 - [Arquitetura multidomínio](multidomain-architecture.md)
 - [Fronteiras dos domínios de saúde](architecture-health-domains.md)
 - [API e aplicação analítica](api-dashboard.md)
+- [Exemplo real e reproduzível do parser](exemplo-parser-real.md)
 - [Contrato do warehouse v1](warehouse-v1.md)
 - [Dataset multi-contratação](multi-contratacao.md)
 - [Qualidade do normalizador](qualidade-normalizador.md)
@@ -39,6 +40,7 @@ O domínio histórico `medications` testa a generalização além da odontologia
 ## Release atual
 
 - [Changelog](../CHANGELOG.md)
+- [Release v1.50.0](release-v1.50.0.md)
 - [Release v1.49.0](release-v1.49.0.md)
 - [Auditoria v1.49.0](audit-v1.49.0.md)
 - [Revisão do README v1.49.0](readme-review-v1.49.0.md)
