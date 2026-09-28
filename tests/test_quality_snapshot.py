@@ -19,6 +19,7 @@ def test_quality_snapshot_includes_medications_v1_to_v4_rollup() -> None:
     assert medications["holdouts"]["v2"]["micro_accuracy"] == 0.7969
     assert medications["holdouts"]["v3"]["micro_accuracy"] == 0.901
     assert medications["holdouts"]["v4"]["micro_accuracy"] == 0.9844
+    assert medications["holdouts"]["v4"]["micro_accuracy"] == 0.9844
 
     assert medications["per_field"]["active_ingredient"] == 0.7344
     assert medications["per_field"]["strength"] == 0.9635
