@@ -147,6 +147,8 @@ def load_raw_items(path: str | Path) -> tuple[list[PNCPItem], str]:
 
 def load_raw_results(path: str | Path) -> tuple[list[PNCPItemResult], str]:
     content = Path(path).read_bytes()
+    if not content.strip():
+        return [], _hash(content)
     payload = json.loads(content)
     records = _result_records(payload)
     return [PNCPItemResult.model_validate(record) for record in records], _hash(content)
