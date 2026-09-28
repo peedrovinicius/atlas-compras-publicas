@@ -2,7 +2,7 @@
 
 # Atlas de Compras Públicas
 
-Transforma descrições do PNCP em produtos estruturados e comparáveis, preservando a evidência de origem para auditoria.
+Plataforma de inteligência sobre compras públicas que estrutura itens do PNCP, compara preços homologados e preserva a evidência de origem para auditoria.
 
 [![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
@@ -18,7 +18,7 @@ O Atlas captura contratações, itens e resultados do PNCP, preserva as resposta
 
 Hoje, a vertical odontológica possui 548 exemplos independentes e 984 campos técnicos avaliados, com micro accuracy ponderada de 91,36%.
 
-Painéis públicos de preços e sinais ainda não são publicados porque dependem de uma base DuckDB analítica consolidada.
+A aplicação pública já permite pesquisar produtos, comparar preços homologados, acompanhar histórico e diferenças regionais, identificar fornecedores e órgãos compradores e consultar sinais estatísticos com rastreabilidade até o PNCP.
 
 ## Exemplo real: antes e depois
 
@@ -50,9 +50,10 @@ O Atlas resolve essa etapa antes da análise de preços e mantém a trilha de ev
 | Evidência | SHA-256 e manifestos para preservar a origem |
 | Normalização | Descrição, apresentação, medidas e atributos técnicos |
 | Identidade | Regras de comparação entre produtos estruturados |
-| Analítica | Parquet e DuckDB para consolidação local |
+| Analítica | DuckDB consolidado com busca, resumo de preços, histórico e geografia |
+| Mercado | Fornecedores e órgãos compradores por produto comparável |
 | Qualidade | Benchmarks congelados, regressões e CI automatizado |
-| Sinais | MAD e IQR implementados como sinais estatísticos explicáveis |
+| Sinais | MAD e IQR como sinais estatísticos explicáveis, com acesso aos registros de origem |
 
 Sinal estatístico não é tratado como prova de irregularidade.
 
@@ -133,15 +134,39 @@ O CI atual executa `ruff check .`, `pytest -q` e o build TypeScript/Vite do fron
 
 [Snapshot de qualidade](docs/dashboard-quality-snapshot.html) · [Dados do snapshot](docs/dashboard-quality-snapshot.json)
 
-## Demo pública
+## Aplicação pública
 
-A demo publicada usa React + TypeScript no frontend e executa a normalização real pela API FastAPI:
+A aplicação publicada usa React + TypeScript no frontend e FastAPI + DuckDB na camada analítica:
 
-- [Abrir demo](https://atlas-compras-publicas-web.onrender.com)
+- [Abrir Atlas](https://atlas-compras-publicas-web.onrender.com)
 - [Swagger / OpenAPI](https://atlas-compras-publicas.onrender.com/docs)
 - [Health check](https://atlas-compras-publicas.onrender.com/health)
 
-A página inicial permite testar descrições livres. Os painéis analíticos de preços e sinais continuam fora da demo enquanto não existir uma base DuckDB consolidada e publicável.
+A experiência pública possui duas áreas.
+
+**Explorar preços** é a entrada principal. A pesquisa encontra identidades de produto na base analítica e expõe:
+
+- mediana, percentis e tamanho da amostra comparável;
+- histórico mensal de preços;
+- comparação por região e UF;
+- fornecedores e órgãos compradores;
+- sinais estatísticos com aviso metodológico explícito;
+- registros que sustentam a análise, com hashes de origem e link para o PNCP.
+
+**Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
+
+Principais endpoints analíticos:
+
+```text
+GET /api/v1/products/search?q=...
+GET /api/v1/products/{product_id}
+GET /api/v1/products/{product_id}/history
+GET /api/v1/products/{product_id}/regions
+GET /api/v1/products/{product_id}/suppliers
+GET /api/v1/products/{product_id}/buyers
+GET /api/v1/products/{product_id}/signals
+GET /api/v1/products/{product_id}/records
+```
 
 ## Quickstart
 
@@ -188,12 +213,12 @@ As baselines históricas v1-v4 permanecem preservadas sem rename retroativo.
 
 ## Limitações e próximos passos
 
-- não há painel público de preços e sinais neste momento;
-- a publicação desses painéis depende de uma base DuckDB analítica consolidada;
+- a cobertura pública reflete os registros presentes na base analítica publicada e não deve ser interpretada como o universo integral do PNCP;
+- estatísticas de preço dependem da identidade comparável e de normalizações consideradas defensáveis; a interface sinaliza quando a amostra fica abaixo do mínimo metodológico;
+- sinais estatísticos indicam distância da distribuição observada e não constituem prova de irregularidade;
 - medicamentos permanece experimental e separado de materiais e dispositivos, conforme a auditoria da issue #30;
 - o namespace Python `dental_procurement_intelligence` e o alias legado `dpi` são mantidos por compatibilidade; a CLI pública já pode ser chamada por `atlas`;
-- a proteção da branch `main` está registrada na issue #28;
-- metadados públicos e licença estão registrados na issue #29.
+- novas verticais devem entrar somente com domínio, regras e benchmark independentes.
 
 ## Estrutura do repositório
 
