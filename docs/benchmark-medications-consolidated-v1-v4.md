@@ -31,11 +31,11 @@ O v4 elevou a leitura consolidada do domínio para 683 campos corretos em 768 av
 
 O principal ganho aparece na estabilidade do holdout independente mais recente. O v4 teve 189 de 192 campos corretos, com apenas três mismatches. Ainda assim, a consolidação preserva a leitura histórica: princípio ativo continua sendo o campo mais sensível quando acumulamos todos os ciclos.
 
-## Erros remanescentes do v4
+## Erros remanescentes da baseline v4
 
 | ID | Campo | Esperado | Predito | Interpretação |
 | --- | --- | --- | --- | --- |
-| `med4-cur93-020` | `dosage_form` | `topical` | `unknown` | `geléia` ainda não é reconhecida como forma tópica. |
+| `med4-cur93-020` | `dosage_form` | `topical` | `unknown` | `geléia` ainda não era reconhecida como forma tópica. |
 | `med4-cur93-020` | `route` | `topical` | `unknown` | Erro derivado da forma farmacêutica não reconhecida. |
 | `med4-cur1270-001` | `active_ingredient` | `AMOXICILINA TRIIDRATADA` | `.266-AMOXICILINA TRIIDRATADA` | Prefixo numérico composto deixou resíduo antes do princípio ativo. |
 
@@ -46,17 +46,15 @@ O principal ganho aparece na estabilidade do holdout independente mais recente. 
 | v1 pós-v1.44 | 192/192 | não substitui a baseline v1 |
 | v2 pós-v1.46 | 192/192 | não substitui a baseline v2 |
 | v3 pós-v1.48 | 192/192 | não substitui a baseline v3 |
+| v4 pós-v1.49 | 192/192 | não substitui a baseline v4 |
 
-O v4 ainda não possui pós-tuning. A baseline independente deve permanecer preservada mesmo se houver ajuste posterior.
+O pós-tuning v1.49 corrigiu os três erros residuais do v4 com duas mudanças pequenas: reconhecimento de `geléia` como forma tópica e remoção de prefixos numéricos compostos.
 
 ## Decisão metodológica
 
-Medicamentos permanece em `benchmark_required` até que a estabilidade do campo de princípio ativo seja confirmada em ciclos adicionais ou que uma correção pontual seja validada sem regressão.
+Medicamentos permanece em `benchmark_required` na leitura consolidada porque a decisão de promoção deve considerar a série histórica das baselines independentes, não apenas regressões pós-tuning perfeitas.
 
-Não há indicação para tuning amplo. Se houver evolução posterior, ela deve ser pequena e direcionada aos dois padrões remanescentes:
-
-- reconhecimento de `geléia` como forma tópica;
-- limpeza de prefixos numéricos compostos antes do nome do medicamento.
+Não há indicação para tuning amplo. A evolução v1.49 foi pontual e deve ser mantida separada da baseline independente.
 
 ## Arquivos relacionados
 
@@ -64,8 +62,10 @@ Não há indicação para tuning amplo. Se houver evolução posterior, ela deve
 - `data/evaluation/medications-v2-baseline.json`
 - `data/evaluation/medications-v3-baseline.json`
 - `data/evaluation/medications-v4-baseline.json`
+- `data/evaluation/medications-v4-post-v1.49.json`
 - `docs/benchmark-medications-v1.md`
 - `docs/benchmark-medications-v2.md`
 - `docs/benchmark-medications-v3.md`
 - `docs/benchmark-medications-v4.md`
+- `docs/benchmark-medications-v4-post-tuning.md`
 - `docs/medications-v4-freeze.md`
