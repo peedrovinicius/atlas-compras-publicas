@@ -353,7 +353,10 @@ export default function App() {
       <header className="site-header">
         <a className="brand" href="/" aria-label="Atlas de Compras Públicas">
           <span className="brand-mark">A</span>
-          <span>Atlas</span>
+          <span className="brand-copy">
+            <strong>Atlas</strong>
+            <small>Compras públicas</small>
+          </span>
         </a>
 
         <nav className="header-actions" aria-label="Links principais">
@@ -363,7 +366,7 @@ export default function App() {
               className={mode === "analytics" ? "active" : ""}
               onClick={() => setMode("analytics")}
             >
-              Explorar preços
+              Preços
             </button>
             <button
               type="button"
@@ -379,23 +382,30 @@ export default function App() {
                 ? "api-state api-state-offline"
                 : "api-state"
             }
+            title={
+              apiOnline === null
+                ? "Verificando disponibilidade da API"
+                : apiOnline
+                  ? "API disponível"
+                  : "API indisponível"
+            }
           >
             <span className="status-dot" />
-            {apiOnline === null
-              ? "Verificando API"
-              : apiOnline
-                ? "API online"
-                : "API indisponível"}
+            <span className="api-state-label">
+              {apiOnline === null
+                ? "Verificando"
+                : apiOnline
+                  ? "Online"
+                  : "Offline"}
+            </span>
           </span>
-          <a href={`${API_BASE_URL}/docs`} target="_blank" rel="noreferrer">
-            Swagger
-          </a>
           <a
+            className="header-link"
             href="https://github.com/peedrovinicius/atlas-compras-publicas"
             target="_blank"
             rel="noreferrer"
           >
-            GitHub
+            Código
           </a>
         </nav>
       </header>
@@ -555,10 +565,11 @@ export default function App() {
           Atlas de Compras Públicas
           {apiVersion ? ` v${apiVersion}` : ""}
         </span>
-        <span>
-          {mode === "analytics"
-            ? "Dados públicos, comparação contextual e rastreabilidade"
-            : "Até 20 descrições por análise"}
+        <span className="footer-links">
+          <a href={`${API_BASE_URL}/docs`} target="_blank" rel="noreferrer">
+            API
+          </a>
+          <span>Dados públicos · PNCP · rastreabilidade</span>
         </span>
       </footer>
     </div>
