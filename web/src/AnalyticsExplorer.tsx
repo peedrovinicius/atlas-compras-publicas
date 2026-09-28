@@ -1,14 +1,22 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-import { fetchProductAnalytics, searchProducts } from "./api";
+import { downloadProductRecordsCsv, fetchProductAnalytics, searchProducts } from "./api";
 import type {
   AnalyticsFilters,
   ProductAnalyticsBundle,
   ProductSearchItem,
+  ProductSort,
 } from "./types";
 
 const DEFAULT_QUERY = "resina";
 const PAGE_SIZE = 10;
+const DEFAULT_SORT: ProductSort = "coverage";
+const SORT_OPTIONS: Array<{ value: ProductSort; label: string }> = [
+  { value: "coverage", label: "Mais preços comparáveis" },
+  { value: "procurements", label: "Mais compras" },
+  { value: "latest", label: "Mais recentes" },
+  { value: "name", label: "Nome" },
+];
 const EXAMPLES = ["resina", "ionômero", "anestésico", "flúor"];
 const EMPTY_FILTERS: AnalyticsFilters = {
   state_code: "",
@@ -63,6 +71,116 @@ function percent(value: number | null | undefined): string {
   })}%`;
 }
 
+function readInitialState() {
+  const params = new URLSearchParams(window.location.search);
+  const sortValue = params.get("sort");
+  const sort: ProductSort = SORT_OPTIONS.some((option) => option.value === sortValue)
+    ? (sortValue as ProductSort)
+    : DEFAULT_SORT;
+  const rawOffset = Number(params.get("offset") ?? "0");
+
+  return {
+    query: params.get("q")?.trim() || DEFAULT_QUERY,
+    sort,
+    offset: Number.isFinite(rawOffset) && rawOffset >= 0 ? rawOffset : 0,
+    productId: params.get("product_id"),
+    filters: {
+      state_code: params.get("state_code") ?? "",
+      macroregion: params.get("macroregion") ?? "",
+      supplier: params.get("supplier") ?? "",
+      buyer: params.get("buyer") ?? "",
+      start_date: params.get("start_date") ?? "",
+      end_date: params.get("end_date") ?? "",
+    } satisfies AnalyticsFilters,
+  };
+}
+
+function syncExplorerUrl(
+  query: string,
+  filters: AnalyticsFilters,
+  sort: ProductSort,
+  offset: number,
+  productId: string | null = null,
+) {
+  const params = new URLSearchParams();
+  params.set("q", query);
+  if (sort !== DEFAULT_SORT) params.set("sort", sort);
+  if (offset > 0) params.set("offset", String(offset));
+  for (const [key, value] of Object.entries(filters)) {
+    const cleaned = value.trim();
+    if (cleaned) params.set(key, cleaned);
+  }
+  if (productId) params.set("product_id", productId);
+  window.history.replaceState(null, "", `?${params.toString()}`);
+}
+
+function HistoryChart({
+  points,
+}: {
+  points: ProductAnalyticsBundle["history"]["points"];
+}) {
+  const visible = points.filter((point) => point.median_price !== null);
+  if (visible.length === 0) return null;
+
+  const values = visible.flatMap((point) => [
+    Number(point.percentile_25 ?? point.median_price),
+    Number(point.median_price),
+    Number(point.percentile_75 ?? point.median_price),
+  ]);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const range = Math.max(maxValue - minValue, 1);
+  const width = 760;
+  const height = 220;
+  const padding = 24;
+  const x = (index: number) =>
+    visible.length === 1
+      ? width / 2
+      : padding + (index / (visible.length - 1)) * (width - padding * 2);
+  const y = (value: number) =>
+    height - padding - ((value - minValue) / range) * (height - padding * 2);
+
+  const upper = visible.map((point, index) =>
+    `${x(index)},${y(Number(point.percentile_75 ?? point.median_price))}`,
+  );
+  const lower = visible
+    .map((point, index) =>
+      `${x(index)},${y(Number(point.percentile_25 ?? point.median_price))}`,
+    )
+    .reverse();
+  const median = visible
+    .map((point, index) => `${x(index)},${y(Number(point.median_price))}`)
+    .join(" ");
+
+  return (
+    <div className="history-chart">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Evolução da mediana e da faixa interquartil de preços"
+      >
+        <polygon className="history-band" points={[...upper, ...lower].join(" ")} />
+        <polyline className="history-line" points={median} />
+        {visible.map((point, index) => (
+          <circle
+            className="history-point"
+            key={point.month}
+            cx={x(index)}
+            cy={y(Number(point.median_price))}
+            r="4"
+          >
+            <title>{`${date(point.month)}: ${money(point.median_price)}`}</title>
+          </circle>
+        ))}
+      </svg>
+      <div className="history-chart-axis">
+        <span>{date(visible[0].month)}</span>
+        <span>{date(visible[visible.length - 1].month)}</span>
+      </div>
+    </div>
+  );
+}
+
 function Metric({ label, value, note }: { label: string; value: string; note: string }) {
   return (
     <div className="metric-card">
@@ -74,26 +192,32 @@ function Metric({ label, value, note }: { label: string; value: string; note: st
 }
 
 export default function AnalyticsExplorer() {
-  const [query, setQuery] = useState(DEFAULT_QUERY);
-  const [filters, setFilters] = useState<AnalyticsFilters>({ ...EMPTY_FILTERS });
+  const initialState = useRef(readInitialState()).current;
+  const [query, setQuery] = useState(initialState.query);
+  const [filters, setFilters] = useState<AnalyticsFilters>({ ...initialState.filters });
+  const [sort, setSort] = useState<ProductSort>(initialState.sort);
   const [appliedFilters, setAppliedFilters] = useState<AnalyticsFilters>({
-    ...EMPTY_FILTERS,
+    ...initialState.filters,
   });
-  const [appliedQuery, setAppliedQuery] = useState(DEFAULT_QUERY);
+  const [appliedQuery, setAppliedQuery] = useState(initialState.query);
+  const [appliedSort, setAppliedSort] = useState<ProductSort>(initialState.sort);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [offset, setOffset] = useState(0);
+  const [offset, setOffset] = useState(initialState.offset);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [bundle, setBundle] = useState<ProductAnalyticsBundle | null>(null);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const detailRef = useRef<HTMLElement>(null);
 
   async function runSearch(
     nextQuery = query,
     nextFilters = filters,
     nextOffset = 0,
+    nextSort = sort,
   ) {
     const cleaned = nextQuery.trim();
     if (cleaned.length < 2) {
@@ -110,6 +234,7 @@ export default function AnalyticsExplorer() {
       const response = await searchProducts(
         cleaned,
         nextFilters,
+        nextSort,
         PAGE_SIZE,
         nextOffset,
       );
@@ -118,6 +243,8 @@ export default function AnalyticsExplorer() {
       setOffset(response.offset);
       setAppliedQuery(cleaned);
       setAppliedFilters({ ...nextFilters });
+      setAppliedSort(nextSort);
+      syncExplorerUrl(cleaned, nextFilters, nextSort, response.offset);
     } catch (requestError) {
       setResults([]);
       setTotal(0);
@@ -132,20 +259,27 @@ export default function AnalyticsExplorer() {
     }
   }
 
-  async function selectProduct(item: ProductSearchItem) {
-    setSelectedId(item.product_id);
+  async function loadProduct(
+    productId: string,
+    nextFilters = appliedFilters,
+    shouldScroll = true,
+  ) {
+    setSelectedId(productId);
     setLoading(true);
     setError(null);
 
     try {
       const analytics = await fetchProductAnalytics(
-        item.product_id,
-        appliedFilters,
+        productId,
+        nextFilters,
       );
       setBundle(analytics);
-      window.requestAnimationFrame(() => {
-        detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      syncExplorerUrl(appliedQuery, nextFilters, appliedSort, offset, productId);
+      if (shouldScroll) {
+        window.requestAnimationFrame(() => {
+          detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
     } catch (requestError) {
       setBundle(null);
       setError(
@@ -158,13 +292,53 @@ export default function AnalyticsExplorer() {
     }
   }
 
+  async function selectProduct(item: ProductSearchItem) {
+    await loadProduct(item.product_id);
+  }
+
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareFeedback("Link copiado");
+    } catch {
+      setShareFeedback("Copie a URL do navegador");
+    }
+  }
+
+  async function exportCsv() {
+    if (!selectedId) return;
+    setExporting(true);
+    setError(null);
+    try {
+      await downloadProductRecordsCsv(selectedId, appliedFilters);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Não foi possível exportar os registros.",
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void runSearch();
   }
 
   useEffect(() => {
-    void runSearch(DEFAULT_QUERY, EMPTY_FILTERS, 0);
+    void (async () => {
+      await runSearch(
+        initialState.query,
+        initialState.filters,
+        initialState.offset,
+        initialState.sort,
+      );
+      if (initialState.productId) {
+        await loadProduct(initialState.productId, initialState.filters, false);
+      }
+    })();
   }, []);
 
   const summary = bundle?.summary;
