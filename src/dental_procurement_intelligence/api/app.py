@@ -42,8 +42,24 @@ def _bootstrap_demo_database(path: Path) -> Path:
     from dental_procurement_intelligence.analytics.demo_data import build_demo_data
     from dental_procurement_intelligence.pncp import PNCPClient
 
+    max_results_raw = os.environ.get("ATLAS_BOOTSTRAP_MAX_RESULTS", "8").strip()
+    try:
+        max_results = int(max_results_raw)
+    except ValueError as exc:
+        raise RuntimeError(
+            "ATLAS_BOOTSTRAP_MAX_RESULTS deve ser um inteiro positivo."
+        ) from exc
+    if max_results < 1:
+        raise RuntimeError(
+            "ATLAS_BOOTSTRAP_MAX_RESULTS deve ser um inteiro positivo."
+        )
+
     with PNCPClient() as client:
-        result = build_demo_data(client, path.parent)
+        result = build_demo_data(
+            client,
+            path.parent,
+            max_result_requests_per_procurement=max_results,
+        )
 
     generated = Path(result.database_path)
     if generated != path:
