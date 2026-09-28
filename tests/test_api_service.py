@@ -1,3 +1,4 @@
+from decimal import Decimal
 from pathlib import Path
 
 import duckdb
@@ -197,32 +198,33 @@ def test_product_search_groups_awards_by_technical_identity(
             SELECT * FROM (
                 VALUES
                     (
-                        'p1', 'a1', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'p1', 'a1', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        '111', 'CE', DATE '2026-05-10',
+                        '111', 'CE', DATE '2026-05-10', 10.0,
                         'defensible', 10.00
                     ),
                     (
-                        'p2', 'a2', 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'p2', 'a2', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
                         'composite_resin', 'syringe', 'A2', NULL,
                         'nanohybrid', 'light_cure', NULL, NULL, NULL,
                         NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
-                        '222', 'MG', DATE '2026-06-10',
+                        '222', 'MG', DATE '2026-06-10', 20.0,
                         'defensible', 12.00
                     ),
                     (
-                        'p3', 'a3', 'IONOMERO DE VIDRO 10G',
+                        'p3', 'a3', 2, 'IONOMERO DE VIDRO 10G',
                         'glass_ionomer', 'powder', NULL, NULL,
                         NULL, NULL, NULL, NULL, NULL,
                         NULL, NULL, 1, 10.0, 'g', NULL, NULL,
-                        '333', 'PR', DATE '2026-06-11',
+                        '333', 'PR', DATE '2026-06-11', 5.0,
                         'review', NULL
                     )
             ) AS t(
                 procurement_key,
                 award_key,
+                item_number,
                 original_description,
                 product_category,
                 presentation,
@@ -243,6 +245,7 @@ def test_product_search_groups_awards_by_technical_identity(
                 supplier_document,
                 state_code,
                 analysis_date,
+                awarded_quantity,
                 price_normalization_status,
                 awarded_price_per_base_unit
             )
@@ -274,3 +277,130 @@ def test_product_search_rejects_short_query(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="pelo menos 2"):
         service.analytics_product_search(database, query="a")
+
+
+
+def test_product_summary_prioritizes_median_and_marks_small_sample(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards AS
+            SELECT * FROM (
+                VALUES
+                    (
+                        'p1', 'a1', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '111', 'CE', DATE '2026-05-10', 10.0,
+                        'defensible', 10.00
+                    ),
+                    (
+                        'p2', 'a2', 1, 'RESINA COMPOSTA A2 SERINGA 4G',
+                        'composite_resin', 'syringe', 'A2', NULL,
+                        'nanohybrid', 'light_cure', NULL, NULL, NULL,
+                        NULL, NULL, 1, 4.0, 'g', 4.0, 'g',
+                        '222', 'MG', DATE '2026-06-10', 20.0,
+                        'defensible', 12.00
+                    )
+            ) AS t(
+                procurement_key,
+                award_key,
+                item_number,
+                original_description,
+                product_category,
+                presentation,
+                shade,
+                concentration_percent,
+                resin_technology,
+                curing_mode,
+                adhesive_strategy,
+                ionomer_use,
+                fluoride_formulation,
+                anesthetic_active_ingredient,
+                anesthetic_vasoconstrictor,
+                package_count,
+                unit_quantity_value,
+                unit_quantity_unit,
+                normalized_quantity_value,
+                normalized_quantity_unit,
+                supplier_document,
+                state_code,
+                analysis_date,
+                awarded_quantity,
+                price_normalization_status,
+                awarded_price_per_base_unit
+            )
+            """
+        )
+
+    search = service.analytics_product_search(
+        database,
+        query="resina composta A2",
+    )
+    product_id = search["items"][0]["product_id"]
+
+    summary = service.analytics_product_summary(
+        database,
+        product_id=product_id,
+    )
+
+    assert summary["display_name"].startswith("Resina composta")
+    assert summary["award_count"] == 2
+    assert summary["procurement_count"] == 2
+    assert summary["item_count"] == 2
+    assert summary["supplier_count"] == 2
+    assert summary["state_count"] == 2
+    assert summary["price_sample_count"] == 2
+    assert summary["minimum_sample_size"] == 5
+    assert summary["sample_sufficient"] is False
+    assert summary["price_unit"] == "R$/g"
+    assert summary["price_stats"]["median_price"] == Decimal("11.000")
+    assert summary["price_stats"]["min_price"] == Decimal("10.000")
+    assert summary["price_stats"]["max_price"] == Decimal("12.000")
+    assert float(summary["price_stats"]["total_physical_quantity"]) == 120.0
+
+
+def test_product_summary_rejects_unknown_product(tmp_path: Path) -> None:
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            """
+            CREATE TABLE silver_awards (
+                product_category VARCHAR,
+                presentation VARCHAR,
+                shade VARCHAR,
+                concentration_percent DOUBLE,
+                resin_technology VARCHAR,
+                curing_mode VARCHAR,
+                adhesive_strategy VARCHAR,
+                ionomer_use VARCHAR,
+                fluoride_formulation VARCHAR,
+                anesthetic_active_ingredient VARCHAR,
+                anesthetic_vasoconstrictor VARCHAR,
+                package_count BIGINT,
+                unit_quantity_value DOUBLE,
+                unit_quantity_unit VARCHAR,
+                normalized_quantity_value DOUBLE,
+                normalized_quantity_unit VARCHAR,
+                procurement_key VARCHAR,
+                item_number BIGINT,
+                supplier_document VARCHAR,
+                state_code VARCHAR,
+                analysis_date DATE,
+                original_description VARCHAR,
+                awarded_quantity DOUBLE,
+                price_normalization_status VARCHAR,
+                awarded_price_per_base_unit DECIMAL(38,12)
+            )
+            """
+        )
+
+    with pytest.raises(LookupError, match="não encontrado"):
+        service.analytics_product_summary(
+            database,
+            product_id="0" * 32,
+        )
