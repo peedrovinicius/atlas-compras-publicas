@@ -5,8 +5,8 @@ from dental_procurement_intelligence.analytics import (
     DEMO_CNPJ,
     DEMO_SEQUENCE,
     DEMO_YEAR,
+    demo_data,
 )
-from dental_procurement_intelligence.analytics import demo_data
 from dental_procurement_intelligence.cli import build_parser
 
 
