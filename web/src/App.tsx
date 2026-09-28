@@ -360,6 +360,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Ir para o conteúdo
+      </a>
       <header className="site-header">
         <a className="brand" href="/" aria-label="Atlas de Compras Públicas">
           <span className="brand-mark">A</span>
@@ -374,6 +377,7 @@ export default function App() {
             <button
               type="button"
               className={mode === "analytics" ? "active" : ""}
+              aria-pressed={mode === "analytics"}
               onClick={() => setMode("analytics")}
             >
               Preços
@@ -381,12 +385,15 @@ export default function App() {
             <button
               type="button"
               className={mode === "laboratory" ? "active" : ""}
+              aria-pressed={mode === "laboratory"}
               onClick={() => setMode("laboratory")}
             >
               Laboratório
             </button>
           </div>
           <span
+            role="status"
+            aria-live="polite"
             className={
               apiOnline === false
                 ? "api-state api-state-offline"
@@ -420,7 +427,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {mode === "analytics" ? (
           <AnalyticsExplorer />
         ) : (
@@ -460,7 +467,11 @@ export default function App() {
 
             <div className="composer-footer">
               <div>
-                <p className={error ? "feedback feedback-error" : "feedback"}>
+                <p
+                  className={error ? "feedback feedback-error" : "feedback"}
+                  role={error ? "alert" : "status"}
+                  aria-live="polite"
+                >
                   {error ?? message}
                 </p>
               </div>
