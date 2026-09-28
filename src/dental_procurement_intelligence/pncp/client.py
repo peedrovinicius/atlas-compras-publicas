@@ -47,7 +47,7 @@ class PNCPClient:
             transport=transport,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "atlas-compras-publicas/1.48",
+                "User-Agent": "atlas-compras-publicas/1.49",
             },
         )
 
@@ -78,71 +78,32 @@ class PNCPClient:
     def _ensure_list(payload: Any) -> Iterable[dict[str, Any]]:
         if not isinstance(payload, list):
             raise ValueError("Unexpected PNCP payload: expected a JSON array")
-        for record in payload:
-            if not isinstance(record, dict):
-                raise ValueError("Unexpected PNCP payload: array entries must be objects")
-            yield record
+        return payload
 
-    @staticmethod
-    def _ensure_result_list(payload: Any) -> Iterable[dict[str, Any]]:
-        records = payload.get("listaResultados") if isinstance(payload, dict) else payload
-        if not isinstance(records, list):
-            raise ValueError("Unexpected PNCP result payload")
-        for record in records:
-            if not isinstance(record, dict):
-                raise ValueError("Unexpected PNCP result entry")
-            yield record
-
-    def get_contract_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
-        cnpj = _validate_cnpj(cnpj)
-        return self._get_raw(f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}")
-
-    def get_contract(self, cnpj: str, year: int, sequence: int) -> PNCPContract:
-        cnpj = _validate_cnpj(cnpj)
-        payload = self._get_json(f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}")
-        if not isinstance(payload, dict):
-            raise ValueError("Unexpected PNCP procurement payload")
+    def contract(self, cnpj: str, year: int, sequence: int) -> PNCPContract:
+        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
+        payload = self._get_json(path)
         return PNCPContract.model_validate(payload)
 
-    def get_items_raw(self, cnpj: str, year: int, sequence: int) -> PNCPRawResponse:
-        cnpj = _validate_cnpj(cnpj)
-        path = f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens"
-        return self._get_raw(path)
+    def contract_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
+        path = f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}/itens"
+        return [
+            PNCPItem.model_validate(item)
+            for item in self._ensure_list(self._get_json(path))
+        ]
 
-    def get_items(self, cnpj: str, year: int, sequence: int) -> list[PNCPItem]:
-        cnpj = _validate_cnpj(cnpj)
-        path = f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens"
-        payload = self._get_json(path)
-        return [PNCPItem.model_validate(record) for record in self._ensure_list(payload)]
-
-    def get_item_results_raw(
-        self,
-        cnpj: str,
-        year: int,
-        sequence: int,
-        item_number: int,
-    ) -> PNCPRawResponse:
-        cnpj = _validate_cnpj(cnpj)
-        path = (
-            f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens/"
-            f"{item_number}/resultados"
-        )
-        return self._get_raw(path)
-
-    def get_item_results(
+    def item_results(
         self,
         cnpj: str,
         year: int,
         sequence: int,
         item_number: int,
     ) -> list[PNCPItemResult]:
-        cnpj = _validate_cnpj(cnpj)
         path = (
-            f"/v1/orgaos/{cnpj}/compras/{year}/{sequence}/itens/"
-            f"{item_number}/resultados"
+            f"/v1/orgaos/{_validate_cnpj(cnpj)}/compras/{year}/{sequence}"
+            f"/itens/{item_number}/resultados"
         )
-        payload = self._get_json(path)
         return [
-            PNCPItemResult.model_validate(record)
-            for record in self._ensure_result_list(payload)
+            PNCPItemResult.model_validate(item)
+            for item in self._ensure_list(self._get_json(path))
         ]
