@@ -1162,6 +1162,13 @@ def _pncp_procurement_url(procurement_key: str | None) -> str | None:
     )
 
 
+_SIGNAL_DISCLAIMER = (
+    "Um sinal estatístico indica apenas que o preço está distante da "
+    "distribuição observada para produtos comparáveis. Isso não constitui "
+    "prova de irregularidade."
+)
+
+
 def analytics_product_signals(
     database_path: str | Path,
     *,
