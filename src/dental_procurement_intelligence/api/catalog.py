@@ -108,7 +108,7 @@ _CATEGORY_SEARCH_ALIASES = {
 }
 
 
-def _normalize_search_text(value: str) -> str:
+def normalize_product_search_text(value: str) -> str:
     decomposed = unicodedata.normalize("NFKD", value)
     without_accents = "".join(
         character
@@ -121,7 +121,7 @@ def _normalize_search_text(value: str) -> str:
 def resolve_product_search_query(
     query: str,
 ) -> tuple[str | None, list[str], str | None]:
-    normalized = _normalize_search_text(query)
+    normalized = normalize_product_search_text(query)
     if not normalized:
         return None, [], None
 
@@ -130,7 +130,7 @@ def resolve_product_search_query(
 
     for category, aliases in _CATEGORY_SEARCH_ALIASES.items():
         for alias in aliases:
-            normalized_alias = _normalize_search_text(alias)
+            normalized_alias = normalize_product_search_text(alias)
             padded_query = f" {normalized} "
             padded_alias = f" {normalized_alias} "
             if (
@@ -151,7 +151,7 @@ def resolve_product_search_query(
 
     for category, aliases in _CATEGORY_SEARCH_ALIASES.items():
         for alias in aliases:
-            normalized_alias = _normalize_search_text(alias)
+            normalized_alias = normalize_product_search_text(alias)
             alias_tokens = normalized_alias.split()
             size = len(alias_tokens)
 
