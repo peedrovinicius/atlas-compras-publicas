@@ -492,3 +492,138 @@ def analytics_product_history(
         "points": rows,
         "total_observations": sum(row["observations"] for row in rows),
     }
+
+
+
+def analytics_product_regions(
+    database_path: str | Path,
+    *,
+    product_id: str,
+) -> dict[str, Any]:
+    path = _require_database(database_path)
+    if len(product_id) != 32:
+        raise ValueError("product_id inválido")
+
+    identity = _product_identity_expression()
+
+    with duckdb.connect(str(path), read_only=True) as connection:
+        exists = connection.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM silver_awards
+            WHERE {identity} = ?
+            """,
+            [product_id],
+        ).fetchone()[0]
+        if not exists:
+            raise LookupError("Produto não encontrado na base analítica")
+
+        national = connection.execute(
+            f"""
+            SELECT
+                COUNT(*) AS observations,
+                COUNT(DISTINCT procurement_key) AS procurement_count,
+                COUNT(DISTINCT state_code) AS state_count,
+                MEDIAN(awarded_price_per_base_unit) AS median_price
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND price_normalization_status = 'defensible'
+              AND awarded_price_per_base_unit IS NOT NULL
+              AND awarded_price_per_base_unit > 0
+            """,
+            [product_id],
+        ).fetchone()
+
+        national_columns = [
+            "observations",
+            "procurement_count",
+            "state_count",
+            "median_price",
+        ]
+        national_summary = dict(
+            zip(national_columns, national, strict=True)
+        )
+
+        cursor = connection.execute(
+            f"""
+            WITH state_stats AS (
+                SELECT
+                    state_code,
+                    macroregion,
+                    COUNT(*) AS observations,
+                    COUNT(DISTINCT procurement_key) AS procurement_count,
+                    MEDIAN(awarded_price_per_base_unit) AS median_price
+                FROM silver_awards
+                WHERE {identity} = ?
+                  AND price_normalization_status = 'defensible'
+                  AND awarded_price_per_base_unit IS NOT NULL
+                  AND awarded_price_per_base_unit > 0
+                  AND state_code IS NOT NULL
+                GROUP BY state_code, macroregion
+            )
+            SELECT
+                state_code,
+                macroregion,
+                observations,
+                procurement_count,
+                median_price,
+                CASE
+                    WHEN ? IS NULL OR ? = 0 THEN NULL
+                    ELSE ROUND(
+                        100 * (
+                            CAST(median_price AS DOUBLE)
+                            / CAST(? AS DOUBLE)
+                            - 1
+                        ),
+                        2
+                    )
+                END AS difference_from_national_percent
+            FROM state_stats
+            ORDER BY observations DESC, state_code
+            """,
+            [
+                product_id,
+                national_summary["median_price"],
+                national_summary["median_price"],
+                national_summary["median_price"],
+            ],
+        )
+        columns = [column[0] for column in cursor.description]
+        states = [
+            dict(zip(columns, row, strict=True))
+            for row in cursor.fetchall()
+        ]
+
+        region_cursor = connection.execute(
+            f"""
+            SELECT
+                macroregion,
+                COUNT(*) AS observations,
+                COUNT(DISTINCT procurement_key) AS procurement_count,
+                COUNT(DISTINCT state_code) AS state_count,
+                MEDIAN(awarded_price_per_base_unit) AS median_price
+            FROM silver_awards
+            WHERE {identity} = ?
+              AND price_normalization_status = 'defensible'
+              AND awarded_price_per_base_unit IS NOT NULL
+              AND awarded_price_per_base_unit > 0
+              AND macroregion IS NOT NULL
+            GROUP BY macroregion
+            ORDER BY observations DESC, macroregion
+            """,
+            [product_id],
+        )
+        region_columns = [
+            column[0] for column in region_cursor.description
+        ]
+        regions = [
+            dict(zip(region_columns, row, strict=True))
+            for row in region_cursor.fetchall()
+        ]
+
+    return {
+        "product_id": product_id,
+        "national": national_summary,
+        "regions": regions,
+        "states": states,
+    }
