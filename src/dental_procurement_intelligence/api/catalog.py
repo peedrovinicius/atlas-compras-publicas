@@ -130,9 +130,14 @@ def resolve_product_search_query(
             normalized_alias = _normalize_search_text(alias)
             padded_query = f" {normalized} "
             padded_alias = f" {normalized_alias} "
-            if padded_alias in padded_query:
-                if best_match is None or len(normalized_alias) > len(best_match[1]):
-                    best_match = (category, normalized_alias)
+            if (
+                padded_alias in padded_query
+                and (
+                    best_match is None
+                    or len(normalized_alias) > len(best_match[1])
+                )
+            ):
+                best_match = (category, normalized_alias)
 
     if best_match is None:
         return None, normalized.split(), None
