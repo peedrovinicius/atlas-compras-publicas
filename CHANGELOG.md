@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.69.0
+
+- resultados do Explorador passam a permitir seleção para comparação;
+- até 3 produtos podem ser comparados lado a lado;
+- comparação exige mesma categoria e mesma unidade normalizada;
+- tabela comparativa mostra mediana, preços comparáveis, compras, UFs, apresentação e cor;
+- seleção é preservada durante paginação da mesma consulta;
+- comparação é limpa quando consulta, filtros ou ordenação mudam;
+- interface comparativa adaptada para desktop e mobile;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.69.0.
+
 ## 1.68.0
 
 - busca de produtos passa a oferecer ordenação por relevância estruturada como padrão;
