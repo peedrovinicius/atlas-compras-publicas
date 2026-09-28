@@ -31,7 +31,7 @@ pip install -e ".[dev]"
 Execute as verificações principais:
 
 ```bash
-ruff check src tests
+ruff check .
 pytest -q
 ```
 
