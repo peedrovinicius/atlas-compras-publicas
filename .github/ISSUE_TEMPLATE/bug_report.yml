@@ -1,0 +1,45 @@
+name: Relatar problema
+description: Reporte um erro de captura, normalização, benchmark, analytics, API ou documentação.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: Obrigado por ajudar a melhorar o Atlas de Compras Públicas.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: Descreva objetivamente o comportamento observado.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+      description: O que deveria ter acontecido?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área principal
+      options:
+        - Captura PNCP
+        - Normalização e identidade
+        - Benchmarks
+        - Analytics e DuckDB
+        - API e dashboard
+        - Documentação
+        - CI e infraestrutura
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reprodução
+      description: Informe comando, entrada mínima e passos necessários para reproduzir.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências
+      description: Inclua mensagens de erro ou trechos relevantes sem dados pessoais ou segredos.
