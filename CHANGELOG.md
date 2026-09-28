@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.56.0
+
+- resultados de busca passam a expor mediana de preço normalizado antes da abertura da análise;
+- cartões de resultado mostram compras, observações de preço, UFs e atualização mais recente;
+- filtros ativos aparecem como chips removíveis acima dos resultados;
+- busca vazia causada por filtros oferece ação para repetir sem o recorte;
+- aliases seguros adicionados para termos usuais como `CIV`, `cimento de vidro`, `bonding` e `anestesia local`;
+- teste de regressão garante a mediana nos resultados e os novos aliases;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.56.0.
+
 ## 1.55.0
 
 - busca textual genérica passa a ignorar diferenças de acentuação;
