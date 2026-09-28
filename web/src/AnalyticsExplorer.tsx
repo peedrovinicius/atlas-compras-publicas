@@ -263,16 +263,6 @@ function HistoryChart({
   );
 }
 
-function Metric({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{note}</small>
-    </div>
-  );
-}
-
 export default function AnalyticsExplorer() {
   const initialState = useRef(readInitialState()).current;
   const [query, setQuery] = useState(initialState.query);
@@ -1112,6 +1102,11 @@ export default function AnalyticsExplorer() {
                     ? `${number(summary.price_sample_count)} preços comparáveis`
                     : `Amostra pequena: ${number(summary.price_sample_count)} preços`}
                 </span>
+                {summary.latest_update && (
+                  <span className="analytics-updated">
+                    Atualizado {date(summary.latest_update)}
+                  </span>
+                )}
                 <button type="button" onClick={() => void copyShareLink()}>
                   {shareFeedback ?? "Copiar link"}
                 </button>
@@ -1175,14 +1170,49 @@ export default function AnalyticsExplorer() {
               </p>
             )}
 
-            <div className="analytics-metrics" hidden={detailView !== "overview"}>
-              <Metric label="Mediana" value={money(stats.median_price)} note={summary.price_unit ?? "preço normalizado"} />
-              <Metric label="Faixa central" value={`${money(stats.percentile_25)} a ${money(stats.percentile_75)}`} note="25º ao 75º percentil" />
-              <Metric label="Compras" value={number(summary.procurement_count)} note="processos distintos" />
-              <Metric label="Fornecedores" value={number(summary.supplier_count)} note="documentos distintos" />
-              <Metric label="UFs" value={number(summary.state_count)} note="cobertura da amostra" />
-              <Metric label="Período" value={`${date(summary.period_start)} a ${date(summary.period_end)}`} note="datas observadas" />
-            </div>
+            <section className="analytics-executive-summary" hidden={detailView !== "overview"}>
+              <div className="analytics-price-hero">
+                <span>Preço de referência</span>
+                <strong>{money(stats.median_price)}</strong>
+                <small>{summary.price_unit ?? "preço normalizado"}</small>
+                <p>
+                  Metade das observações comparáveis está entre{" "}
+                  <b>{money(stats.percentile_25)}</b> e{" "}
+                  <b>{money(stats.percentile_75)}</b>.
+                </p>
+              </div>
+              <div className="analytics-summary-stats">
+                <div><span>Compras</span><strong>{number(summary.procurement_count)}</strong><small>processos distintos</small></div>
+                <div><span>Fornecedores</span><strong>{number(summary.supplier_count)}</strong><small>documentos distintos</small></div>
+                <div><span>UFs</span><strong>{number(summary.state_count)}</strong><small>cobertura observada</small></div>
+                <div><span>Período</span><strong>{date(summary.period_start)}</strong><small>até {date(summary.period_end)}</small></div>
+              </div>
+            </section>
+
+            {detailView === "market" && (
+              <div className="analytics-view-intro">
+                <div>
+                  <span className="section-kicker">Leitura de mercado</span>
+                  <h3>Onde se compra, quem fornece e quem demanda.</h3>
+                </div>
+                <p>
+                  Compare diferenças regionais e concentração entre fornecedores e órgãos compradores.
+                </p>
+              </div>
+            )}
+
+            {detailView === "evidence" && (
+              <div className="analytics-view-intro">
+                <div>
+                  <span className="section-kicker">Base auditável</span>
+                  <h3>Do indicador de preço até o registro de origem.</h3>
+                </div>
+                <p>
+                  {number(bundle.signals.items.length)} sinais estatísticos e{" "}
+                  {number(bundle.records.total)} registros disponíveis neste recorte.
+                </p>
+              </div>
+            )}
 
             <div className="analytics-grid">
               <article className="analytics-card analytics-card-wide" hidden={detailView !== "overview"}>
