@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.53.0
+
+- descoberta guiada no Explorador de preços com categorias disponíveis na base;
+- atalhos de categoria exibem quantidade de grupos comparáveis e observações de preço;
+- aliases em português permitem buscar por nomes humanos sem conhecer a taxonomia interna;
+- interpretação específica para resina composta, resina flow, adesivo, ionômero, ácido fosfórico, flúor, anestésico e demais categorias odontológicas atuais;
+- buscas amplas como `resina` continuam retornando múltiplos tipos em vez de serem forçadas para uma única categoria;
+- interface informa quando a consulta foi reconhecida como uma categoria;
+- novos testes de regressão para aliases e descoberta de categorias;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.53.0.
+
 ## 1.52.0
 
 - ordenação pública por cobertura de preços, quantidade de compras, atualização mais recente ou nome;
