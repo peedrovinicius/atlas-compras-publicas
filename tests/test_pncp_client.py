@@ -126,3 +126,43 @@ def test_alphanumeric_cnpj_is_preserved() -> None:
         client.close()
 
     assert raw.status_code == 200
+
+
+def test_item_pagination_collects_all_pages() -> None:
+    requested_pages: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        page = int(request.url.params["pagina"])
+        size = int(request.url.params["tamanhoPagina"])
+        requested_pages.append(page)
+        assert size == 2
+
+        payloads = {
+            1: [
+                {"numeroItem": 1, "descricao": "ITEM 1"},
+                {"numeroItem": 2, "descricao": "ITEM 2"},
+            ],
+            2: [
+                {"numeroItem": 3, "descricao": "ITEM 3"},
+            ],
+        }
+        return httpx.Response(200, json=payloads.get(page, []))
+
+    client = PNCPClient(
+        settings=_settings(),
+        transport=httpx.MockTransport(handler),
+    )
+    try:
+        pages = client.get_item_pages_raw(
+            "10.000.000/0000-03",
+            2021,
+            1,
+            page_size=2,
+        )
+        items = client.contract_items("10.000.000/0000-03", 2021, 1)
+    finally:
+        client.close()
+
+    assert len(pages) == 2
+    assert [item.item_number for item in items] == [1, 2, 3]
+    assert requested_pages == [1, 2, 1]
