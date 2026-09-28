@@ -310,46 +310,6 @@ def analytics_product_discovery(
             for row in cursor.fetchall()
         ]
 
-        facet_fields = (
-            "shade",
-            "presentation",
-            "concentration_percent",
-            "resin_technology",
-            "curing_mode",
-            "adhesive_strategy",
-            "ionomer_use",
-            "fluoride_formulation",
-            "anesthetic_active_ingredient",
-            "anesthetic_vasoconstrictor",
-        )
-        facets: dict[str, list[dict[str, Any]]] = {}
-        for field in facet_fields:
-            if field not in available_columns:
-                continue
-
-            facet_cursor = connection.execute(
-                f"""
-                SELECT
-                    CAST({field} AS VARCHAR) AS value,
-                    COUNT(DISTINCT {identity}) AS product_count
-                FROM silver_awards
-                WHERE {search_where_sql}
-                  AND {field} IS NOT NULL
-                  AND TRIM(CAST({field} AS VARCHAR)) <> ''
-                GROUP BY {field}
-                ORDER BY product_count DESC, value
-                LIMIT 8
-                """,
-                parameters,
-            )
-            facets[field] = [
-                {
-                    "value": value,
-                    "product_count": int(product_count),
-                }
-                for value, product_count in facet_cursor.fetchall()
-            ]
-
     for row in rows:
         row["label"] = parser_category_label(row["product_category"])
 
@@ -499,6 +459,46 @@ def analytics_product_search(
             dict(zip(columns, row, strict=True))
             for row in cursor.fetchall()
         ]
+
+        facet_fields = (
+            "shade",
+            "presentation",
+            "concentration_percent",
+            "resin_technology",
+            "curing_mode",
+            "adhesive_strategy",
+            "ionomer_use",
+            "fluoride_formulation",
+            "anesthetic_active_ingredient",
+            "anesthetic_vasoconstrictor",
+        )
+        facets: dict[str, list[dict[str, Any]]] = {}
+        for field in facet_fields:
+            if field not in available_columns:
+                continue
+
+            facet_cursor = connection.execute(
+                f"""
+                SELECT
+                    CAST({field} AS VARCHAR) AS value,
+                    COUNT(DISTINCT {identity}) AS product_count
+                FROM silver_awards
+                WHERE {search_where_sql}
+                  AND {field} IS NOT NULL
+                  AND TRIM(CAST({field} AS VARCHAR)) <> ''
+                GROUP BY {field}
+                ORDER BY product_count DESC, value
+                LIMIT 8
+                """,
+                parameters,
+            )
+            facets[field] = [
+                {
+                    "value": value,
+                    "product_count": int(product_count),
+                }
+                for value, product_count in facet_cursor.fetchall()
+            ]
 
     for row in rows:
         category_label = parser_category_label(row["product_category"])
