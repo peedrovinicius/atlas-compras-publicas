@@ -15,6 +15,7 @@ A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, p�
 - Snapshot de qualidade atualizado para medicamentos v1-v4.
 - Testes de baseline, pós-tuning e snapshot atualizados.
 - README alinhado com a consolidação de medicamentos v1-v4 e com o pós-tuning v1.49.
+- Revisão editorial do README atualizada em `docs/readme-review-v1.49.0.md`.
 - Workflow de CI ampliado para cobrir README e snapshot visual.
 - Auditoria inicial registrada em `docs/audit-v1.49.0.md`.
 
@@ -36,6 +37,7 @@ A release v1.49.0 fecha o ciclo de medicamentos v4 com baseline independente, p�
 - `docs/dashboard-quality-snapshot.html`
 - `docs/assets/dashboard-quality-snapshot.svg`
 - `docs/benchmark-medications-consolidated-v1-v4.md`
+- `docs/readme-review-v1.49.0.md`
 - `pyproject.toml`
 - `src/dental_procurement_intelligence/__init__.py`
 - `src/dental_procurement_intelligence/pncp/client.py`
