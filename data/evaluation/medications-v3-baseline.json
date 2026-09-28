@@ -1,0 +1,40 @@
+{
+  "dataset": "data/evaluation/medications-v3.jsonl",
+  "dataset_git_blob_sha": "3de9b933654f19e5e782861985c68fddb44ed9e7",
+  "frozen_dataset_commit": "036449c2c83588551e51dbc44567364aa4e74e26",
+  "parser_git_blob_sha": "3b88991a1971fcba916d1f6028cef237b80edcdc",
+  "parser_version": "1.46.0",
+  "measurement_method": "deterministic_mirror_of_v1.46_parser_after_dataset_freeze",
+  "source_description_mode": "source_faithful_excerpt",
+  "sample_count": 48,
+  "evaluated_field_count": 192,
+  "correct_field_count": 173,
+  "micro_accuracy": 0.901,
+  "false_positive_count": 0,
+  "false_negative_count": 5,
+  "mismatch_count": 14,
+  "per_field": {
+    "active_ingredient": {
+      "evaluated": 48,
+      "correct": 35,
+      "accuracy": 0.7292
+    },
+    "strength": {
+      "evaluated": 48,
+      "correct": 47,
+      "accuracy": 0.9792
+    },
+    "dosage_form": {
+      "evaluated": 48,
+      "correct": 46,
+      "accuracy": 0.9583
+    },
+    "route": {
+      "evaluated": 48,
+      "correct": 45,
+      "accuracy": 0.9375
+    }
+  },
+  "error_count": 19,
+  "interpretation": "Independent post-v1.46 holdout. No medications-v3 tuning was applied before or during this measurement."
+}
