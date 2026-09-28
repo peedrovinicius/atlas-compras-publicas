@@ -2,9 +2,9 @@
 
 ## Escopo
 
-Auditoria inicial da release v1.49.0 do Atlas de Compras Públicas.
+Auditoria da release v1.49.0 do Atlas de Compras Públicas.
 
-O foco desta etapa é verificar consistência metodológica, documentação pública, separação entre baseline independente e pós-tuning, snapshot de qualidade e estado do CI.
+O foco desta etapa é verificar consistência metodológica, documentação pública, separação entre baseline independente e pós-tuning, snapshot de qualidade e estado real do CI.
 
 ## Estado auditado
 
@@ -17,9 +17,9 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Medicamentos v4 pós-tuning | documentado separadamente |
 | Snapshot v1-v4 | atualizado |
 | Teste de snapshot v1-v4 | atualizado |
-| CI pelo conector | inconclusivo |
+| CI | falhou sem logs úteis |
 
-## Achados iniciais
+## Achados
 
 ### 1. Baseline independente preservada
 
@@ -39,7 +39,7 @@ Resultado preservado:
 
 ### 2. Pós-tuning separado
 
-O pós-tuning v1.49 foi registrado em arquivo separado:
+O pós-tuning v1.49 foi registrado em arquivos separados:
 
 - `data/evaluation/medications-v4-post-v1.49.json`
 - `docs/benchmark-medications-v4-post-tuning.md`
@@ -54,7 +54,7 @@ Resultado:
 
 A auditoria considera correta a separação entre baseline independente e regressão pós-tuning.
 
-### 3. README corrigido
+### 3. README corrigido e reduzido
 
 O README tinha um texto desatualizado dizendo que o v4 ainda não possuía pós-tuning. A inconsistência foi corrigida nesta auditoria.
 
@@ -63,7 +63,8 @@ O README agora:
 - mantém a baseline independente v4;
 - mostra o pós-tuning v1.49 como regressão separada;
 - aponta para o documento técnico correto;
-- evita expandir demais a página principal.
+- reduz excesso operacional na página principal;
+- usa `->` na cadeia de rastreabilidade para evitar travessões em texto público.
 
 ### 4. Snapshot atualizado
 
@@ -79,26 +80,49 @@ Arquivos atualizados:
 - `docs/dashboard-quality-snapshot.html`
 - `docs/assets/dashboard-quality-snapshot.svg`
 
-### 5. CI inconclusivo pelo conector
+### 5. CI passou a cobrir README e snapshot visual
 
-A API do GitHub Actions retornou um run antigo com falha no commit `95209cf`, anterior aos commits finais da release.
+O workflow `.github/workflows/ci.yml` foi ampliado para disparar também quando houver alteração em:
 
-O job falhou sem steps e sem logs úteis disponíveis pela API. Os commits posteriores feitos pelo conector não apareceram como novo workflow executado.
+- `README.md`;
+- `docs/dashboard-quality-snapshot.html`;
+- `docs/assets/dashboard-quality-snapshot.svg`.
+
+Antes, o CI cobria o JSON do snapshot, mas não cobria o HTML e o SVG do snapshot nem o README.
+
+### 6. CI executou, mas falhou sem logs úteis
+
+Após a correção do workflow, houve novo run do GitHub Actions:
+
+| Campo | Valor |
+| --- | --- |
+| Run | `36411056152` |
+| Commit | `57ac5b0d1eea06238443ec1bd00ae4b9aa760758` |
+| Job | `quality` |
+| Status | completed |
+| Conclusão | failure |
+| Steps retornados pela API | nenhum |
+| Logs pela API | indisponíveis, BlobNotFound |
 
 Interpretação da auditoria:
 
 - não é correto declarar CI aprovado;
-- não há erro técnico concreto visível para corrigir a partir dos logs;
-- a verificação final deve ser feita pela aba Actions do GitHub ou por execução local de `ruff check .` e `pytest -q`.
+- a falha ocorreu sem etapas visíveis de `Install`, `Ruff` ou `Tests`;
+- sem logs, não há erro concreto de código para corrigir pela API;
+- o padrão é compatível com falha operacional antes da execução do runner, limite de minutos, fila, permissão, quota ou problema de infraestrutura do Actions;
+- a próxima verificação precisa ser feita visualmente na aba Actions ou por execução local de `ruff check .` e `pytest -q`.
 
-## Checklist de auditoria iniciado
+## Checklist de auditoria
 
 - [x] Conferir separação baseline x pós-tuning.
 - [x] Conferir documentação de release.
 - [x] Conferir README de alto nível.
+- [x] Corrigir README desatualizado.
 - [x] Conferir snapshot v1-v4.
 - [x] Conferir teste de snapshot v1-v4.
-- [x] Registrar limitação de CI.
+- [x] Ampliar cobertura de path do CI para README e snapshot visual.
+- [x] Disparar novo CI via commit no workflow.
+- [x] Registrar falha do CI sem logs úteis.
 - [ ] Conferir Actions manualmente na interface.
 - [ ] Rodar suíte local ou em ambiente conectado.
 - [ ] Conferir links do README no GitHub renderizado.
@@ -110,6 +134,6 @@ Interpretação da auditoria:
 
 A próxima etapa deve focar em três frentes:
 
-1. sanidade visual do README e do snapshot no GitHub;
-2. execução real do CI ou suíte local;
-3. revisão textual para manter o projeto com aparência técnica, séria e sem excesso de documentação operacional.
+1. validação local ou visual do CI;
+2. sanidade visual do README e do snapshot no GitHub;
+3. revisão textual para manter o projeto técnico, sério e sem excesso de documentação operacional.
