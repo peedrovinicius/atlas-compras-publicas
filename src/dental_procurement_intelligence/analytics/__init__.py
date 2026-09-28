@@ -1,4 +1,10 @@
-from .demo_data import DemoDataBuildResult, build_demo_data
+from .demo_data import (
+    DEMO_CNPJ,
+    DEMO_SEQUENCE,
+    DEMO_YEAR,
+    DemoDataBuildResult,
+    build_demo_data,
+)
 from .anomalies import (
     PriceSignalBuildResult,
     anomaly_summary,
@@ -32,6 +38,9 @@ from .quality import (
 
 __all__ = [
     "AnalyticsBuildResult",
+    "DEMO_CNPJ",
+    "DEMO_SEQUENCE",
+    "DEMO_YEAR",
     "AwardBuildResult",
     "AwardDatasetBuildResult",
     "DuckDBWarehouse",
