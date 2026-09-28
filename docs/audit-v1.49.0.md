@@ -36,7 +36,7 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Proteção da `main` | ausente |
 | Rulesets | nenhum ativo |
 | PRs abertos | 0 |
-| Issues abertas | 2 |
+| Issues abertas | 4 |
 | Tag GitHub `v1.49.0` | ausente |
 | Release GitHub `v1.49.0` | ausente |
 | Branches de trabalho auditadas | 27, todas incorporadas à `main` |
@@ -45,6 +45,8 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Índice de documentação | criado |
 | Branches | 55, limpeza destrutiva não aplicada |
 | Descrição do repositório | ausente |
+| Visibilidade | público |
+| Auditoria do domínio de medicamentos/produtos de saúde | issue #30 aberta |
 
 ## Achados
 
@@ -292,7 +294,7 @@ Foram encontradas 55 branches, incluindo releases históricas, branches de avali
 
 Nenhuma branch foi apagada durante a auditoria porque a exclusão é destrutiva e pode remover referências úteis para reprodução histórica.
 
-O repositório permanece privado e atualmente não possui descrição no metadata do GitHub. A descrição deve ser preenchida antes de uma eventual publicação.
+O repositório está público e atualmente não possui descrição no metadata do GitHub. A descrição e os topics continuam pendentes na issue #29.
 
 ### 18. Auditoria textual inicial concluída
 
@@ -339,11 +341,13 @@ A proteção não deve exigir o check `quality` enquanto o GitHub Actions contin
 
 ### 22. Estado de issues e Pull Requests
 
-No momento desta auditoria:
+No momento desta atualização da auditoria:
 
 - PRs abertos: 0;
 - issue #27: exemplo real de entrada e saída do parser;
-- issue #28: proteção da `main` após normalização do CI.
+- issue #28: proteção da `main` após normalização do CI;
+- issue #29: metadados e licença do repositório público;
+- issue #30: reestruturação do domínio de medicamentos e produtos de saúde.
 
 A issue #27 permanece válida como ponto de entrada para colaboração futura.
 
@@ -361,6 +365,40 @@ Portanto, não é correto afirmar que existe uma GitHub Release v1.49.0. A relea
 O metadata do repositório indica que a busca de código não está indexada para esta conexão.
 
 Por isso, resultados vazios em buscas textuais por termos como ChatGPT, OpenAI ou Codex não foram usados como prova isolada. A conclusão de higiene estrutural foi baseada na inspeção completa da árvore de arquivos e nomes versionados.
+
+
+### 25. CI normalizado
+
+A investigação posterior conseguiu acessar os steps e logs completos do GitHub Actions.
+
+O problema real foi dividido em duas etapas:
+
+1. Ruff encontrou 22 erros de estilo e importação. As correções reduziram progressivamente o conjunto até Ruff passar.
+2. Com Ruff verde, o pytest expôs falhas reais e testes desatualizados. Foram corrigidas interfaces compatíveis do cliente PNCP, apresentação e contagem de embalagem no parser e o snapshot v1-v4.
+
+O run 61, associado ao commit `2d6ba44419caa09f925c19996194d575d8613480`, concluiu com sucesso:
+
+- Checkout: success;
+- Python 3.12: success;
+- Install: success;
+- Ruff: success;
+- Tests: success.
+
+Assim, o bloqueio de CI desta auditoria está encerrado.
+
+### 26. Reestruturação do domínio de medicamentos e produtos de saúde
+
+Durante a auditoria foi identificado que o agrupamento atual chamado `medications` precisa de revisão conceitual mais ampla.
+
+A preocupação não será resolvida com rename parcial. Foi aberta a issue #30 para:
+
+- inventariar todos os exemplos de v1 a v4;
+- separar medicamentos de materiais, dispositivos e demais produtos de saúde;
+- revisar namespaces, datasets, benchmarks, documentação e testes;
+- definir uma taxonomia coerente antes de qualquer migração;
+- preservar integralmente as baselines históricas.
+
+Até essa auditoria específica ser feita, não deve haver renomeação em massa do domínio.
 
 ## Checklist de auditoria
 
@@ -397,8 +435,8 @@ Por isso, resultados vazios em buscas textuais por termos como ChatGPT, OpenAI o
 - [x] Criar índice enxuto para docs/.
 - [x] Contabilizar branches sem excluir histórico.
 - [x] Conferir metadata e identificar descrição ausente.
-- [ ] Conferir Actions manualmente na interface.
-- [ ] Rodar suíte local ou em ambiente conectado.
+- [x] Conferir Actions e identificar a causa real da falha.
+- [x] Validar Ruff e pytest no GitHub Actions.
 - [x] Conferir existência dos links locais do README.
 - [ ] Conferir a renderização visual dos links no GitHub.
 - [ ] Conferir visual do snapshot SVG no GitHub renderizado.
@@ -407,6 +445,7 @@ Por isso, resultados vazios em buscas textuais por termos como ChatGPT, OpenAI o
 
 A próxima etapa depende de ambiente de execução ou interface visual:
 
-1. abrir a aba Actions e ler a causa da falha do run `36411056152`;
-2. executar localmente `ruff check .` e `pytest -q`;
-3. conferir visualmente README e snapshot renderizados no GitHub.
+1. executar a auditoria arquitetural da issue #30;
+2. completar metadados e licença da issue #29;
+3. proteger a `main` conforme issue #28;
+4. conferir visualmente README e snapshot renderizados no GitHub.
