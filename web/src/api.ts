@@ -6,6 +6,7 @@ import type {
   ProductAnalyticsBundle,
   ProductBuyers,
   ProductDistribution,
+  ProductDiscoveryResponse,
   ProductHistory,
   ProductRecords,
   ProductRegions,
@@ -77,6 +78,10 @@ export async function normalizeDescriptions(
   });
   const body = await decode<BatchResponse>(response);
   return body.items;
+}
+
+export async function fetchProductDiscovery(): Promise<ProductDiscoveryResponse> {
+  return get<ProductDiscoveryResponse>("/api/v1/products/discovery");
 }
 
 export async function searchProducts(
