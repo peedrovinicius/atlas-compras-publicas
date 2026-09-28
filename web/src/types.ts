@@ -1,3 +1,12 @@
+export type AnalyticsFilters = {
+  state_code: string;
+  macroregion: string;
+  supplier: string;
+  buyer: string;
+  start_date: string;
+  end_date: string;
+};
+
 export type Quantity = {
   value: string;
   unit: string;
@@ -60,6 +69,14 @@ export type ProductSearchItem = {
 
 export type ProductSearchResponse = {
   query: string;
+  filters: {
+    state_code: string | null;
+    macroregion: string | null;
+    supplier: string | null;
+    buyer: string | null;
+    start_date: string | null;
+    end_date: string | null;
+  };
   items: ProductSearchItem[];
   total: number;
   limit: number;
