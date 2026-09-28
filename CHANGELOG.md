@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.57.0
+
+- busca passa a devolver facetas de refinamento calculadas sobre todo o conjunto compatível;
+- refinamentos clicáveis por cor, apresentação, concentração e atributos técnicos;
+- contagens das facetas independem da página atual dos resultados;
+- pesquisas recentes limitadas a seis consultas e mantidas apenas no `localStorage` do navegador;
+- ação explícita para limpar o histórico local;
+- refinamentos preservam filtros e ordenação atuais;
+- teste de regressão protege as contagens das facetas mesmo com paginação;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.57.0.
+
 ## 1.56.0
 
 - resultados de busca passam a expor mediana de preço normalizado antes da abertura da análise;
