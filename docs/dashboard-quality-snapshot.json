@@ -69,10 +69,10 @@
     }
   },
   "medications": {
-    "sample_count": 144,
-    "evaluated_field_count": 576,
-    "correct_field_count": 494,
-    "weighted_micro_accuracy": 0.8576,
+    "sample_count": 192,
+    "evaluated_field_count": 768,
+    "correct_field_count": 683,
+    "weighted_micro_accuracy": 0.8893,
     "holdouts": {
       "v1": {
         "sample_count": 48,
@@ -91,13 +91,19 @@
         "evaluated_field_count": 192,
         "correct_field_count": 173,
         "micro_accuracy": 0.901
+      },
+      "v4": {
+        "sample_count": 48,
+        "evaluated_field_count": 192,
+        "correct_field_count": 189,
+        "micro_accuracy": 0.9844
       }
     },
     "per_field": {
-      "active_ingredient": 0.6528,
-      "strength": 0.9514,
-      "dosage_form": 0.9167,
-      "route": 0.9097
+      "active_ingredient": 0.7344,
+      "strength": 0.9635,
+      "dosage_form": 0.9323,
+      "route": 0.9271
     }
   },
   "limitations": [
