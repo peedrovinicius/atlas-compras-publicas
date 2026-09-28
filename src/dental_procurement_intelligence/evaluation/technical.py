@@ -5,7 +5,6 @@ from typing import Any
 
 from dental_procurement_intelligence.identity import parse_product
 
-
 TECHNICAL_ATTRIBUTE_FIELDS = (
     "resin_technology",
     "curing_mode",
