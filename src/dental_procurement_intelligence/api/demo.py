@@ -48,15 +48,9 @@ DEMO_HTML = """<!doctype html>
   --error: #b42318;
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-}
+body { margin: 0; background: var(--bg); color: var(--text); }
 button,
-textarea {
-  font: inherit;
-}
+textarea { font: inherit; }
 a { color: inherit; }
 .shell {
   width: min(1120px, calc(100vw - 32px));
@@ -70,31 +64,17 @@ a { color: inherit; }
   gap: 18px;
   margin-bottom: 62px;
 }
-.brand {
-  font-weight: 750;
-  letter-spacing: -.02em;
-}
+.brand { font-weight: 750; letter-spacing: -.02em; }
 .toplinks {
   display: flex;
   gap: 18px;
   font-size: 14px;
   color: var(--muted);
 }
-.toplinks a {
-  text-decoration: none;
-}
-.toplinks a:hover {
-  color: var(--text);
-}
-.hero {
-  max-width: 760px;
-  margin-bottom: 34px;
-}
-.eyebrow {
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 10px;
-}
+.toplinks a { text-decoration: none; }
+.toplinks a:hover { color: var(--text); }
+.hero { max-width: 760px; margin-bottom: 34px; }
+.eyebrow { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
 h1 {
   margin: 0;
   font-size: clamp(38px, 7vw, 68px);
@@ -107,7 +87,7 @@ h1 {
   color: var(--muted);
   font-size: 18px;
   line-height: 1.55;
-  max-width: 660px;
+  max-width: 680px;
 }
 .workspace {
   display: grid;
@@ -120,12 +100,8 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 18px;
 }
-.test-panel {
-  padding: 26px;
-}
-.list-panel {
-  padding: 22px;
-}
+.test-panel { padding: 26px; }
+.list-panel { padding: 22px; }
 .panel-title {
   margin: 0 0 6px;
   font-size: 18px;
@@ -145,7 +121,7 @@ label {
 }
 textarea {
   width: 100%;
-  min-height: 122px;
+  min-height: 150px;
   resize: vertical;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -173,27 +149,32 @@ textarea:focus {
   font-weight: 700;
   cursor: pointer;
 }
-.primary[disabled] {
-  opacity: .55;
-  cursor: wait;
-}
-.status {
-  color: var(--muted);
-  font-size: 13px;
-}
+.primary[disabled] { opacity: .55; cursor: wait; }
+.status { color: var(--muted); font-size: 13px; }
 .status[data-kind="ok"] { color: var(--ok); }
 .status[data-kind="error"] { color: var(--error); }
-.result {
+.results {
+  display: grid;
+  gap: 14px;
   margin-top: 26px;
-  padding-top: 22px;
-  border-top: 1px solid var(--line);
 }
-.result-label {
+.result-card {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+.result-index {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .08em;
+  margin-bottom: 4px;
+}
+.result-source {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
 }
 .result-main {
   font-size: 23px;
@@ -205,7 +186,7 @@ textarea:focus {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 .meta {
   background: var(--soft);
@@ -214,21 +195,42 @@ textarea:focus {
   font-size: 12px;
   color: #494949;
 }
-.categories {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.technical {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 18px 0 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fafaf8;
 }
-.categories li {
+.technical dt { color: var(--muted); font-size: 11px; }
+.technical dd {
+  margin: 3px 0 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.categories { list-style: none; padding: 0; margin: 0; }
+.categories li { border-bottom: 1px solid #ecece8; }
+.categories li:last-child { border-bottom: 0; }
+.category-button {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
   padding: 10px 0;
-  border-bottom: 1px solid #ecece8;
+  font: inherit;
   font-size: 14px;
+  cursor: pointer;
 }
-.categories li:last-child {
-  border-bottom: 0;
+.category-button:hover { color: #000; }
+.category-button:focus-visible {
+  outline: 2px solid #aaa;
+  outline-offset: 2px;
 }
 .dot {
   width: 7px;
@@ -237,7 +239,7 @@ textarea:focus {
   background: #92928c;
   flex: 0 0 auto;
 }
-.categories li[data-fallback="true"] {
+.categories li[data-fallback="true"] .category-button {
   color: var(--muted);
 }
 .examples {
@@ -264,32 +266,7 @@ textarea:focus {
   font-size: 12px;
   cursor: pointer;
 }
-.example-buttons button:hover {
-  background: var(--soft);
-}
-details {
-  margin-top: 18px;
-}
-summary {
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 13px;
-}
-.technical {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 20px;
-  margin-top: 16px;
-}
-.technical dt {
-  color: var(--muted);
-  font-size: 11px;
-}
-.technical dd {
-  margin: 3px 0 0;
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
+.example-buttons button:hover { background: var(--soft); }
 footer {
   margin-top: 28px;
   color: var(--muted);
@@ -299,55 +276,28 @@ footer {
   gap: 14px;
   flex-wrap: wrap;
 }
-footer a {
-  color: var(--muted);
-  text-decoration: none;
-}
-footer a:hover {
-  color: var(--text);
-}
 @media (max-width: 820px) {
-  .topbar {
-    margin-bottom: 42px;
-  }
-  .workspace {
-    grid-template-columns: 1fr;
-  }
-  .list-panel {
-    order: 2;
-  }
+  .topbar { margin-bottom: 42px; }
+  .workspace { grid-template-columns: 1fr; }
+  .list-panel { order: 2; }
 }
 @media (max-width: 560px) {
   .shell {
     width: min(100% - 20px, 1120px);
     padding-top: 18px;
   }
-  .toplinks {
-    gap: 10px;
-  }
-  .toplinks .optional {
-    display: none;
-  }
+  .toplinks { gap: 10px; }
+  .toplinks .optional { display: none; }
   .test-panel,
-  .list-panel {
-    padding: 18px;
-  }
-  h1 {
-    font-size: 42px;
-  }
-  .hero p {
-    font-size: 16px;
-  }
+  .list-panel { padding: 18px; }
+  h1 { font-size: 42px; }
+  .hero p { font-size: 16px; }
   .actions {
     align-items: stretch;
     flex-direction: column;
   }
-  .primary {
-    width: 100%;
-  }
-  .technical {
-    grid-template-columns: 1fr;
-  }
+  .primary { width: 100%; }
+  .technical { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -364,10 +314,10 @@ footer a:hover {
 
   <section class="hero">
     <div class="eyebrow">Normalizador de descrições do PNCP</div>
-    <h1>Teste uma descrição.</h1>
+    <h1>Teste uma ou várias descrições.</h1>
     <p>
-      Cole o texto exatamente como aparece na compra pública. O Atlas mostra o que
-      conseguiu identificar e deixa explícito quando não reconhece o produto.
+      Cole uma descrição por linha. O Atlas analisa até 20 itens de uma vez
+      e mostra os detalhes técnicos de cada resultado.
     </p>
   </section>
 
@@ -375,11 +325,12 @@ footer a:hover {
     <section class="panel test-panel" aria-labelledby="test-title">
       <h2 id="test-title" class="panel-title">Testar agora</h2>
       <p class="panel-copy">
-        Você pode apagar o exemplo e escrever qualquer outra descrição.
+        Uma descrição por linha. Você também pode clicar em uma categoria
+        ao lado para ir direto ao campo.
       </p>
 
-      <label for="description">Descrição</label>
-      <textarea id="description" maxlength="2000">RES FOTOP A2 C/2 SERINGAS 4G</textarea>
+      <label for="description">Descrições</label>
+      <textarea id="description" maxlength="40000">RES FOTOP A2 C/2 SERINGAS 4G</textarea>
 
       <div class="actions">
         <button id="run" class="primary" type="button">Analisar</button>
@@ -388,11 +339,7 @@ footer a:hover {
         </div>
       </div>
 
-      <div class="result">
-        <div class="result-label">Resultado</div>
-        <div id="result-main" class="result-main">Carregando...</div>
-        <div id="result-meta" class="result-meta"></div>
-      </div>
+      <div id="results" class="results" aria-live="polite"></div>
 
       <div class="examples">
         <div class="examples-title">Exemplos rápidos</div>
@@ -416,58 +363,12 @@ footer a:hover {
           </button>
         </div>
       </div>
-
-      <details>
-        <summary>Ver detalhes técnicos</summary>
-        <dl class="technical">
-          <div>
-            <dt>Categoria interna</dt>
-            <dd id="category">...</dd>
-          </div>
-          <div>
-            <dt>Apresentação</dt>
-            <dd id="presentation">...</dd>
-          </div>
-          <div>
-            <dt>Cor</dt>
-            <dd id="shade">...</dd>
-          </div>
-          <div>
-            <dt>Concentração</dt>
-            <dd id="concentration">...</dd>
-          </div>
-          <div>
-            <dt>Quantidade por unidade</dt>
-            <dd id="unit-quantity">...</dd>
-          </div>
-          <div>
-            <dt>Embalagem</dt>
-            <dd id="package-count">...</dd>
-          </div>
-          <div>
-            <dt>Total físico</dt>
-            <dd id="total-quantity">...</dd>
-          </div>
-          <div>
-            <dt>Resolução da medida</dt>
-            <dd id="measurement-resolution">...</dd>
-          </div>
-          <div>
-            <dt>Termos reconhecidos</dt>
-            <dd id="matched-terms">...</dd>
-          </div>
-          <div>
-            <dt>Atributos técnicos</dt>
-            <dd id="technical-attributes">...</dd>
-          </div>
-        </dl>
-      </details>
     </section>
 
     <aside class="panel list-panel" aria-labelledby="list-title">
       <h2 id="list-title" class="panel-title">O que reconhece hoje</h2>
       <p class="panel-copy">
-        Esta lista vem diretamente do parser atual.
+        Clique em qualquer item para ir direto ao campo de teste.
       </p>
       <ul class="categories">
         __SUPPORTED_CATEGORIES__
@@ -477,7 +378,7 @@ footer a:hover {
 
   <footer>
     <span>Atlas de Compras Públicas v__ATLAS_VERSION__</span>
-    <span>60 análises/minuto por IP · até 2.000 caracteres</span>
+    <span>Até 20 descrições por análise · 60 análises/minuto por IP</span>
   </footer>
 </div>
 
@@ -487,8 +388,7 @@ footer a:hover {
 const input = document.getElementById("description");
 const button = document.getElementById("run");
 const statusNode = document.getElementById("status");
-const resultMain = document.getElementById("result-main");
-const resultMeta = document.getElementById("result-meta");
+const resultsNode = document.getElementById("results");
 const labels = __CATEGORY_LABELS__;
 
 const presentationLabels = {
@@ -499,23 +399,9 @@ const presentationLabels = {
   kit: "Kit"
 };
 
-function text(id, value) {
-  const node = document.getElementById(id);
-  const empty = value === null || value === undefined || value === "";
-  node.textContent = empty ? "Não identificado" : value;
-}
-
 function quantity(value) {
-  if (!value) return null;
+  if (!value) return "Não identificado";
   return value.value + " " + value.unit;
-}
-
-function addMeta(value) {
-  if (!value) return;
-  const item = document.createElement("span");
-  item.className = "meta";
-  item.textContent = value;
-  resultMeta.appendChild(item);
 }
 
 function technicalAttributes(value) {
@@ -528,32 +414,92 @@ function technicalAttributes(value) {
   }).join(" | ");
 }
 
-function render(data) {
-  const category = labels[data.category] || data.category;
-  const presentation = presentationLabels[data.presentation] || data.presentation;
+function addMeta(container, value) {
+  if (!value) return;
+  const item = document.createElement("span");
+  item.className = "meta";
+  item.textContent = value;
+  container.appendChild(item);
+}
 
-  resultMain.textContent = category;
-  resultMeta.replaceChildren();
+function addTechnical(grid, label, value) {
+  const wrapper = document.createElement("div");
+  const term = document.createElement("dt");
+  const description = document.createElement("dd");
 
-  if (data.shade) addMeta("Cor " + data.shade);
-  if (data.concentration_percent) {
-    addMeta(data.concentration_percent + "%");
+  term.textContent = label;
+  description.textContent = value || "Não identificado";
+  wrapper.appendChild(term);
+  wrapper.appendChild(description);
+  grid.appendChild(wrapper);
+}
+
+function renderResult(data, index, total) {
+  const card = document.createElement("article");
+  card.className = "result-card";
+
+  const indexNode = document.createElement("div");
+  indexNode.className = "result-index";
+  indexNode.textContent = total > 1 ? "Resultado " + index + " de " + total : "Resultado";
+
+  const source = document.createElement("div");
+  source.className = "result-source";
+  source.textContent = data.original_description;
+
+  const main = document.createElement("div");
+  main.className = "result-main";
+  main.textContent = labels[data.category] || data.category;
+
+  const meta = document.createElement("div");
+  meta.className = "result-meta";
+
+  if (data.shade) addMeta(meta, "Cor " + data.shade);
+  if (data.concentration_percent) addMeta(meta, data.concentration_percent + "%");
+  if (data.presentation) {
+    addMeta(meta, presentationLabels[data.presentation] || data.presentation);
   }
-  if (presentation) addMeta(presentation);
-  if (data.package_count) addMeta(data.package_count + " un");
-  if (data.unit_quantity) addMeta(quantity(data.unit_quantity) + "/un");
-  if (data.total_quantity) addMeta(quantity(data.total_quantity) + " total");
+  if (data.package_count) addMeta(meta, data.package_count + " un");
+  if (data.unit_quantity) addMeta(meta, quantity(data.unit_quantity) + "/un");
+  if (data.total_quantity) addMeta(meta, quantity(data.total_quantity) + " total");
 
-  text("category", data.category);
-  text("presentation", presentation);
-  text("shade", data.shade);
-  text("concentration", data.concentration_percent);
-  text("unit-quantity", quantity(data.unit_quantity));
-  text("package-count", data.package_count);
-  text("total-quantity", quantity(data.total_quantity));
-  text("measurement-resolution", data.measurement_resolution);
-  text("matched-terms", (data.matched_terms || []).join(", ") || "Nenhum");
-  text("technical-attributes", technicalAttributes(data.technical_attributes));
+  const technical = document.createElement("dl");
+  technical.className = "technical";
+  addTechnical(technical, "Categoria interna", data.category);
+  addTechnical(
+    technical,
+    "Apresentação",
+    presentationLabels[data.presentation] || data.presentation
+  );
+  addTechnical(technical, "Cor", data.shade);
+  addTechnical(technical, "Concentração", data.concentration_percent);
+  addTechnical(technical, "Quantidade por unidade", quantity(data.unit_quantity));
+  addTechnical(technical, "Embalagem", data.package_count);
+  addTechnical(technical, "Total físico", quantity(data.total_quantity));
+  addTechnical(technical, "Resolução da medida", data.measurement_resolution);
+  addTechnical(
+    technical,
+    "Termos reconhecidos",
+    (data.matched_terms || []).join(", ") || "Nenhum"
+  );
+  addTechnical(
+    technical,
+    "Atributos técnicos",
+    technicalAttributes(data.technical_attributes)
+  );
+
+  card.appendChild(indexNode);
+  card.appendChild(source);
+  card.appendChild(main);
+  card.appendChild(meta);
+  card.appendChild(technical);
+  resultsNode.appendChild(card);
+}
+
+function renderResults(items) {
+  resultsNode.replaceChildren();
+  items.forEach(function (item, position) {
+    renderResult(item, position + 1, items.length);
+  });
 }
 
 function status(message, kind) {
@@ -561,11 +507,24 @@ function status(message, kind) {
   statusNode.dataset.kind = kind || "";
 }
 
-async function normalize() {
-  const description = input.value.trim();
+function descriptionsFromInput() {
+  return input.value
+    .split("\n")
+    .map(function (value) { return value.trim(); })
+    .filter(Boolean);
+}
 
-  if (description.length < 3) {
-    status("Digite pelo menos 3 caracteres.", "error");
+async function normalize() {
+  const descriptions = descriptionsFromInput();
+
+  if (!descriptions.length) {
+    status("Digite pelo menos uma descrição.", "error");
+    input.focus();
+    return;
+  }
+
+  if (descriptions.length > 20) {
+    status("Use no máximo 20 descrições por vez.", "error");
     input.focus();
     return;
   }
@@ -575,17 +534,29 @@ async function normalize() {
   status("Consultando o parser...", "");
 
   try {
-    const endpoint = "/api/v1/normalize?description=";
-    const response = await fetch(endpoint + encodeURIComponent(description));
+    let response;
+
+    if (descriptions.length === 1) {
+      const endpoint = "/api/v1/normalize?description=";
+      response = await fetch(endpoint + encodeURIComponent(descriptions[0]));
+    } else {
+      response = await fetch("/api/v1/normalize/batch", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(descriptions)
+      });
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
-      const detail = data.detail || "Não foi possível analisar essa descrição.";
+      const detail = data.detail || "Não foi possível analisar as descrições.";
       throw new Error(typeof detail === "string" ? detail : "Entrada inválida.");
     }
 
-    render(data);
-    status("Pronto.", "ok");
+    const items = descriptions.length === 1 ? [data] : data.items;
+    renderResults(items);
+    status(items.length + (items.length === 1 ? " resultado." : " resultados."), "ok");
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao consultar a API.";
     status(message, "error");
@@ -598,7 +569,18 @@ async function normalize() {
 document.querySelectorAll(".example-buttons button").forEach(function (example) {
   example.addEventListener("click", function () {
     input.value = example.dataset.description || "";
+    input.focus();
     normalize();
+  });
+});
+
+document.querySelectorAll(".category-button").forEach(function (category) {
+  category.addEventListener("click", function () {
+    const label = category.dataset.label || "essa categoria";
+    input.scrollIntoView({behavior: "smooth", block: "center"});
+    input.focus();
+    input.select();
+    status("Digite uma descrição de " + label + ".", "");
   });
 });
 
@@ -630,9 +612,11 @@ def render_demo(version: str) -> str:
     supported = "\n".join(
         (
             f'<li data-fallback="{str(item["fallback"]).lower()}">'
+            f'<button class="category-button" type="button" '
+            f'data-label="{escape(str(item["label"]))}">'
             '<span class="dot" aria-hidden="true"></span>'
             + escape(str(item["label"]))
-            + "</li>"
+            + "</button></li>"
         )
         for item in parser_categories()
     )
