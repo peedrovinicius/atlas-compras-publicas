@@ -80,7 +80,8 @@ _BRAND_ONLY_NAMES = {
 
 
 def _prepare_text(description: str) -> str:
-    text = normalize_description(description)
+    protected = description.replace("+", " PLUS ")
+    text = normalize_description(protected).replace(" PLUS ", " + ")
     for source, target in _TEXT_REWRITES:
         text = text.replace(source, target)
     return text
@@ -90,8 +91,14 @@ def _clean_active_ingredient(text: str) -> str | None:
     without_code = _LEADING_CODE.sub("", text).strip()
 
     structured_salts = (
-        (r"^AMBROXOL\s+COMPOSICAO\s+SAL\s+CLORIDRATO\b", "AMBROXOL CLORIDRATO"),
-        (r"^FENTANILA\s+APRESENTACAO\s+SAL\s+CITRATO\b", "FENTANILA CITRATO"),
+        (
+            r"^AMBROXOL\s+COMPOSICAO\s+SAL\s+CLORIDRATO\b",
+            "AMBROXOL CLORIDRATO",
+        ),
+        (
+            r"^FENTANILA\s+APRESENTACAO\s+SAL\s+CITRATO\b",
+            "FENTANILA CITRATO",
+        ),
     )
     for pattern, ingredient in structured_salts:
         if re.search(pattern, without_code):
@@ -101,44 +108,43 @@ def _clean_active_ingredient(text: str) -> str | None:
         without_code, maxsplit=1
     )[0].strip(" ,-")
 
-    first_strength = _STRENGTH.search(ingredient_text)
-    if first_strength:
-        prefix = ingredient_text[: first_strength.start()].strip(" ,-")
+    strength_matches = list(_STRENGTH.finditer(ingredient_text))
+    if strength_matches:
+        first_strength = strength_matches[0]
+        first = ingredient_text[: first_strength.start()].strip(" ,-")
     else:
-        prefix = ingredient_text
+        first = ingredient_text
 
-    prefix = re.sub(
+    first = re.sub(
         r",\s*(FOSFATO|CLORIDRATO|LACTATO)\b",
         r" \1",
-        prefix,
+        first,
     )
-    prefix = re.sub(r"\s+", " ", prefix).strip(" ,-")
+    first = re.sub(r"\s+", " ", first).strip(" ,-")
 
-    if re.search(r"\b(?:FRASCO/AMPOLA|FRASCO|AMPOLA)\b", prefix):
-        prefix = re.split(
+    if re.search(r"\b(?:FRASCO/AMPOLA|FRASCO|AMPOLA)\b", first):
+        first = re.split(
             r"\b(?:FRASCO/AMPOLA|FRASCO|AMPOLA)\b",
-            prefix,
+            first,
             maxsplit=1,
         )[0].strip(" ,-")
 
-    prefix = re.sub(r",?\s*\d+(?:[.,]\d+)?%$", "", prefix).strip(" ,-")
+    first = re.sub(r",?\s*\d+(?:[.,]\d+)?%$", "", first).strip(" ,-")
+    components = [first] if first else []
 
-    components = [prefix] if prefix else []
-
-    tail_pattern = re.compile(
-        r"(?:\+|\s)"
-        r"(?P<ingredient>[A-Z][A-Z -]*?)\s+"
-        r"(?=(?:\d{1,3}(?:\.\d{3})+|\d+(?:[.,]\d+)?)\s*"
-        r"(?:MCG|MG|G|UI)\b)"
-    )
-    for match in tail_pattern.finditer(ingredient_text):
-        candidate = match.group("ingredient").strip(" ,-")
-        candidate = re.sub(r"^(?:PO|DILUENTE)\s+", "", candidate)
-        if (
-            candidate
-            and candidate not in components
-            and not any(candidate in item for item in components)
-        ):
+    for index in range(1, len(strength_matches)):
+        previous = strength_matches[index - 1]
+        current = strength_matches[index]
+        between = ingredient_text[previous.end() : current.start()]
+        if "+" not in between:
+            continue
+        candidate = between.split("+", 1)[1].strip(" ,-")
+        candidate = re.sub(
+            r"^(?:PO|DILUENTE|BISNAGA(?:\s+COM)?)\s+",
+            "",
+            candidate,
+        ).strip(" ,-")
+        if candidate and candidate not in components:
             components.append(candidate)
 
     associated = _ASSOCIATED_INGREDIENT.search(without_code)
@@ -181,6 +187,7 @@ def _clean_active_ingredient(text: str) -> str | None:
         " CREME",
         " GEL VAGINAL",
         " TUBETE",
+        " USO TOPICO",
     )
     positions = [
         cleaned.find(marker)
@@ -189,6 +196,13 @@ def _clean_active_ingredient(text: str) -> str | None:
     ]
     if positions:
         cleaned = cleaned[: min(positions)].strip(" ,-")
+
+    cleaned = re.sub(
+        r"(?<=[A-Z])(?=\d+(?:[.,]\d+)?%)",
+        " ",
+        cleaned,
+    )
+    cleaned = re.sub(r"\s*\d+(?:[.,]\d+)?%.*$", "", cleaned).strip(" ,-")
 
     generic_noise = {
         "",
