@@ -1,7 +1,27 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+
+
+def _coerce_date(value: object) -> object:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip()
+        try:
+            return date.fromisoformat(normalized)
+        except ValueError:
+            return datetime.fromisoformat(
+                normalized.replace("Z", "+00:00")
+            ).date()
+    return value
 
 
 class PNCPBaseModel(BaseModel):
@@ -38,6 +58,11 @@ class PNCPContract(PNCPBaseModel):
     organization: PNCPOrganization | None = Field(default=None, alias="orgaoEntidade")
     organization_unit: PNCPOrganizationUnit | None = Field(default=None, alias="unidadeOrgao")
 
+    @field_validator("publication_date", mode="before")
+    @classmethod
+    def normalize_publication_date(cls, value: object) -> object:
+        return _coerce_date(value)
+
 
 class PNCPItem(PNCPBaseModel):
     """Subset of PNCP procurement-item fields used by the analytical pipeline."""
@@ -66,3 +91,8 @@ class PNCPItemResult(PNCPBaseModel):
     cancellation_date: datetime | None = Field(default=None, alias="dataCancelamento")
     status_id: int | None = Field(default=None, alias="situacaoCompraItemResultadoId")
     status_name: str | None = Field(default=None, alias="situacaoCompraItemResultadoNome")
+
+    @field_validator("result_date", mode="before")
+    @classmethod
+    def normalize_result_date(cls, value: object) -> object:
+        return _coerce_date(value)
