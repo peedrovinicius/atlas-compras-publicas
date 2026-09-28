@@ -35,6 +35,7 @@ A documentação OpenAPI é fornecida pelo FastAPI em `/docs`.
 
 - `GET /api/v1/products/search?q=...`
 - `GET /api/v1/products/{product_id}`
+- `GET /api/v1/products/{product_id}/distribution`
 - `GET /api/v1/products/{product_id}/history`
 - `GET /api/v1/products/{product_id}/regions`
 - `GET /api/v1/products/{product_id}/suppliers`
@@ -85,6 +86,14 @@ A resposta inclui:
 
 A interface apresenta aviso quando a amostra fica abaixo do mínimo metodológico informado pela própria API.
 
+## Distribuição de preços
+
+`/distribution` considera somente observações com preço físico normalizado classificado como `defensible`. A rota divide a faixa entre mínimo e máximo em intervalos de largura uniforme e retorna a contagem por faixa.
+
+O parâmetro `bins` aceita valores entre 5 e 40 e usa 10 por padrão. Quando todos os preços são iguais, a resposta retorna uma única faixa.
+
+A visualização pública usa esses intervalos para mostrar a forma da distribuição sem recalcular preços no frontend.
+
 ## Histórico e geografia
 
 `/history` agrupa por mês e expõe mediana, média, percentis, mínimo, máximo e volume de observações.
@@ -131,7 +140,7 @@ A aplicação pública possui duas áreas.
 
 ### Explorar preços
 
-É a experiência principal. Faz pesquisa por produto e apresenta resumo, histórico, geografia, fornecedores, órgãos compradores, sinais e registros rastreáveis.
+É a experiência principal. Faz pesquisa por produto e apresenta resumo, distribuição de preços, histórico, geografia, fornecedores, órgãos compradores, sinais e cartões de evidência rastreáveis.
 
 ### Laboratório
 
