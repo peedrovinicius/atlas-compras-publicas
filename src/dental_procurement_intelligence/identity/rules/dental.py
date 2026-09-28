@@ -217,7 +217,13 @@ RESIN_TECHNOLOGY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("nanohybrid", ("NANOHIBRIDA", "NANO-HIBRIDA", "NANOHYBRID")),
     (
         "microhybrid",
-        ("MICROHIBRIDA", "MICRO-HIBRIDA", "MICRO HIBRIDA", "MICROHIDRIDA", "MICROHYBRID"),
+        (
+            "MICROHIBRIDA",
+            "MICRO-HIBRIDA",
+            "MICRO HIBRIDA",
+            "MICROHIDRIDA",
+            "MICROHYBRID",
+        ),
     ),
 )
 CURING_MODE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
