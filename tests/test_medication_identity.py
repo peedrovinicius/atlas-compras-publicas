@@ -97,3 +97,67 @@ def test_medication_v1_tuning_keeps_numeric_denominator_context_bounded() -> Non
     assert unknown_form.strength == "0.4 mg"
     assert injectable.strength == "500 mg/5 ml"
     assert ophthalmic.strength == "32 mg"
+
+
+def test_medication_v2_tuning_covers_generalized_variants() -> None:
+    association = parse_medication(
+        "Amoxicilina 50mg + clavulanato de potássio 12,5mg/ml, "
+        "pó para suspensão oral"
+    )
+    elixir = parse_medication("DIGOXINA, 0,05MG/ML, ELIXIR FRASCO 60 ML")
+    capsule = parse_medication("AMOXICILINA 500MG CAPS")
+    gel = parse_medication(
+        "Metronidazol 100mg/g (10%) gel vaginal, bisnaga com 50g"
+    )
+    iv_im = parse_medication("BROMOPRIDA 5MG/ML 2ML IV/IM")
+    salt = parse_medication(
+        "Ambroxol composição: sal cloridrato, concentração: 3, "
+        "forma farmacêutica: xarope"
+    )
+    joined = parse_medication("ACIDOACETICO3%,USOTOPICO.FRASCO1LITRO")
+
+    assert association.active_ingredient == (
+        "AMOXICILINA + CLAVULANATO DE POTASSIO"
+    )
+    assert association.dosage_form == MedicationDosageForm.ORAL_LIQUID
+    assert association.route == MedicationRoute.ORAL
+
+    assert elixir.dosage_form == MedicationDosageForm.ORAL_LIQUID
+    assert elixir.route == MedicationRoute.ORAL
+
+    assert capsule.dosage_form == MedicationDosageForm.CAPSULE
+    assert capsule.route == MedicationRoute.ORAL
+
+    assert gel.active_ingredient == "METRONIDAZOL"
+    assert gel.dosage_form == MedicationDosageForm.TOPICAL
+    assert gel.route == MedicationRoute.TOPICAL
+
+    assert iv_im.dosage_form == MedicationDosageForm.INJECTABLE
+    assert iv_im.route == MedicationRoute.INJECTABLE
+
+    assert salt.active_ingredient == "AMBROXOL CLORIDRATO"
+    assert salt.dosage_form == MedicationDosageForm.ORAL_LIQUID
+
+    assert joined.active_ingredient == "ACIDO ACETICO"
+    assert joined.route == MedicationRoute.TOPICAL
+
+
+def test_medication_v2_tuning_handles_multiple_active_ingredients() -> None:
+    triple = parse_medication(
+        "ACIDOS GRAXOS ESSENCIAIS + RETINOL + RACEALFATOCOFEROL - "
+        "FORMA FARMACEUTICA LOÇÃO OLEOSA, VIA DE ADMINISTRAÇÃO TÓPICA"
+    )
+    dual = parse_medication(
+        "BENZILPENICILINA POTÁSSICA + PROCAÍNA 300.000 UI + "
+        "100.000 UI, PÓ PARA SUSPENSÃO INJETÁVEL"
+    )
+
+    assert triple.active_ingredient == (
+        "ACIDOS GRAXOS ESSENCIAIS + RETINOL + RACEALFATOCOFEROL"
+    )
+    assert triple.dosage_form == MedicationDosageForm.TOPICAL
+    assert triple.route == MedicationRoute.TOPICAL
+
+    assert dual.active_ingredient == (
+        "BENZILPENICILINA POTASSICA + PROCAINA"
+    )
