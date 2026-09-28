@@ -1021,6 +1021,23 @@ def test_product_search_filters_and_paginates(tmp_path: Path) -> None:
     assert page["offset"] == 1
     assert len(page["items"]) == 1
 
+    latest = service.analytics_product_search(
+        database,
+        query="resina",
+        sort="latest",
+        limit=10,
+        offset=0,
+    )
+    assert [item["shade"] for item in latest["items"]] == ["B1", "A3", "A2"]
+    assert latest["sort"] == "latest"
+
+    with pytest.raises(ValueError, match="sort"):
+        service.analytics_product_search(
+            database,
+            query="resina",
+            sort="invalid",
+        )
+
 
 def test_product_filters_apply_to_summary_and_records(tmp_path: Path) -> None:
     database = tmp_path / "analytics.duckdb"
@@ -1134,3 +1151,46 @@ def test_product_filters_apply_to_summary_and_records(tmp_path: Path) -> None:
     assert distribution["observations"] == 1
     assert distribution["min_price"] == 10.0
     assert distribution["max_price"] == 10.0
+
+
+
+def test_product_records_export_collects_all_pages(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[int] = []
+
+    def fake_records(
+        database_path: str | Path,
+        *,
+        product_id: str,
+        limit: int,
+        offset: int,
+        **_: object,
+    ) -> dict[str, object]:
+        calls.append(offset)
+        total = 205
+        remaining = max(0, total - offset)
+        size = min(limit, remaining)
+        return {
+            "product_id": product_id,
+            "items": [
+                {"award_key": f"award-{index}"}
+                for index in range(offset, offset + size)
+            ],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    monkeypatch.setattr(service, "analytics_product_records", fake_records)
+
+    rows = service.analytics_product_records_export(
+        "unused.duckdb",
+        product_id="a" * 32,
+        state_code="CE",
+    )
+
+    assert len(rows) == 205
+    assert rows[0]["award_key"] == "award-0"
+    assert rows[-1]["award_key"] == "award-204"
+    assert calls == [0, 100, 200]
