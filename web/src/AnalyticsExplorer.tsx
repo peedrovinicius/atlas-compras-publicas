@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { downloadProductRecordsCsv, fetchProductAnalytics, fetchProductDiscovery, searchProducts, suggestProducts } from "./api";
 import type {
@@ -214,6 +214,7 @@ export default function AnalyticsExplorer() {
   const [interpretedLabel, setInterpretedLabel] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<ProductSearchItem[]>([]);
   const [suggesting, setSuggesting] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(initialState.offset);
@@ -344,12 +345,46 @@ export default function AnalyticsExplorer() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSuggestions([]);
+    setActiveSuggestionIndex(-1);
     void runSearch();
+  }
+
+  function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape") {
+      setSuggestions([]);
+      setActiveSuggestionIndex(-1);
+      return;
+    }
+
+    if (suggestions.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveSuggestionIndex((current) =>
+        current >= suggestions.length - 1 ? 0 : current + 1,
+      );
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveSuggestionIndex((current) =>
+        current <= 0 ? suggestions.length - 1 : current - 1,
+      );
+      return;
+    }
+
+    if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+      event.preventDefault();
+      const item = suggestions[activeSuggestionIndex];
+      if (item) void chooseSuggestion(item);
+    }
   }
 
   async function chooseSuggestion(item: ProductSearchItem) {
     const currentQuery = query.trim() || item.sample_description;
     setSuggestions([]);
+    setActiveSuggestionIndex(-1);
     setResults([item]);
     setTotal(1);
     setOffset(0);
@@ -370,6 +405,7 @@ export default function AnalyticsExplorer() {
     const cleaned = query.trim();
     if (cleaned.length < 2 || cleaned === appliedQuery) {
       setSuggestions([]);
+      setActiveSuggestionIndex(-1);
       setSuggesting(false);
       return;
     }
@@ -381,10 +417,12 @@ export default function AnalyticsExplorer() {
         .then((response) => {
           if (requestId !== suggestionRequestRef.current) return;
           setSuggestions(response.items);
+          setActiveSuggestionIndex(-1);
         })
         .catch(() => {
           if (requestId !== suggestionRequestRef.current) return;
           setSuggestions([]);
+          setActiveSuggestionIndex(-1);
         })
         .finally(() => {
           if (requestId === suggestionRequestRef.current) {
@@ -477,6 +515,12 @@ export default function AnalyticsExplorer() {
                 aria-autocomplete="list"
                 aria-expanded={suggestions.length > 0}
                 aria-controls="analytics-suggestions"
+                aria-activedescendant={
+                  activeSuggestionIndex >= 0
+                    ? `analytics-suggestion-${suggestions[activeSuggestionIndex]?.product_id}`
+                    : undefined
+                }
+                onKeyDown={handleSearchKeyDown}
               />
               {(suggesting || suggestions.length > 0) && (
                 <div
@@ -489,11 +533,19 @@ export default function AnalyticsExplorer() {
                       Procurando produtos...
                     </div>
                   ) : (
-                    suggestions.map((item) => (
+                    suggestions.map((item, index) => (
                       <button
                         type="button"
                         role="option"
+                        id={`analytics-suggestion-${item.product_id}`}
+                        aria-selected={activeSuggestionIndex === index}
+                        className={
+                          activeSuggestionIndex === index
+                            ? "analytics-suggestion-active"
+                            : undefined
+                        }
                         key={item.product_id}
+                        onMouseEnter={() => setActiveSuggestionIndex(index)}
                         onClick={() => void chooseSuggestion(item)}
                       >
                         <span>
@@ -686,9 +738,27 @@ export default function AnalyticsExplorer() {
         {searching ? (
           <div className="analytics-loading">Consultando a base analítica...</div>
         ) : results.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state analytics-empty-recovery">
             <strong>Nenhum produto encontrado.</strong>
-            <span>Tente um termo mais amplo ou use um dos exemplos acima.</span>
+            <span>
+              Tente um termo mais amplo ou escolha uma categoria disponível na base.
+            </span>
+            {discovery.length > 0 && (
+              <div className="analytics-empty-actions">
+                {discovery.slice(0, 4).map((item) => (
+                  <button
+                    type="button"
+                    key={item.product_category}
+                    onClick={() => {
+                      setQuery(item.label);
+                      void runSearch(item.label, filters, 0, sort);
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="analytics-result-list">
