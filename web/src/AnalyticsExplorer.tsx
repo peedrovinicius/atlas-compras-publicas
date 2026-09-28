@@ -733,7 +733,11 @@ export default function AnalyticsExplorer() {
                 </div>
               )}
             </div>
-            <button className="primary-button" type="submit" disabled={searching}>
+            <button
+              className="primary-button"
+              type="submit"
+              disabled={searching || query.trim().length < 2}
+            >
               {searching ? "Pesquisando..." : "Pesquisar"}
             </button>
           </div>
@@ -867,12 +871,18 @@ export default function AnalyticsExplorer() {
                 onClick={() => {
                   const cleared = { ...EMPTY_FILTERS };
                   setFilters(cleared);
-                  void runSearch(query, cleared, 0, sort);
+                  if (hasSearched && query.trim().length >= 2) {
+                    void runSearch(query, cleared, 0, sort);
+                  }
                 }}
               >
                 Limpar
               </button>
-              <button className="primary-button" type="submit" disabled={searching}>
+              <button
+                className="primary-button"
+                type="submit"
+                disabled={searching || query.trim().length < 2}
+              >
                 Aplicar filtros
               </button>
             </div>
