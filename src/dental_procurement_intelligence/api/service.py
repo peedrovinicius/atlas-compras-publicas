@@ -17,6 +17,8 @@ from dental_procurement_intelligence.analytics import (
 from dental_procurement_intelligence.api.catalog import (
     normalize_product_search_text,
     parser_category_label,
+    product_presentation_label,
+    resolve_product_presentation_token,
     resolve_product_search_query,
 )
 from dental_procurement_intelligence.identity import available_domains
@@ -326,7 +328,7 @@ def analytics_product_search(
     buyer: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
-    sort: str = "coverage",
+    sort: str = "relevance",
     limit: int = 20,
     offset: int = 0,
 ) -> dict[str, Any]:
@@ -338,7 +340,7 @@ def analytics_product_search(
         raise ValueError("limit deve estar entre 1 e 100")
     if offset < 0:
         raise ValueError("offset não pode ser negativo")
-    if sort not in {"coverage", "procurements", "latest", "name"}:
+    if sort not in {"relevance", "coverage", "procurements", "latest", "name"}:
         raise ValueError("sort inválido")
 
     interpreted_category, residual_tokens, interpreted_label = (
@@ -373,9 +375,21 @@ def analytics_product_search(
         search_clauses.append("product_category = ?")
         search_parameters.append(interpreted_category)
 
+    presentation_tokens = {
+        token: resolve_product_presentation_token(token)
+        for token in tokens
+    }
+
     for token in tokens:
-        search_clauses.append(f"{search_text} LIKE ?")
-        search_parameters.append(f"%{token}%")
+        presentation = presentation_tokens[token]
+        if presentation is not None:
+            search_clauses.append(
+                f"({search_text} LIKE ? OR presentation = ?)"
+            )
+            search_parameters.extend([f"%{token}%", presentation])
+        else:
+            search_clauses.append(f"{search_text} LIKE ?")
+            search_parameters.append(f"%{token}%")
 
     identity = _product_identity_expression()
     filter_clauses, filter_parameters = _award_filter_sql(
@@ -406,6 +420,47 @@ def analytics_product_search(
             if "analysis_date" in available_columns
             else "NULL"
         )
+
+        normalized_cleaned = normalize_product_search_text(cleaned)
+        relevance_parts = [
+            (
+                "MAX(CASE WHEN LOWER(STRIP_ACCENTS(original_description)) = ? "
+                "THEN 100 ELSE 0 END)"
+            )
+        ]
+        relevance_parameters: list[Any] = [normalized_cleaned]
+
+        if interpreted_category is not None:
+            relevance_parts.append(
+                "CASE WHEN product_category = ? THEN 40 ELSE 0 END"
+            )
+            relevance_parameters.append(interpreted_category)
+
+        for token in tokens:
+            normalized_token = normalize_product_search_text(token)
+            relevance_parts.append(
+                (
+                    "MAX(CASE WHEN LOWER(STRIP_ACCENTS(original_description)) LIKE ? "
+                    "THEN 10 ELSE 0 END)"
+                )
+            )
+            relevance_parameters.append(f"%{normalized_token}%")
+            relevance_parts.append(
+                (
+                    "CASE WHEN LOWER(STRIP_ACCENTS(COALESCE(shade, ''))) = ? "
+                    "THEN 30 ELSE 0 END"
+                )
+            )
+            relevance_parameters.append(normalized_token)
+
+            presentation = presentation_tokens[token]
+            if presentation is not None:
+                relevance_parts.append(
+                    "CASE WHEN presentation = ? THEN 35 ELSE 0 END"
+                )
+                relevance_parameters.append(presentation)
+
+        relevance_expression = " + ".join(relevance_parts)
 
         total = connection.execute(
             f"""
@@ -438,9 +493,13 @@ def analytics_product_search(
                       AND awarded_price_per_base_unit > 0
                 ) AS median_price,
                 {latest_date_expression} AS latest_date,
-                MIN(original_description) AS sample_description
+                MIN(original_description) AS sample_description,
+                {relevance_expression} AS relevance_score
             {base_sql}
             ORDER BY
+                CASE WHEN ? = 'relevance' THEN relevance_score END DESC,
+                CASE WHEN ? = 'relevance' THEN priced_observation_count END DESC,
+                CASE WHEN ? = 'relevance' THEN procurement_count END DESC,
                 CASE WHEN ? = 'coverage' THEN priced_observation_count END DESC,
                 CASE WHEN ? = 'coverage' THEN procurement_count END DESC,
                 CASE WHEN ? = 'procurements' THEN procurement_count END DESC,
@@ -452,7 +511,21 @@ def analytics_product_search(
                 shade
             LIMIT ? OFFSET ?
             """,
-            [*parameters, sort, sort, sort, sort, sort, sort, limit, offset],
+            [
+                *relevance_parameters,
+                *parameters,
+                sort,
+                sort,
+                sort,
+                sort,
+                sort,
+                sort,
+                sort,
+                sort,
+                sort,
+                limit,
+                offset,
+            ],
         )
         columns = [column[0] for column in cursor.description]
         rows = [
@@ -510,6 +583,32 @@ def analytics_product_search(
         row["display_name"] = " · ".join(
             str(value) for value in details if value
         )
+
+        reasons: list[str] = []
+        if interpreted_label:
+            reasons.append(f"Categoria: {interpreted_label}")
+
+        normalized_shade = normalize_product_search_text(
+            str(row.get("shade") or "")
+        )
+        if normalized_shade and any(
+            normalize_product_search_text(token) == normalized_shade
+            for token in tokens
+        ):
+            reasons.append(f"Cor {row['shade']}")
+
+        for token in tokens:
+            presentation = presentation_tokens[token]
+            if presentation and presentation == row.get("presentation"):
+                reasons.append(
+                    f"Apresentação: {product_presentation_label(presentation)}"
+                )
+                break
+
+        if not reasons:
+            reasons.append("Descrição compatível")
+
+        row["match_reasons"] = reasons[:3]
 
     return {
         "query": cleaned,
