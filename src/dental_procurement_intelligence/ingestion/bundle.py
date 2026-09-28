@@ -21,6 +21,11 @@ class ContractBundle:
     contract_evidence: EvidenceRecord
     item_evidence: EvidenceRecord
     result_evidence: tuple[EvidenceRecord, ...]
+    item_page_evidence: tuple[EvidenceRecord, ...] = ()
+
+    @property
+    def all_item_evidence(self) -> tuple[EvidenceRecord, ...]:
+        return (self.item_evidence, *self.item_page_evidence)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -28,8 +33,11 @@ class ContractBundle:
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "ContractBundle":
         result_records = payload.get("result_evidence", [])
+        page_records = payload.get("item_page_evidence", [])
         if not isinstance(result_records, list):
             raise ValueError("result_evidence deve ser uma lista")
+        if not isinstance(page_records, list):
+            raise ValueError("item_page_evidence deve ser uma lista")
 
         return cls(
             schema_version=int(payload["schema_version"]),
@@ -43,6 +51,9 @@ class ContractBundle:
             result_evidence=tuple(
                 EvidenceRecord(**record) for record in result_records
             ),
+            item_page_evidence=tuple(
+                EvidenceRecord(**record) for record in page_records
+            ),
         )
 
 
@@ -54,12 +65,18 @@ def build_contract_bundle(
     contract_evidence: EvidenceRecord,
     item_evidence: EvidenceRecord,
     result_evidence: tuple[EvidenceRecord, ...],
+    item_page_evidence: tuple[EvidenceRecord, ...] = (),
 ) -> ContractBundle:
-    evidence = (contract_evidence, item_evidence, *result_evidence)
+    evidence = (
+        contract_evidence,
+        item_evidence,
+        *item_page_evidence,
+        *result_evidence,
+    )
     captured_at = max(record.retrieved_at_utc for record in evidence)
 
     return ContractBundle(
-        schema_version=1,
+        schema_version=2,
         procurement_key=procurement_key(cnpj, year, sequence),
         cnpj=cnpj,
         year=year,
@@ -68,6 +85,7 @@ def build_contract_bundle(
         contract_evidence=contract_evidence,
         item_evidence=item_evidence,
         result_evidence=result_evidence,
+        item_page_evidence=item_page_evidence,
     )
 
 
