@@ -10,3 +10,5 @@ class Settings(BaseSettings):
     pncp_base_url: str = Field(default="https://pncp.gov.br/api/pncp")
     pncp_query_base_url: str = Field(default="https://pncp.gov.br/api/consulta")
     pncp_timeout_seconds: float = Field(default=30.0, gt=0)
+    pncp_max_attempts: int = Field(default=3, ge=1, le=5)
+    pncp_retry_backoff_seconds: float = Field(default=0.5, ge=0, le=10)
