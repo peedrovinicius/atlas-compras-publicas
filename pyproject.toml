@@ -20,6 +20,8 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/peedrovinicius/atlas-compras-publicas"
 Documentation = "https://github.com/peedrovinicius/atlas-compras-publicas/tree/main/docs"
+Demo = "https://atlas-compras-publicas.onrender.com"
+API = "https://atlas-compras-publicas.onrender.com/docs"
 Issues = "https://github.com/peedrovinicius/atlas-compras-publicas/issues"
 
 [project.optional-dependencies]
