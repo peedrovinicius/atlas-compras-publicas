@@ -543,3 +543,12 @@ Nenhuma lacuna do v2 é corrigida na v1.45.
 Após tuning controlado, o medicamentos v2 atingiu 192/192 campos corretos e 100% de micro accuracy.
 
 A baseline independente de 79,69% permanece imutável. O resultado pós-tuning está em `medications-v2-post-v1.46.json`.
+
+
+### Medicamentos v3
+
+Holdout independente congelado após a v1.46, com 48 exemplos de 8 contratações inéditas e 192 campos avaliados.
+
+Baseline independente: **173/192 campos corretos (90,10%)**, com 0 falsos positivos, 5 falsos negativos e 14 mismatches.
+
+O dataset e a baseline são imutáveis. Nenhum tuning v3 integra esta release.
