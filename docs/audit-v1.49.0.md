@@ -29,7 +29,17 @@ O foco desta etapa é verificar consistência metodológica, documentação púb
 | Padrão do CI | reproduzido em três commits independentes |
 | Guia local de qualidade | alinhado ao CI |
 | LICENSE | ausente, decisão do mantenedor |
-| SECURITY.md | ausente, melhoria futura |
+| SECURITY.md | presente |
+| SUPPORT.md | presente |
+| CODE_OF_CONDUCT.md | presente |
+| Templates de issue e PR | presentes |
+| Proteção da `main` | ausente |
+| Rulesets | nenhum ativo |
+| PRs abertos | 0 |
+| Issues abertas | 2 |
+| Tag GitHub `v1.49.0` | ausente |
+| Release GitHub `v1.49.0` | ausente |
+| Branches de trabalho auditadas | 27, todas incorporadas à `main` |
 | Estrutura do repositório | 216 arquivos auditados |
 | Arquivos suspeitos/temporários | nenhum encontrado |
 | Índice de documentação | criado |
@@ -219,9 +229,19 @@ A auditoria alinhou o `CONTRIBUTING.md` ao comando real do workflow para evitar 
 
 ### 14. Arquivos de governança pública
 
-`LICENSE` e `SECURITY.md` não existem atualmente.
+A governança foi ampliada durante a auditoria e agora inclui:
 
-Nenhuma licença foi escolhida automaticamente nesta auditoria, pois essa decisão pertence ao mantenedor do projeto. `SECURITY.md` fica registrado como melhoria futura caso o repositório passe a receber contribuições externas ou seja tornado público.
+- `SECURITY.md`;
+- `SUPPORT.md`;
+- `CODE_OF_CONDUCT.md`;
+- `.github/pull_request_template.md`;
+- formulário de bug;
+- formulário de melhoria;
+- configuração de links das issues.
+
+Os arquivos foram revisados e estão coerentes com a metodologia do projeto: não tratam sinal estatístico como prova, orientam o tratamento privado de vulnerabilidades e exigem preservação das baselines.
+
+`LICENSE` continua ausente. Nenhuma licença foi escolhida automaticamente porque essa decisão pertence ao mantenedor.
 
 ### 15. Higiene estrutural do repositório
 
@@ -279,6 +299,53 @@ Pontos mantidos:
 - limitação real do Actions sem logs úteis;
 - status da auditoria textual inicial.
 
+
+### 20. Branches de trabalho não possuem commits perdidos
+
+Foram comparadas com a `main` 27 branches de arquitetura, CI, documentação, features, avaliação e tuning.
+
+Todas apresentaram a `main` como descendente direto, com zero commits exclusivos na branch. Portanto, o conteúdo dessas branches já está incorporado à `main`.
+
+Elas podem ser consideradas candidatas a limpeza futura, mas não foram apagadas porque exclusão de branch é uma ação destrutiva.
+
+### 21. Proteção da main ausente
+
+A API do GitHub informa:
+
+- `protected: false`;
+- proteção desabilitada;
+- nenhum status check obrigatório;
+- lista de rulesets vazia.
+
+Foi criada a issue #28, `[Governança] Proteger a branch main após normalizar o CI`, para registrar a correção necessária.
+
+A proteção não deve exigir o check `quality` enquanto o GitHub Actions continuar falhando antes do primeiro step.
+
+### 22. Estado de issues e Pull Requests
+
+No momento desta auditoria:
+
+- PRs abertos: 0;
+- issue #27: exemplo real de entrada e saída do parser;
+- issue #28: proteção da `main` após normalização do CI.
+
+A issue #27 permanece válida como ponto de entrada para colaboração futura.
+
+### 23. Tag e release GitHub ainda não publicadas
+
+A documentação interna da v1.49.0 existe, mas os endpoints do GitHub retornaram 404 para:
+
+- ref `tags/v1.49.0`;
+- release associada à tag `v1.49.0`.
+
+Portanto, não é correto afirmar que existe uma GitHub Release v1.49.0. A release está documentada no repositório e possui branch própria, mas a tag e a publicação na área Releases ainda precisam ser criadas por uma interface ou integração que suporte essa operação.
+
+### 24. Limitação da busca de código
+
+O metadata do repositório indica que a busca de código não está indexada para esta conexão.
+
+Por isso, resultados vazios em buscas textuais por termos como ChatGPT, OpenAI ou Codex não foram usados como prova isolada. A conclusão de higiene estrutural foi baseada na inspeção completa da árvore de arquivos e nomes versionados.
+
 ## Checklist de auditoria
 
 - [x] Conferir separação baseline x pós-tuning.
@@ -302,6 +369,13 @@ Pontos mantidos:
 - [x] Confirmar que a reexecução falha antes dos steps.
 - [x] Alinhar o comando Ruff do CONTRIBUTING com o CI.
 - [x] Verificar presença de LICENSE e SECURITY.md.
+- [x] Revisar SECURITY, SUPPORT, código de conduta e templates.
+- [x] Conferir proteção da branch main e rulesets.
+- [x] Registrar issue para proteção da main.
+- [x] Conferir PRs e issues abertas.
+- [x] Auditar 27 branches de trabalho contra a main.
+- [x] Confirmar ausência de tag e GitHub Release v1.49.0.
+- [x] Registrar limitação da busca de código não indexada.
 - [x] Inspecionar a árvore completa do repositório.
 - [x] Conferir .gitignore e .env.example.
 - [x] Criar índice enxuto para docs/.
