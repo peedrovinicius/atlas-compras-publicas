@@ -60,7 +60,7 @@ A documentação OpenAPI é fornecida pelo FastAPI em `/docs`.
 
 A interface usa essa resposta para mostrar atalhos clicáveis antes da pesquisa. Assim o usuário pode chegar a uma categoria sem conhecer a nomenclatura interna nem a forma exata usada no PNCP.
 
-A busca também interpreta aliases comuns em português. Expressões como `adesivo odontológico`, `ionômero de vidro`, `resina flow`, `anestésico local` e `flúor` são resolvidas para a categoria correspondente antes de aplicar os demais termos da consulta.
+A busca também interpreta aliases comuns em português. Expressões como `adesivo odontológico`, `ionômero de vidro`, `resina flow`, `anestésico local` e `flúor` são resolvidas para a categoria correspondente antes de aplicar os demais termos da consulta. Termos usuais como `CIV`, `cimento de vidro`, `bonding` e `anestesia local` também são reconhecidos.
 
 Buscas genéricas continuam amplas. Por exemplo, `resina` não é forçada para uma única categoria.
 
@@ -100,7 +100,11 @@ A pesquisa retorna, entre outros campos:
 - quantidade de contratações;
 - fornecedores distintos;
 - UFs observadas;
-- quantidade de observações com preço normalizado defensável.
+- quantidade de observações com preço normalizado defensável;
+- mediana do preço normalizado defensável;
+- data mais recente observada.
+
+O frontend usa esses campos para permitir comparação rápida antes de abrir a análise completa. Filtros ativos aparecem como chips removíveis e, quando um recorte zera os resultados, a interface permite repetir a mesma busca sem filtros.
 
 ## Resumo de preços
 
