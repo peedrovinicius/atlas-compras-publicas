@@ -2,6 +2,18 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.54.0
+
+- autocomplete com até seis produtos reais enquanto o usuário digita;
+- sugestões iniciadas a partir de dois caracteres, com debounce de 250 ms;
+- sugestões respeitam os filtros ativos do Explorador;
+- seleção de sugestão abre diretamente a análise sem etapa intermediária;
+- tolerância conservadora a pequenos erros de digitação nos aliases de categorias;
+- preferência por expressões específicas quando uma forma curta e uma forma aproximada competem;
+- proteção contra classificação de termos não relacionados;
+- novos testes dedicados ao resolvedor de aliases;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.54.0.
+
 ## 1.53.0
 
 - descoberta guiada no Explorador de preços com categorias disponíveis na base;
