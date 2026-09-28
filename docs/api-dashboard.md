@@ -1,10 +1,10 @@
-# API e dashboard analítico
+# API e aplicação analítica
 
 ## Objetivo
 
-Expor as camadas analíticas já existentes do Atlas sem duplicar regra de negócio.
+Expor a camada analítica do Atlas sem duplicar regra de negócio entre CLI, API e interface pública.
 
-A API e o dashboard usam a mesma camada de serviço sobre o DuckDB.
+A API e o frontend consultam a mesma base DuckDB e usam as mesmas identidades de produto, critérios de normalização de preço e regras de rastreabilidade.
 
 ## Instalação da API
 
@@ -15,109 +15,152 @@ pip install -e ".[api]"
 ## Iniciar a API
 
 ~~~bash
-dpi serve-api --database data/analytics.duckdb --host 127.0.0.1 --port 8000
+atlas serve-api --database data/analytics.duckdb --host 127.0.0.1 --port 8000
 ~~~
 
-Rotas v1:
+A documentação OpenAPI é fornecida pelo FastAPI em `/docs`.
+
+## Rotas principais
+
+### Sistema e normalização
 
 - `GET /health`
+- `GET /api/v1/meta`
 - `GET /api/v1/domains`
+- `GET /api/v1/parser/categories`
+- `GET /api/v1/normalize?description=...`
+- `POST /api/v1/normalize/batch`
+
+### Inteligência por produto
+
+- `GET /api/v1/products/search?q=...`
+- `GET /api/v1/products/{product_id}`
+- `GET /api/v1/products/{product_id}/history`
+- `GET /api/v1/products/{product_id}/regions`
+- `GET /api/v1/products/{product_id}/suppliers`
+- `GET /api/v1/products/{product_id}/buyers`
+- `GET /api/v1/products/{product_id}/signals`
+- `GET /api/v1/products/{product_id}/records`
+
+### Visões analíticas gerais
+
 - `GET /api/v1/overview`
 - `GET /api/v1/categories`
 - `GET /api/v1/quality`
 - `GET /api/v1/awards`
 - `GET /api/v1/anomalies`
-- `GET /api/v1/unrecognized?limit=50`
+- `GET /api/v1/unrecognized`
 
-A documentação OpenAPI é fornecida pelo FastAPI quando a API está em execução.
+## Pesquisa e identidade de produto
+
+A busca pública opera sobre produtos já normalizados e exclui a categoria `unknown`.
+
+Cada resultado recebe um `product_id` determinístico calculado a partir dos campos que definem a identidade comparável. A interface usa esse identificador para abrir as demais visões analíticas sem reconstruir regras no frontend.
+
+A pesquisa retorna, entre outros campos:
+
+- nome de exibição;
+- descrição de exemplo;
+- quantidade de homologações;
+- quantidade de contratações;
+- fornecedores distintos;
+- UFs observadas;
+- quantidade de observações com preço normalizado defensável.
+
+## Resumo de preços
+
+O endpoint de produto consolida estatísticas somente sobre observações cujo preço por unidade física foi considerado defensável.
+
+A resposta inclui:
+
+- mediana;
+- média;
+- mínimo e máximo;
+- percentis 25 e 75;
+- desvio padrão;
+- quantidade física agregada;
+- número de observações de preço;
+- período coberto;
+- indicador `sample_sufficient`.
+
+A interface apresenta aviso quando a amostra fica abaixo do mínimo metodológico informado pela própria API.
+
+## Histórico e geografia
+
+`/history` agrupa por mês e expõe mediana, média, percentis, mínimo, máximo e volume de observações.
+
+`/regions` fornece referência nacional, agregação por macrorregião e comparação por UF. A diferença percentual por estado é calculada em relação à mediana nacional do mesmo produto comparável.
+
+## Fornecedores e órgãos compradores
+
+`/suppliers` resume presença na amostra, contratações e mediana de preço por fornecedor.
+
+`/buyers` resume órgãos e unidades compradoras, quantidade de contratações, valor homologado e mediana observada.
+
+Essas visões são descritivas. Elas não atribuem qualidade, responsabilidade ou irregularidade a fornecedores ou órgãos públicos.
+
+## Sinais estatísticos
+
+`/signals` expõe registros marcados pela camada `gold_price_signals`, incluindo contexto de comparação, tamanho do grupo, quartis, MAD, z-score modificado quando disponível e método utilizado.
+
+A resposta inclui obrigatoriamente o aviso interpretativo de que distância estatística não constitui prova de irregularidade.
+
+## Rastreabilidade
+
+`/records` retorna os registros que sustentam a análise do produto, incluindo:
+
+- contratação e item;
+- descrição original;
+- fornecedor;
+- órgão e unidade compradora;
+- localidade e modalidade;
+- valores homologados;
+- status e motivo da normalização do preço;
+- SHA-256 da contratação, item e resultado;
+- link correspondente no PNCP quando reconstruível.
+
+A cadeia de auditoria permanece:
+
+~~~text
+análise -> produto comparável -> homologação -> item -> contratação -> SHA-256 -> evidência original -> PNCP
+~~~
+
+## Aplicação React
+
+A aplicação pública possui duas áreas.
+
+### Explorar preços
+
+É a experiência principal. Faz pesquisa por produto e apresenta resumo, histórico, geografia, fornecedores, órgãos compradores, sinais e registros rastreáveis.
+
+### Laboratório
+
+Mantém o parser interativo. O usuário pode inserir até 20 descrições ou clicar nas categorias publicadas para executar um exemplo automaticamente e inspecionar a saída técnica.
+
+O frontend não contém números analíticos codificados. Os resultados vêm da API.
 
 ## Paginação e filtros
 
-As coleções usam o envelope:
+Coleções paginadas usam `limit` e `offset`. Os limites máximos variam conforme a rota e são validados pela API.
 
-~~~json
-{
-  "items": [],
-  "total": 0,
-  "limit": 50,
-  "offset": 0
-}
-~~~
+Os filtros são parametrizados e não interpolam entrada do usuário diretamente em SQL.
 
-Parâmetros comuns:
+## Dashboard HTML estático
 
-- `limit`: 1 a 500;
-- `offset`: posição inicial, maior ou igual a zero.
-
-Filtros disponíveis:
-
-- `/api/v1/categories`: `category`;
-- `/api/v1/awards`: `category`, `macroregion`, `year`;
-- `/api/v1/anomalies`: `category`, `scope`;
-- `/api/v1/unrecognized`: paginação por `limit` e `offset`.
-
-Exemplo:
-
-~~~text
-/api/v1/awards?category=composite_resin&macroregion=Nordeste&year=2026&limit=25&offset=0
-~~~
-
-Os filtros são aplicados sem interpolação de entrada do usuário em SQL.
-
-## Dashboard HTML
-
-Gerar um snapshot:
+O snapshot HTML continua disponível para inspeção metodológica e pode ser gerado com:
 
 ~~~bash
-dpi build-dashboard \
+atlas build-dashboard \
   --database data/analytics.duckdb \
   --output docs/dashboard.html
 ~~~
 
-O arquivo gerado é autocontido e apresenta:
-
-- total de itens;
-- categorias identificadas;
-- itens totalmente estruturados;
-- qualidade média de normalização;
-- preços normalizados por categoria;
-- homologações e economia, quando disponíveis;
-- sinais estatísticos, quando disponíveis;
-- status dos domínios do motor de identidade.
-
-## Fonte de verdade
-
-O dashboard não possui números codificados no HTML.
-
-Cada execução lê o DuckDB informado e gera o snapshot a partir das mesmas funções usadas pela API e pela CLI analítica.
+A aplicação React não substitui esse artefato. O snapshot continua útil para reprodução local e documentação de qualidade.
 
 ## Segurança interpretativa
 
-Os sinais estatísticos exibidos pelo dashboard são indicadores para priorização analítica.
+Os sinais estatísticos são instrumentos de priorização analítica.
 
 Eles não constituem prova de fraude, sobrepreço, irregularidade ou responsabilidade de qualquer agente.
 
-## Dependências
-
-FastAPI e Uvicorn ficam no extra opcional `api`.
-
-A geração estática do dashboard usa somente dependências já presentes no pacote base.
-
-## Snapshot publicado
-
-Enquanto ainda não existe um DuckDB consolidado versionado, o repositório publica
-um snapshot metodológico real em:
-
-- `docs/dashboard-quality-snapshot.html`;
-- `docs/assets/dashboard-quality-snapshot.svg`;
-- `docs/dashboard-quality-snapshot.json`.
-
-Ele usa exclusivamente baselines congeladas do próprio projeto e não preenche
-painéis de preços com dados fictícios.
-
-## Próximas melhorias
-
-- endpoint de contratação/item;
-- gráficos interativos com dados reais;
-- publicação automatizada do snapshot;
-- autenticação quando houver implantação pública com operações não somente leitura.
+A cobertura da aplicação pública corresponde à base analítica publicada e não deve ser interpretada como cobertura integral do PNCP.
