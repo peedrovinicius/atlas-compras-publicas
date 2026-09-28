@@ -174,7 +174,8 @@ A experiência pública possui duas áreas.
 - refinamentos clicáveis por cor, apresentação e atributos técnicos, com contagem real de grupos compatíveis;
 - pesquisas recentes armazenadas somente no navegador do usuário, com opção de limpar;
 - reforma visual da interface pública, com busca em destaque, filtros avançados recolhidos, cabeçalho simplificado e hierarquia mais limpa;
-- análise dividida em Visão geral, Mercado e Evidências para reduzir rolagem e excesso de informação na mesma tela.
+- análise dividida em Visão geral, Mercado e Evidências para reduzir rolagem e excesso de informação na mesma tela;
+- readiness dedicado do DuckDB em `/ready`, separado do liveness `/health`.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
@@ -269,6 +270,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.67.0](docs/release-v1.67.0.md)
 - [Release v1.66.0](docs/release-v1.66.0.md)
 - [Release v1.65.0](docs/release-v1.65.0.md)
 - [Release v1.64.0](docs/release-v1.64.0.md)

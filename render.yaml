@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: atlas-compras-publicas-analytics
+    runtime: python
+    region: virginia
+    plan: free
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: pip install -e ".[api]" && atlas build-demo-data --output-root data/demo
+    startCommand: uvicorn "dental_procurement_intelligence.api.app:create_app" --factory --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ready
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.11
+      - key: ATLAS_DATABASE_PATH
+        value: data/demo/atlas-demo.duckdb
+      - key: ATLAS_FRONTEND_URL
+        value: https://atlas-compras-publicas-web.onrender.com
+      - key: ATLAS_DEMO_MAX_RESULT_REQUESTS
+        value: "8"
+      - key: PNCP_TIMEOUT_SECONDS
+        value: "8"
+      - key: PNCP_MAX_ATTEMPTS
+        value: "1"
+      - key: PNCP_RETRY_BACKOFF_SECONDS
+        value: "0"
+
+  - type: web
+    name: atlas-compras-publicas-web
+    runtime: static
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: cd web && npm install --no-audit --no-fund && npm run build
+    staticPublishPath: web/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://atlas-compras-publicas-analytics.onrender.com

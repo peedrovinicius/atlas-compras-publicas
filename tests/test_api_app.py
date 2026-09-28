@@ -14,6 +14,7 @@ def test_api_exposes_versioned_analytics_routes() -> None:
 
     assert "/" in paths
     assert "/health" in paths
+    assert "/ready" in paths
     assert "/api/v1/normalize" in paths
     assert "/api/v1/normalize/batch" in paths
     assert "/api/v1/meta" in paths
@@ -76,6 +77,39 @@ def test_api_root_redirects_to_react_frontend() -> None:
     assert response.headers["location"] == (
         "https://atlas-compras-publicas-web.onrender.com"
     )
+
+
+def test_ready_rejects_missing_analytics_database(tmp_path) -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    database = tmp_path / "missing.duckdb"
+    client = TestClient(create_app(database))
+
+    response = client.get("/ready")
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Banco analítico indisponível."}
+
+
+def test_ready_accepts_analytics_database(tmp_path) -> None:
+    pytest.importorskip("fastapi")
+    import duckdb
+    from fastapi.testclient import TestClient
+
+    database = tmp_path / "analytics.duckdb"
+    with duckdb.connect(str(database)) as connection:
+        connection.execute("CREATE TABLE silver_awards (award_key VARCHAR)")
+
+    client = TestClient(create_app(database))
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ready",
+        "version": __version__,
+        "database": "analytics.duckdb",
+    }
 
 
 def test_health_exposes_current_version() -> None:

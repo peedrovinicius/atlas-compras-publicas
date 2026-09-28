@@ -7,6 +7,8 @@ from threading import Lock
 from time import monotonic
 from typing import Any
 
+import duckdb
+
 from dental_procurement_intelligence import __version__
 from dental_procurement_intelligence.api.catalog import parser_categories
 from dental_procurement_intelligence.api.service import (
@@ -67,6 +69,25 @@ def _bootstrap_demo_database(path: Path) -> Path:
         generated.replace(path)
 
     return path
+
+
+def _analytics_database_ready(path: Path) -> bool:
+    if not path.is_file():
+        return False
+
+    try:
+        with duckdb.connect(str(path), read_only=True) as connection:
+            row = connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM information_schema.tables
+                WHERE table_name = 'silver_awards'
+                """
+            ).fetchone()
+    except duckdb.Error:
+        return False
+
+    return bool(row and row[0] > 0)
 
 
 def create_app(database_path: str | Path | None = None) -> Any:
@@ -149,6 +170,19 @@ def create_app(database_path: str | Path | None = None) -> Any:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "version": __version__}
+
+    @app.get("/ready")
+    def ready() -> dict[str, str]:
+        if not _analytics_database_ready(resolved_database_path):
+            raise HTTPException(
+                status_code=503,
+                detail="Banco analítico indisponível.",
+            )
+        return {
+            "status": "ready",
+            "version": __version__,
+            "database": resolved_database_path.name,
+        }
 
     @app.get("/", include_in_schema=False)
     def frontend() -> RedirectResponse:

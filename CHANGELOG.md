@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.67.0
+
+- endpoint `/ready` valida a disponibilidade real do DuckDB e da tabela `silver_awards`;
+- `/health` permanece como liveness simples da aplicação;
+- configuração canônica de produção adicionada em `render.yaml`;
+- Blueprint oficial define apenas frontend e API analítica;
+- auto-deploy canônico passa a aguardar CI com `checksPass`;
+- build da API pública usa amostra PNCP limitada e caminho explícito do DuckDB;
+- frontend e documentação permanecem apontados para `atlas-compras-publicas-analytics`;
+- pacote, API, cliente PNCP e frontend sincronizados em 1.67.0.
+
 ## 1.66.0
 
 - Explorador de preços passa a exibir todas as categorias conhecidas que possuem observações de preço;
