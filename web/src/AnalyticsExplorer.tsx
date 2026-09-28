@@ -5,12 +5,15 @@ import type {
   AnalyticsFilters,
   ProductAnalyticsBundle,
   ProductDiscoveryItem,
+  ProductSearchFacets,
   ProductSearchItem,
   ProductSort,
 } from "./types";
 
 const DEFAULT_QUERY = "resina";
 const PAGE_SIZE = 10;
+const RECENT_SEARCHES_KEY = "atlas:recent-searches";
+const RECENT_SEARCHES_LIMIT = 6;
 const DEFAULT_SORT: ProductSort = "coverage";
 const SORT_OPTIONS: Array<{ value: ProductSort; label: string }> = [
   { value: "coverage", label: "Mais preços comparáveis" },
@@ -35,12 +38,73 @@ const FILTER_LABELS: Record<keyof AnalyticsFilters, string> = {
   start_date: "Desde",
   end_date: "Até",
 };
+const FACET_LABELS: Record<string, string> = {
+  shade: "Cor",
+  presentation: "Apresentação",
+  concentration_percent: "Concentração",
+  resin_technology: "Tecnologia",
+  curing_mode: "Cura",
+  adhesive_strategy: "Estratégia adesiva",
+  ionomer_use: "Uso",
+  fluoride_formulation: "Formulação",
+  anesthetic_active_ingredient: "Princípio ativo",
+  anesthetic_vasoconstrictor: "Vasoconstrictor",
+};
+
+const FACET_VALUE_LABELS: Record<string, string> = {
+  syringe: "Seringa",
+  bottle: "Frasco",
+  tube: "Tubo",
+  jar: "Pote",
+  cartridge: "Tubete",
+  ampoule: "Ampola",
+  kit: "Kit",
+  package: "Pacote",
+  bag: "Saco",
+  light_cure: "Fotopolimerizável",
+  dual_cure: "Cura dual",
+  self_cure: "Autopolimerizável",
+  self_etch: "Autocondicionante",
+  etch_and_rinse: "Condicionamento total",
+  universal: "Universal",
+};
+
 const REGION_OPTIONS = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"];
 const UF_OPTIONS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
   "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
   "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
 ];
+
+function readRecentSearches(): string[] {
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, RECENT_SEARCHES_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+function formatFacetValue(key: string, value: string): string {
+  if (key === "shade") return `Cor ${value}`;
+  if (key === "concentration_percent") return `Concentração ${value}%`;
+  const friendly = FACET_VALUE_LABELS[value];
+  if (friendly) return friendly;
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toLocaleUpperCase("pt-BR"));
+}
+
+function queryFacetValue(value: string): string {
+  return value.replaceAll("_", " ");
+}
 
 function normalizeDiscoveryText(value: string): string {
   return value
@@ -224,6 +288,8 @@ export default function AnalyticsExplorer() {
   const [suggesting, setSuggesting] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [results, setResults] = useState<ProductSearchItem[]>([]);
+  const [facets, setFacets] = useState<ProductSearchFacets>({});
+  const [recentSearches, setRecentSearches] = useState<string[]>(readRecentSearches);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(initialState.offset);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -241,6 +307,7 @@ export default function AnalyticsExplorer() {
     nextFilters = filters,
     nextOffset = 0,
     nextSort = sort,
+    rememberSearch = false,
   ) {
     const cleaned = nextQuery.trim();
     if (cleaned.length < 2) {
@@ -262,6 +329,7 @@ export default function AnalyticsExplorer() {
         nextOffset,
       );
       setResults(response.items);
+      setFacets(response.facets);
       setTotal(response.total);
       setInterpretedLabel(response.interpreted_label);
       setOffset(response.offset);
@@ -269,8 +337,27 @@ export default function AnalyticsExplorer() {
       setAppliedFilters({ ...nextFilters });
       setAppliedSort(nextSort);
       syncExplorerUrl(cleaned, nextFilters, nextSort, response.offset);
+      if (rememberSearch && nextOffset === 0) {
+        const nextRecent = [
+          cleaned,
+          ...recentSearches.filter(
+            (item) =>
+              normalizeDiscoveryText(item) !== normalizeDiscoveryText(cleaned),
+          ),
+        ].slice(0, RECENT_SEARCHES_LIMIT);
+        setRecentSearches(nextRecent);
+        try {
+          window.localStorage.setItem(
+            RECENT_SEARCHES_KEY,
+            JSON.stringify(nextRecent),
+          );
+        } catch {
+          // Histórico recente é apenas uma conveniência local.
+        }
+      }
     } catch (requestError) {
       setResults([]);
+      setFacets({});
       setTotal(0);
       setInterpretedLabel(null);
       setOffset(0);
@@ -282,6 +369,27 @@ export default function AnalyticsExplorer() {
     } finally {
       setSearching(false);
     }
+  }
+
+  function clearRecentSearches() {
+    setRecentSearches([]);
+    try {
+      window.localStorage.removeItem(RECENT_SEARCHES_KEY);
+    } catch {
+      // Sem efeito funcional se o armazenamento local estiver indisponível.
+    }
+  }
+
+  function applyRefinement(value: string) {
+    const refinement = queryFacetValue(value);
+    const current = appliedQuery.trim();
+    const normalizedCurrent = normalizeDiscoveryText(current.replaceAll("_", " "));
+    const normalizedRefinement = normalizeDiscoveryText(refinement);
+    if (normalizedCurrent.includes(normalizedRefinement)) return;
+
+    const nextQuery = `${current} ${refinement}`.trim();
+    setQuery(nextQuery);
+    void runSearch(nextQuery, appliedFilters, 0, appliedSort, true);
   }
 
   function removeAppliedFilter(key: keyof AnalyticsFilters) {
@@ -366,7 +474,7 @@ export default function AnalyticsExplorer() {
     event.preventDefault();
     setSuggestions([]);
     setActiveSuggestionIndex(-1);
-    void runSearch();
+    void runSearch(query, filters, 0, sort, true);
   }
 
   function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -411,6 +519,19 @@ export default function AnalyticsExplorer() {
     setAppliedQuery(currentQuery);
     setAppliedFilters({ ...filters });
     setAppliedSort("coverage");
+    const nextRecent = [
+      currentQuery,
+      ...recentSearches.filter(
+        (item) =>
+          normalizeDiscoveryText(item) !== normalizeDiscoveryText(currentQuery),
+      ),
+    ].slice(0, RECENT_SEARCHES_LIMIT);
+    setRecentSearches(nextRecent);
+    try {
+      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(nextRecent));
+    } catch {
+      // Histórico recente é apenas uma conveniência local.
+    }
     await loadProduct(
       item.product_id,
       filters,
@@ -513,6 +634,22 @@ export default function AnalyticsExplorer() {
     Object.entries(appliedFilters) as Array<[keyof AnalyticsFilters, string]>
   ).filter(([, value]) => value.trim().length > 0);
   const hasAppliedFilters = activeFilterEntries.length > 0;
+  const refinementGroups = Object.entries(facets)
+    .map(([key, values]) => ({
+      key,
+      label: FACET_LABELS[key] ?? key,
+      values: values.filter((item) => {
+        const candidate = normalizeDiscoveryText(
+          queryFacetValue(item.value),
+        );
+        const current = normalizeDiscoveryText(
+          appliedQuery.replaceAll("_", " "),
+        );
+        return candidate.length > 0 && !current.includes(candidate);
+      }),
+    }))
+    .filter((group) => group.values.length > 0)
+    .slice(0, 4);
 
   return (
     <>
@@ -607,7 +744,7 @@ export default function AnalyticsExplorer() {
                     key={item.product_category}
                     onClick={() => {
                       setQuery(item.label);
-                      void runSearch(item.label, filters, 0, sort);
+                      void runSearch(item.label, filters, 0, sort, true);
                     }}
                   >
                     <strong>{item.label}</strong>
@@ -733,13 +870,38 @@ export default function AnalyticsExplorer() {
               key={example}
               onClick={() => {
                 setQuery(example);
-                void runSearch(example, filters, 0);
+                void runSearch(example, filters, 0, sort, true);
               }}
             >
               {example}
             </button>
           ))}
         </div>
+
+        {recentSearches.length > 0 && (
+          <div className="analytics-recent-searches">
+            <div>
+              <span>Pesquisas recentes</span>
+              <button type="button" onClick={clearRecentSearches}>
+                Limpar
+              </button>
+            </div>
+            <div>
+              {recentSearches.map((recent) => (
+                <button
+                  type="button"
+                  key={recent}
+                  onClick={() => {
+                    setQuery(recent);
+                    void runSearch(recent, filters, 0, sort, true);
+                  }}
+                >
+                  {recent}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {interpretedLabel && (
           <p className="analytics-interpreted">
@@ -783,6 +945,29 @@ export default function AnalyticsExplorer() {
           </div>
         )}
 
+        {!searching && refinementGroups.length > 0 && results.length > 0 && (
+          <div className="analytics-refinements">
+            <span>Refinar resultados</span>
+            {refinementGroups.map((group) => (
+              <div key={group.key}>
+                <small>{group.label}</small>
+                <div>
+                  {group.values.slice(0, 6).map((item) => (
+                    <button
+                      type="button"
+                      key={`${group.key}-${item.value}`}
+                      onClick={() => applyRefinement(item.value)}
+                    >
+                      {formatFacetValue(group.key, item.value)}
+                      <b>{number(item.product_count)}</b>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {searching ? (
           <div className="analytics-loading">Consultando a base analítica...</div>
         ) : results.length === 0 ? (
@@ -810,7 +995,7 @@ export default function AnalyticsExplorer() {
                     key={item.product_category}
                     onClick={() => {
                       setQuery(item.label);
-                      void runSearch(item.label, filters, 0, sort);
+                      void runSearch(item.label, filters, 0, sort, true);
                     }}
                   >
                     {item.label}
