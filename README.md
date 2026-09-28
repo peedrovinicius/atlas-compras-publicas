@@ -149,11 +149,12 @@ A experiência pública possui duas áreas.
 **Explorar preços** é a entrada principal. A pesquisa encontra identidades de produto na base analítica e expõe:
 
 - mediana, percentis e tamanho da amostra comparável;
+- distribuição dos preços normalizados por faixa;
 - histórico mensal de preços;
 - comparação por região e UF;
 - fornecedores e órgãos compradores;
 - sinais estatísticos com aviso metodológico explícito;
-- registros que sustentam a análise, com hashes de origem e link para o PNCP.
+- cartões de evidência com contexto da compra, status da normalização, hashes de origem e link para o PNCP.
 
 **Laboratório** mantém o normalizador interativo. É possível digitar descrições livres ou clicar diretamente nas categorias reconhecidas para executar o parser real e inspecionar atributos técnicos, medidas e termos identificados.
 
@@ -162,6 +163,7 @@ Principais endpoints analíticos:
 ```text
 GET /api/v1/products/search?q=...
 GET /api/v1/products/{product_id}
+GET /api/v1/products/{product_id}/distribution
 GET /api/v1/products/{product_id}/history
 GET /api/v1/products/{product_id}/regions
 GET /api/v1/products/{product_id}/suppliers
