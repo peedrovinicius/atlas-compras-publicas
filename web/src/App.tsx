@@ -14,7 +14,7 @@ import type {
   TechnicalAttributes,
 } from "./types";
 
-const DEFAULT_TEXT = "RES FOTOP A2 C/2 SERINGAS 4G";
+const DEFAULT_TEXT = "";
 
 const CATEGORY_EXAMPLES: Record<string, string> = {
   flowable_resin: "RESINA FLOW A2 SERINGA 2G",
@@ -244,7 +244,10 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const [apiVersion, setApiVersion] = useState<string | null>(null);
-  const [message, setMessage] = useState("Preparando o exemplo inicial.");
+  const [message, setMessage] = useState(
+    "Cole uma descrição do PNCP ou escolha um exemplo rápido.",
+  );
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLElement>(null);
@@ -270,6 +273,7 @@ export default function App() {
       return;
     }
 
+    setHasAnalyzed(true);
     setLoading(true);
     setError(null);
     setMessage(
@@ -341,12 +345,18 @@ export default function App() {
         setApiOnline(false);
       });
 
-    void analyze(DEFAULT_TEXT);
-
     return () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (mode !== "laboratory") return;
+
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, [mode]);
 
   return (
     <div className="app-shell">
@@ -415,22 +425,21 @@ export default function App() {
           <AnalyticsExplorer />
         ) : (
           <>
-        <section className="hero">
-          <span className="eyebrow">Normalização auditável do PNCP</span>
-          <h1>Entenda o item antes de comparar o preço.</h1>
+        <section className="hero laboratory-hero">
+          <span className="eyebrow">Laboratório técnico</span>
+          <h1>Veja como o Atlas entende uma descrição do PNCP.</h1>
           <p>
-            Cole uma ou várias descrições de compras públicas. O Atlas estrutura
-            produto, apresentação, quantidade e atributos técnicos usando o
-            parser real do projeto.
+            Cole uma ou mais descrições para inspecionar a normalização,
+            medidas e atributos usados na inteligência de preços.
           </p>
         </section>
 
-        <section className="workspace">
+        <section className="workspace laboratory-workspace">
           <div className="panel composer-panel">
             <div className="section-heading">
               <div>
                 <span className="section-kicker">Entrada</span>
-                <h2>Teste o parser</h2>
+                <h2>Descrição da compra</h2>
               </div>
               <span className="item-count">
                 {descriptions.length}/20 {descriptions.length === 1 ? "item" : "itens"}
@@ -445,7 +454,7 @@ export default function App() {
               ref={inputRef}
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Cole aqui descrições do PNCP, uma por linha."
+              placeholder="Ex.: RESINA FOTOPOLIMERIZÁVEL A2 SERINGA 4G"
               spellCheck={false}
             />
 
@@ -454,19 +463,19 @@ export default function App() {
                 <p className={error ? "feedback feedback-error" : "feedback"}>
                   {error ?? message}
                 </p>
-                <p className="cold-start">
-                  No plano gratuito, a primeira consulta pode levar alguns
-                  segundos para despertar a API.
-                </p>
               </div>
 
               <button
                 className="primary-button"
                 type="button"
-                disabled={loading}
+                disabled={
+                  loading
+                  || descriptions.length === 0
+                  || descriptions.length > 20
+                }
                 onClick={() => void analyze()}
               >
-                {loading ? "Analisando..." : "Analisar"}
+                {loading ? "Analisando..." : "Analisar descrição"}
               </button>
             </div>
 
@@ -489,12 +498,12 @@ export default function App() {
           <aside className="panel categories-panel">
             <div className="section-heading compact">
               <div>
-                <span className="section-kicker">Cobertura atual</span>
-                <h2>O que reconhece</h2>
+                <span className="section-kicker">Vocabulário</span>
+                <h2>Categorias reconhecidas</h2>
               </div>
             </div>
             <p className="aside-copy">
-              Clique em uma categoria para testar automaticamente um exemplo.
+              Escolha uma categoria para preencher e analisar um exemplo real.
             </p>
 
             <div className="category-list">
@@ -518,9 +527,10 @@ export default function App() {
           </aside>
         </section>
 
+        {(hasAnalyzed || loading) && (
         <section
           ref={resultsRef}
-          className="results-section"
+          className="results-section laboratory-results"
           aria-live="polite"
         >
           <div className="results-header">
@@ -556,6 +566,7 @@ export default function App() {
             </div>
           )}
         </section>
+        )}
           </>
         )}
       </main>
