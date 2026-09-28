@@ -6,8 +6,8 @@ from dental_procurement_intelligence.identity.domains import (
     get_domain,
 )
 from dental_procurement_intelligence.identity.rules.medications import (
-    MEDICATIONS_DOMAIN,
     MEDICATION_CATEGORY_SPECS,
+    MEDICATIONS_DOMAIN,
 )
 
 
