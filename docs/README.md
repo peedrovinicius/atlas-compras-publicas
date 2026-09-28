@@ -23,10 +23,15 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 - [Consolidação técnica v1-v12](benchmark-technical-consolidated-v1-v12.md)
 - [Benchmark técnico v12](benchmark-technical-attributes-v12.md)
 - [Pós-tuning técnico v12](benchmark-technical-attributes-v12-post-tuning.md)
-- [Consolidação de medicamentos v1-v4](benchmark-medications-consolidated-v1-v4.md)
-- [Benchmark de medicamentos v4](benchmark-medications-v4.md)
-- [Pós-tuning de medicamentos v4](benchmark-medications-v4-post-tuning.md)
-- [Congelamento do holdout de medicamentos v4](medications-v4-freeze.md)
+
+### Domínio experimental de saúde
+
+O agrupamento histórico `medications` é usado para testar generalização além da odontologia e está em revisão arquitetural na [issue #30](https://github.com/peedrovinicius/atlas-compras-publicas/issues/30).
+
+- [Consolidação histórica v1-v4](benchmark-medications-consolidated-v1-v4.md)
+- [Benchmark independente v4](benchmark-medications-v4.md)
+- [Pós-tuning v4](benchmark-medications-v4-post-tuning.md)
+- [Congelamento do holdout v4](medications-v4-freeze.md)
 
 ## Release atual
 
