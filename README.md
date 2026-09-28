@@ -6,7 +6,7 @@
 
 O Atlas transforma dados públicos do Portal Nacional de Contratações Públicas (PNCP) em informação comparável, rastreável e explicável. O projeto combina engenharia de dados, normalização de produtos, análise de preços e validação quantitativa para apoiar a exploração de compras públicas em diferentes regiões e períodos.
 
-A odontologia é a primeira vertical implementada e funciona como um domínio de alta complexidade para validar o núcleo analítico.
+A odontologia é a primeira vertical implementada e funciona como um domínio de alta complexidade para validar o núcleo analítico. O domínio de medicamentos já possui benchmarks independentes próprios, mas permanece separado da produção até novo holdout pós-tuning.
 
 ## O que o projeto entrega
 
@@ -44,8 +44,7 @@ A cadeia de rastreabilidade segue o princípio:
 
 ## Integração contínua
 
-O repositório possui um CI enxuto em GitHub Actions para `ruff`, `pytest`,
-consistência de versão, proteção de artefatos congelados e validação do snapshot.
+O repositório possui um CI enxuto em GitHub Actions para `ruff`, `pytest`, consistência de versão, proteção de artefatos congelados e validação do snapshot.
 
 - [Detalhes do CI](docs/ci.md)
 
@@ -90,30 +89,7 @@ A extração de atributos técnicos possui benchmark independente próprio:
 | atributos técnicos v11 | 48 | 80 | 92,50% |
 | atributos técnicos v12 | 48 | 77 | 87,01% |
 
-
-O v1 atingiu 100% na regressão pós-tuning v1.14. A baseline independente original permanece 85,25%.
-
-O v2 usa oito contratações inéditas. Após o tuning da v1.16, o mesmo conjunto atingiu 100%, mas a baseline independente permanece 93,51%.
-
-O v3 usa mais oito contratações inéditas. Após o tuning da v1.18, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, mas as baselines independentes permanecem 94,19% e 93,33%.
-
-O v4 adiciona contexto negativo, abreviações comerciais e grafias não padronizadas. A baseline independente ficou em 88,51%, com 42/45 categorias corretas e um falso positivo contextual. Após o tuning da v1.20, o mesmo conjunto atingiu 100% nos atributos e 45/45 categorias, sem substituir a baseline independente.
-
-O v5 amplia os negativos contextuais e alternativas explícitas. A baseline independente ficou em 86,96%, com 39/48 categorias corretas, 2 falsos positivos técnicos e 10 falsos negativos. Após o tuning da v1.22, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v6 usa oito novas contratações e reforça negativos de contexto ligados a resina. A baseline independente ficou em 93,33%, com 44/48 categorias corretas e nenhum falso positivo técnico. Após o tuning da v1.24, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v7 usa outras oito contratações inéditas após a v1.24. A baseline independente ficou em 91,57% de micro accuracy, com 43/48 categorias corretas, 1 falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.26, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v8 usa oito novas contratações e trechos fiéis das descrições públicas. A baseline independente ficou em 90,36% de micro accuracy, com 43/48 categorias corretas, 5 falsos positivos técnicos, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.28, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v9 usa outras oito contratações inéditas e preserva descrições comerciais curtas, pontuação interna e composição subordinada. A baseline independente ficou em 96,43% de micro accuracy, com 42/48 categorias corretas, 1 falso positivo técnico, 2 falsos negativos e nenhum mismatch. Após o tuning da v1.30, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v10 usa mais oito contratações inéditas e adiciona conflito explícito entre vasoconstritores, ionômero reforçado por resina, linguagem livre de cura pela luz e produtos fluoretados fora das formas canônicas. A baseline independente ficou em 95,24% de micro accuracy, com 45/48 categorias corretas, 1 falso positivo técnico, 3 falsos negativos e nenhum mismatch. Após o tuning da v1.32, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v11 usa oito novas contratações com descrições ainda mais curtas e ruidosas, incluindo `CIV`, `RESINA A1`, revelador para película e pontuação interna na identidade do produto. A baseline independente ficou em 92,50% de micro accuracy, com 36/48 categorias corretas, nenhum falso positivo técnico, 6 falsos negativos e nenhum mismatch. Após o tuning da v1.34, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
-
-O v12 usa oito novas contratações e amplia a adversarialidade com `RX`, `SV`, `Z100`, `AUTO-CONDICIONANTE`, `FENILEFINA` e descrições comerciais muito curtas. A baseline independente ficou em 87,01% de micro accuracy, com 35/48 categorias corretas, nenhum falso positivo técnico, 10 falsos negativos e nenhum mismatch. Após o tuning da v1.37, o mesmo conjunto atingiu 100% nos atributos e 48/48 categorias, sem substituir a baseline independente.
+Os benchmarks técnicos preservam a diferença entre baseline independente e regressão pós-tuning. O v12 permanece como a referência técnica independente mais recente do ciclo atual.
 
 Documentação completa:
 
@@ -148,7 +124,6 @@ Documentação completa:
 - [Regressão técnica v12 pós-tuning v1.37](docs/benchmark-technical-attributes-v12-post-tuning.md)
 - [Consolidação dos benchmarks técnicos v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Revisão da arquitetura de regras e contextos](docs/architecture-rules-review.md)
-
 
 ## Exemplo de normalização
 
@@ -212,23 +187,18 @@ dpi detect-anomalies --database data/analytics.duckdb
 
 ## Domínio de medicamentos
 
-A arquitetura multidomínio já possui uma taxonomia inicial de medicamentos,
-mas ela ainda não está ativa em produção.
+A arquitetura multidomínio já possui uma taxonomia inicial de medicamentos, mas ela ainda não está ativa em produção.
 
-O primeiro holdout independente contém 48 exemplos e 192 campos.
-A baseline ficou em **87,50%** de micro accuracy, com melhor desempenho
-em forma farmacêutica e via do que em ingrediente ativo.
+| Holdout | Parser medido | Exemplos | Campos | Corretos | Micro accuracy |
+| --- | --- | ---: | ---: | ---: | ---: |
+| medicamentos v1 | v1.40.0 | 48 | 192 | 168 | 87,50% |
+| medicamentos v2 | v1.44.0 | 48 | 192 | 153 | 79,69% |
+| medicamentos v3 | v1.46.0 | 48 | 192 | 173 | 90,10% |
+| **Total ponderado** | — | **144** | **576** | **494** | **85,76%** |
 
-Após o tuning da v1.44, o mesmo conjunto congelado atingiu
-**192/192 campos corretos e 100% de micro accuracy**, sem substituir
-a baseline independente.
+Após tuning controlado, os conjuntos congelados v1, v2 e v3 atingiram 192/192 campos corretos nos respectivos ciclos pós-ajuste. Esses resultados pós-tuning não substituem as baselines independentes.
 
-O segundo holdout independente contém outras 8 contratações e 192 campos.
-A baseline do v2 ficou em **79,69%**, com 58,33% em ingrediente ativo,
-97,92% em concentração e 81,25% em forma farmacêutica e via. Nenhuma
-lacuna do v2 foi corrigida na v1.45. Após o tuning controlado da v1.46,
-o conjunto congelado atingiu **192/192 campos corretos**, preservando a
-baseline independente de 79,69%.
+O principal gargalo consolidado é o princípio ativo, com 65,28% de acurácia ponderada entre v1 e v3. Concentração, forma farmacêutica e via ficam acima de 90% no acumulado.
 
 ~~~bash
 dpi evaluate-medications --dataset data/evaluation/medications-v1.jsonl
@@ -241,6 +211,7 @@ dpi medication-errors --dataset data/evaluation/medications-v1.jsonl
 - [Medicamentos v2 pós-tuning v1.46](docs/benchmark-medications-v2-post-tuning.md)
 - [Benchmark independente de medicamentos v3](docs/benchmark-medications-v3.md)
 - [Medicamentos v3 pós-tuning v1.48](docs/benchmark-medications-v3-post-tuning.md)
+- [Consolidação dos benchmarks de medicamentos v1–v3](docs/benchmark-medications-consolidated-v1-v3.md)
 
 O domínio permanece em `benchmark_required` até um novo holdout independente pós-tuning.
 
@@ -248,20 +219,16 @@ O domínio permanece em `benchmark_required` até um novo holdout independente p
 
 ![Snapshot real de qualidade e benchmarks](docs/assets/dashboard-quality-snapshot.svg)
 
-O primeiro snapshot publicado é gerado exclusivamente das baselines congeladas
-do projeto: 548 exemplos técnicos, 984 campos técnicos e o benchmark independente
-de medicamentos.
+O snapshot publicado é gerado exclusivamente das baselines congeladas do projeto: 548 exemplos técnicos, 984 campos técnicos, 144 exemplos de medicamentos e 576 campos de medicamentos.
 
 - [Abrir snapshot HTML](docs/dashboard-quality-snapshot.html)
 - [Dados auditáveis do snapshot](docs/dashboard-quality-snapshot.json)
 
-O snapshot não simula preços, homologações ou sinais. Esses painéis só serão
-publicados quando existir uma base DuckDB analítica consolidada.
+O snapshot não simula preços, homologações ou sinais. Esses painéis só serão publicados quando existir uma base DuckDB analítica consolidada.
 
 ## API e dashboard
 
-A camada analítica pode ser exposta por API HTTP ou por um dashboard HTML estático,
-ambos alimentados pelo mesmo DuckDB.
+A camada analítica pode ser exposta por API HTTP ou por um dashboard HTML estático, ambos alimentados pelo mesmo DuckDB.
 
 ~~~bash
 pip install -e ".[api]"
@@ -271,11 +238,9 @@ dpi build-dashboard --database data/analytics.duckdb --output docs/dashboard.htm
 
 - [Documentação da API e dashboard](docs/api-dashboard.md)
 
-Nenhum valor é fixado no dashboard. O snapshot é gerado a partir da base analítica
-informada no comando.
+Nenhum valor é fixado no dashboard. O snapshot é gerado a partir da base analítica informada no comando.
 
-A API v1 oferece paginação por `limit`/`offset` e filtros por categoria,
-macroregião, ano e escopo, conforme a coleção.
+A API v1 oferece paginação por `limit`/`offset` e filtros por categoria, macroregião, ano e escopo, conforme a coleção.
 
 ## Estrutura
 
@@ -304,6 +269,9 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 - [Arquitetura multidomínio](docs/multidomain-architecture.md)
 - [API e dashboard analítico](docs/api-dashboard.md)
 - [Benchmark de medicamentos v1](docs/benchmark-medications-v1.md)
+- [Benchmark de medicamentos v2](docs/benchmark-medications-v2.md)
+- [Benchmark de medicamentos v3](docs/benchmark-medications-v3.md)
+- [Consolidação de medicamentos v1–v3](docs/benchmark-medications-consolidated-v1-v3.md)
 - [Consolidação técnica v1–v11](docs/benchmark-technical-consolidated-v1-v11.md)
 - [Dataset multi-contratação](docs/multi-contratacao.md)
 - [Metodologia de sinais de preço](docs/metodologia-anomalias.md)
@@ -314,8 +282,8 @@ O namespace Python histórico é mantido por compatibilidade interna. O produto 
 
 ## Próximos passos
 
-- analisar as divergências do holdout independente de medicamentos v3 sem alterar sua baseline
-- consolidar uma base DuckDB real para os painéis de preços e homologações
+- congelar um holdout independente de medicamentos v4 antes de qualquer novo ajuste do parser;
+- consolidar uma base DuckDB real para os painéis de preços e homologações.
 
 ## Fonte dos dados
 
