@@ -27,6 +27,14 @@ const EMPTY_FILTERS: AnalyticsFilters = {
   start_date: "",
   end_date: "",
 };
+const FILTER_LABELS: Record<keyof AnalyticsFilters, string> = {
+  state_code: "UF",
+  macroregion: "Região",
+  supplier: "Fornecedor",
+  buyer: "Órgão",
+  start_date: "Desde",
+  end_date: "Até",
+};
 const REGION_OPTIONS = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"];
 const UF_OPTIONS = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
@@ -276,6 +284,18 @@ export default function AnalyticsExplorer() {
     }
   }
 
+  function removeAppliedFilter(key: keyof AnalyticsFilters) {
+    const nextFilters = { ...appliedFilters, [key]: "" };
+    setFilters(nextFilters);
+    void runSearch(appliedQuery, nextFilters, 0, appliedSort);
+  }
+
+  function clearAllAppliedFilters() {
+    const nextFilters = { ...EMPTY_FILTERS };
+    setFilters(nextFilters);
+    void runSearch(appliedQuery, nextFilters, 0, appliedSort);
+  }
+
   async function loadProduct(
     productId: string,
     nextFilters = appliedFilters,
@@ -489,6 +509,10 @@ export default function AnalyticsExplorer() {
   const discoveryHighlights = (
     discoverySuggestions.length > 0 ? discoverySuggestions : discovery
   ).slice(0, 8);
+  const activeFilterEntries = (
+    Object.entries(appliedFilters) as Array<[keyof AnalyticsFilters, string]>
+  ).filter(([, value]) => value.trim().length > 0);
+  const hasAppliedFilters = activeFilterEntries.length > 0;
 
   return (
     <>
@@ -735,14 +759,49 @@ export default function AnalyticsExplorer() {
           {!searching && <span className="item-count">{number(total)} grupos</span>}
         </div>
 
+        {hasAppliedFilters && (
+          <div className="analytics-active-filters" aria-label="Filtros aplicados">
+            <span>Filtrando por</span>
+            {activeFilterEntries.map(([key, value]) => (
+              <button
+                type="button"
+                key={key}
+                title="Remover filtro"
+                onClick={() => removeAppliedFilter(key)}
+              >
+                {FILTER_LABELS[key]}: {value}
+                <b aria-hidden="true">×</b>
+              </button>
+            ))}
+            <button
+              type="button"
+              className="analytics-clear-filter-chip"
+              onClick={clearAllAppliedFilters}
+            >
+              Limpar todos
+            </button>
+          </div>
+        )}
+
         {searching ? (
           <div className="analytics-loading">Consultando a base analítica...</div>
         ) : results.length === 0 ? (
           <div className="empty-state analytics-empty-recovery">
             <strong>Nenhum produto encontrado.</strong>
             <span>
-              Tente um termo mais amplo ou escolha uma categoria disponível na base.
+              {hasAppliedFilters
+                ? "O produto pode existir fora do recorte atual. Remova um filtro ou tente uma categoria abaixo."
+                : "Tente um termo mais amplo ou escolha uma categoria disponível na base."}
             </span>
+            {hasAppliedFilters && (
+              <button
+                type="button"
+                className="analytics-empty-clear"
+                onClick={clearAllAppliedFilters}
+              >
+                Tentar novamente sem filtros
+              </button>
+            )}
             {discovery.length > 0 && (
               <div className="analytics-empty-actions">
                 {discovery.slice(0, 4).map((item) => (
@@ -776,9 +835,21 @@ export default function AnalyticsExplorer() {
                 <span>
                   <strong>{item.display_name}</strong>
                   <small>{item.sample_description}</small>
+                  <span className="analytics-result-facts">
+                    <span>{number(item.procurement_count)} compras</span>
+                    <span>{number(item.priced_observation_count)} preços</span>
+                    <span>{number(item.state_count)} UFs</span>
+                    {item.latest_date && <span>até {date(item.latest_date)}</span>}
+                  </span>
                 </span>
-                <span className="analytics-result-meta">
-                  {number(item.priced_observation_count)} preços · {number(item.procurement_count)} compras · {number(item.state_count)} UFs
+                <span className="analytics-result-summary">
+                  <strong>{money(item.median_price)}</strong>
+                  <small>
+                    {item.normalized_quantity_unit
+                      ? `mediana por ${item.normalized_quantity_unit}`
+                      : "mediana normalizada"}
+                  </small>
+                  <em>Abrir análise</em>
                 </span>
               </button>
             ))}
