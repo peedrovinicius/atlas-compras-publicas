@@ -1,0 +1,71 @@
+{
+  "dataset": "medications-v4",
+  "parser_version": "post-v1.48-current",
+  "baseline_type": "independent_holdout",
+  "sample_count": 48,
+  "evaluated_field_count": 192,
+  "correct_field_count": 189,
+  "micro_accuracy": 0.9844,
+  "false_positive_count": 0,
+  "false_negative_count": 0,
+  "mismatch_count": 3,
+  "per_field": {
+    "active_ingredient": {
+      "evaluated_count": 48,
+      "correct_count": 47,
+      "accuracy": 0.9792,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 1
+    },
+    "strength": {
+      "evaluated_count": 48,
+      "correct_count": 48,
+      "accuracy": 1.0,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 0
+    },
+    "dosage_form": {
+      "evaluated_count": 48,
+      "correct_count": 47,
+      "accuracy": 0.9792,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 1
+    },
+    "route": {
+      "evaluated_count": 48,
+      "correct_count": 47,
+      "accuracy": 0.9792,
+      "false_positive_count": 0,
+      "false_negative_count": 0,
+      "mismatch_count": 1
+    }
+  },
+  "errors": [
+    {
+      "id": "med4-cur93-020",
+      "field": "dosage_form",
+      "expected": "topical",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med4-cur93-020",
+      "field": "route",
+      "expected": "topical",
+      "predicted": "unknown"
+    },
+    {
+      "id": "med4-cur1270-001",
+      "field": "active_ingredient",
+      "expected": "AMOXICILINA TRIIDRATADA",
+      "predicted": ".266-AMOXICILINA TRIIDRATADA"
+    }
+  ],
+  "notes": [
+    "Baseline executada após congelamento do medications-v4.jsonl.",
+    "Nenhum ajuste do parser foi aplicado antes desta medição.",
+    "Resultado preserva a separação entre baseline independente e tuning posterior."
+  ]
+}
