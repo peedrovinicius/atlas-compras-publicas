@@ -26,10 +26,11 @@ from dental_procurement_intelligence.pncp import (
     PNCPContract,
     PNCPItem,
     PNCPItemResult,
-    award_key as stable_award_key,
     procurement_key_from_contract,
 )
-
+from dental_procurement_intelligence.pncp import (
+    award_key as stable_award_key,
+)
 
 AWARD_SCHEMA: dict[str, pl.DataType] = {
     "procurement_key": pl.String,
@@ -469,11 +470,14 @@ def _bundle_frame(bundle: ContractBundle) -> pl.DataFrame:
     ]
 
     contract_key = procurement_key_from_contract(contract)
-    if contract_key is not None and contract_key.startswith("pncp:"):
-        if contract_key != bundle.procurement_key:
-            raise ValueError(
-                "Manifesto e contratação bruta possuem identidades PNCP diferentes"
-            )
+    if (
+        contract_key is not None
+        and contract_key.startswith("pncp:")
+        and contract_key != bundle.procurement_key
+    ):
+        raise ValueError(
+            "Manifesto e contratação bruta possuem identidades PNCP diferentes"
+        )
 
     return build_award_frame(
         items,
@@ -525,10 +529,7 @@ def build_award_dataset(
     bundles, superseded = _select_latest_bundles(bundle_manifest_paths)
     frames = [_bundle_frame(bundle) for bundle in bundles]
 
-    if frames:
-        frame = pl.concat(frames, how="vertical")
-    else:
-        frame = pl.DataFrame(schema=AWARD_SCHEMA)
+    frame = pl.concat(frames, how="vertical") if frames else pl.DataFrame(schema=AWARD_SCHEMA)
 
     if frame.height:
         if frame.filter(pl.col("award_key").is_null()).height:
