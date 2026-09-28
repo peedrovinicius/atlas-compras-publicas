@@ -1021,6 +1021,14 @@ def test_product_search_filters_and_paginates(tmp_path: Path) -> None:
     assert page["limit"] == 1
     assert page["offset"] == 1
     assert len(page["items"]) == 1
+    shade_facets = {
+        item["value"]: item["product_count"]
+        for item in page["facets"]["shade"]
+    }
+    assert shade_facets == {"A2": 1, "A3": 1, "B1": 1}
+    assert page["facets"]["presentation"] == [
+        {"value": "syringe", "product_count": 3}
+    ]
 
     latest = service.analytics_product_search(
         database,
