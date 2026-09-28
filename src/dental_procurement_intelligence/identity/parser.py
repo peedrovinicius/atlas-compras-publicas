@@ -57,14 +57,14 @@ from dental_procurement_intelligence.normalization import (
 _CATEGORY_RULES = compile_category_rules(DENTAL_CATEGORY_SPECS)
 
 _PRESENTATION_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("syringe", ("SERINGA",)),
-    ("bottle", ("FRASCO",)),
-    ("capsule", ("CAPSULA",)),
-    ("tube", ("TUBO", "BISNAGA")),
-    ("pot", ("POTE",)),
-    ("sachet", ("SACHE", "ENVELOPE")),
-    ("cartridge", ("TUBETE", "CARPULE", "AMPOLA")),
-    ("kit", ("KIT",)),
+    ("syringe", ("SERINGA", "SERINGAS")),
+    ("bottle", ("FRASCO", "FRASCOS")),
+    ("capsule", ("CAPSULA", "CAPSULAS")),
+    ("tube", ("TUBO", "TUBOS", "BISNAGA", "BISNAGAS")),
+    ("pot", ("POTE", "POTES")),
+    ("sachet", ("SACHE", "SACHES", "ENVELOPE", "ENVELOPES")),
+    ("cartridge", ("TUBETE", "TUBETES", "CARPULE", "CARPULES", "AMPOLA", "AMPOLAS")),
+    ("kit", ("KIT", "KITS")),
 )
 
 _SHADE_PATTERN = re.compile(
@@ -454,10 +454,17 @@ def _presentation(text: str) -> str | None:
 
 
 def _package_count(text: str) -> int | None:
-    for pattern in _PACKAGE_PATTERNS:
+    for index, pattern in enumerate(_PACKAGE_PATTERNS):
         match = pattern.search(text)
-        if match:
-            return int(match.group("count"))
+        if not match:
+            continue
+
+        if index == 2:
+            prefix = text[: match.start()]
+            if re.search(r"\b[ABCD][1-4][.,]$", prefix):
+                continue
+
+        return int(match.group("count"))
     return None
 
 
