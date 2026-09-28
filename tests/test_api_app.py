@@ -14,6 +14,7 @@ def test_api_exposes_versioned_analytics_routes() -> None:
     assert "/health" in paths
     assert "/api/v1/normalize" in paths
     assert "/api/v1/normalize/batch" in paths
+    assert "/api/v1/meta" in paths
     assert "/api/v1/domains" in paths
     assert "/api/v1/parser/categories" in paths
     assert "/api/v1/overview" in paths
@@ -205,3 +206,27 @@ def test_public_demo_batch_rejects_more_than_twenty_descriptions() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_meta_reports_configured_database(tmp_path, monkeypatch) -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    database = tmp_path / "atlas-demo.duckdb"
+    database.touch()
+    monkeypatch.setenv("ATLAS_DATABASE_PATH", str(database))
+    monkeypatch.setenv(
+        "ATLAS_FRONTEND_URL",
+        "https://atlas-compras-publicas-web.onrender.com",
+    )
+
+    client = TestClient(create_app())
+    response = client.get("/api/v1/meta")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "version": "1.49.0",
+        "database_available": True,
+        "database_name": "atlas-demo.duckdb",
+        "frontend_url": "https://atlas-compras-publicas-web.onrender.com",
+    }
