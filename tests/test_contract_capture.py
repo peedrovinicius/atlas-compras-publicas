@@ -171,3 +171,80 @@ def test_capture_contract_can_skip_transient_result_timeout(
     assert result.item_count == 2
     assert result.result_response_count == 1
     assert result.result_count == 1
+
+
+
+def test_capture_contract_limits_result_requests(
+    tmp_path: Path,
+) -> None:
+    requested_results: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+
+        if path.endswith("/compras/2021/1"):
+            return httpx.Response(
+                200,
+                json={
+                    "numeroControlePNCP": "example",
+                    "anoCompra": 2021,
+                    "sequencialCompra": 1,
+                },
+            )
+
+        if path.endswith("/itens"):
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "numeroItem": 1,
+                        "descricao": "RESINA COMPOSTA A2 SERINGA 4G",
+                        "temResultado": True,
+                    },
+                    {
+                        "numeroItem": 2,
+                        "descricao": "ADESIVO DENTAL FRASCO 5ML",
+                        "temResultado": True,
+                    },
+                ],
+            )
+
+        if "/resultados" in path:
+            item_number = int(path.split("/itens/")[1].split("/")[0])
+            requested_results.append(item_number)
+            return httpx.Response(
+                200,
+                json={
+                    "listaResultados": [
+                        {
+                            "numeroItem": item_number,
+                            "sequencialResultado": 1,
+                            "quantidadeHomologada": 1,
+                            "valorUnitarioHomologado": 10,
+                        }
+                    ]
+                },
+            )
+
+        raise AssertionError(f"Rota inesperada: {path}")
+
+    client = PNCPClient(
+        settings=Settings(pncp_base_url="https://example.test"),
+        transport=httpx.MockTransport(handler),
+    )
+
+    try:
+        result = capture_contract(
+            client,
+            EvidenceStore(tmp_path),
+            cnpj="10.000.000/0000-03",
+            year=2021,
+            sequence=1,
+            max_result_requests=1,
+        )
+    finally:
+        client.close()
+
+    assert requested_results == [1]
+    assert result.result_response_count == 1
+    assert result.result_count == 1
