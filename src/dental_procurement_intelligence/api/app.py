@@ -1,3 +1,5 @@
+import csv
+import io
 import os
 from collections import defaultdict, deque
 from pathlib import Path
@@ -16,6 +18,7 @@ from dental_procurement_intelligence.api.service import (
     analytics_product_distribution,
     analytics_product_history,
     analytics_product_records,
+    analytics_product_records_export,
     analytics_product_regions,
     analytics_product_search,
     analytics_product_signals,
@@ -31,7 +34,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
     try:
         from fastapi import Body, FastAPI, HTTPException, Query, Request
         from fastapi.middleware.cors import CORSMiddleware
-        from fastapi.responses import RedirectResponse
+        from fastapi.responses import RedirectResponse, Response
     except ImportError as exc:
         raise RuntimeError(
             'Instale o extra da API com: pip install -e ".[api]"'
@@ -277,6 +280,68 @@ def create_app(database_path: str | Path | None = None) -> Any:
             buyer=buyer,
             start_date=start_date,
             end_date=end_date,
+        )
+
+    @app.get("/api/v1/products/{product_id}/records.csv")
+    def product_records_csv(
+        product_id: str,
+        state_code: str | None = None,
+        macroregion: str | None = None,
+        supplier: str | None = None,
+        buyer: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> Response:
+        rows = execute(
+            analytics_product_records_export,
+            resolved_database_path,
+            product_id=product_id,
+            state_code=state_code,
+            macroregion=macroregion,
+            supplier=supplier,
+            buyer=buyer,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        columns = [
+            "award_key",
+            "procurement_key",
+            "item_number",
+            "result_sequence",
+            "analysis_date",
+            "original_description",
+            "supplier_name",
+            "supplier_document",
+            "organization_name",
+            "buyer_unit_name",
+            "municipality_name",
+            "state_code",
+            "macroregion",
+            "modality",
+            "awarded_unit_value",
+            "awarded_quantity",
+            "awarded_total_value",
+            "awarded_price_per_base_unit",
+            "price_normalization_status",
+            "price_normalization_reason",
+            "contract_source_sha256",
+            "item_source_sha256",
+            "result_source_sha256",
+            "pncp_url",
+        ]
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=columns, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+        content = "\ufeff" + output.getvalue()
+        return Response(
+            content=content,
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="atlas-{product_id[:8]}-registros.csv"'
+                )
+            },
         )
 
     @app.get("/api/v1/products/{product_id}/records")
