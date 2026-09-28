@@ -1,10 +1,3 @@
-from .demo_data import (
-    DEMO_CNPJ,
-    DEMO_SEQUENCE,
-    DEMO_YEAR,
-    DemoDataBuildResult,
-    build_demo_data,
-)
 from .anomalies import (
     PriceSignalBuildResult,
     anomaly_summary,
@@ -19,6 +12,13 @@ from .awards import (
     build_awards,
     load_raw_contract,
     load_raw_results,
+)
+from .demo_data import (
+    DEMO_CNPJ,
+    DEMO_SEQUENCE,
+    DEMO_YEAR,
+    DemoDataBuildResult,
+    build_demo_data,
 )
 from .lakehouse import (
     AnalyticsBuildResult,
