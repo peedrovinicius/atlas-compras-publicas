@@ -62,7 +62,7 @@ def test_public_demo_root_is_available_without_analytics_database() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "Teste o Atlas" in response.text
+    assert "Teste uma descrição." in response.text
     assert "O que reconhece hoje" in response.text
     assert "Resina composta" in response.text
     assert "Anestésico local" in response.text
