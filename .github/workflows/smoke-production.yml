@@ -20,11 +20,45 @@ jobs:
       API_URL: https://atlas-compras-publicas-analytics.onrender.com
 
     steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@v4
+
       - name: Check frontend
         run: |
           curl --fail --location --silent --show-error \
             --retry 4 --retry-delay 15 --max-time 120 \
             "$FRONTEND_URL/" > /dev/null
+
+      - name: Check deployed frontend version
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import urllib.request
+          from pathlib import Path
+          from urllib.parse import urljoin
+
+          expected = json.loads(
+              Path("web/package.json").read_text(encoding="utf-8")
+          )["version"]
+          base = os.environ["FRONTEND_URL"].rstrip("/") + "/"
+
+          with urllib.request.urlopen(base, timeout=120) as response:
+              html = response.read().decode("utf-8")
+
+          match = re.search(r'<script[^>]+src="([^"]+\.js)"', html)
+          assert match is not None, "JavaScript bundle não encontrado no frontend publicado"
+
+          bundle_url = urljoin(base, match.group(1))
+          with urllib.request.urlopen(bundle_url, timeout=120) as response:
+              bundle = response.read().decode("utf-8")
+
+          assert f"v{expected}" in bundle, (
+              f"frontend publicado não contém a versão esperada v{expected}"
+          )
+          print(f"Versão publicada confirmada: v{expected}")
+          PY
 
       - name: Check API liveness
         run: |
