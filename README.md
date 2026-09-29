@@ -18,7 +18,7 @@ O Atlas captura contratações, itens e resultados do PNCP, preserva as resposta
 
 Hoje, a vertical odontológica possui 548 exemplos independentes e 984 campos técnicos avaliados, com micro accuracy ponderada de 91,36%.
 
-A aplicação pública já permite pesquisar produtos, comparar preços homologados, acompanhar histórico e diferenças regionais, identificar fornecedores e órgãos compradores e consultar sinais estatísticos com rastreabilidade até o PNCP.
+A aplicação pública já permite pesquisar produtos, comparar preços homologados, acompanhar histórico e diferenças regionais, identificar fornecedores e órgãos compradores, comparar uma proposta recebida e gerar relatório imprimível/PDF com rastreabilidade até o PNCP.
 
 ## Exemplo real: antes e depois
 
@@ -273,6 +273,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.72.0](docs/release-v1.72.0.md)
 - [Release v1.71.0](docs/release-v1.71.0.md)
 - [Release v1.70.0](docs/release-v1.70.0.md)
 - [Release v1.69.0](docs/release-v1.69.0.md)
