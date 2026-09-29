@@ -46,6 +46,9 @@ def test_frozen_artifacts_keep_their_git_blob_sha() -> None:
 def test_release_version_is_consistent() -> None:
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
     project_version = pyproject["project"]["version"]
+    web_package = json.loads(
+        Path("web/package.json").read_text(encoding="utf-8")
+    )
 
     client = Path(
         "src/dental_procurement_intelligence/pncp/client.py"
@@ -53,8 +56,26 @@ def test_release_version_is_consistent() -> None:
     match = re.search(r"atlas-compras-publicas/([0-9.]+)", client)
 
     assert project_version == __version__
+    assert web_package["version"] == project_version
     assert match is not None
     assert match.group(1) == ".".join(project_version.split(".")[:2])
+    assert Path(f"docs/release-v{project_version}.md").exists()
+
+
+def test_render_blueprint_keeps_only_canonical_services() -> None:
+    blueprint = Path("render.yaml").read_text(encoding="utf-8")
+
+    service_names = re.findall(r"^\s+name:\s+([^\s]+)\s*$", blueprint, re.MULTILINE)
+
+    assert service_names == [
+        "atlas-compras-publicas-analytics",
+        "atlas-compras-publicas-web",
+    ]
+    assert blueprint.count("autoDeployTrigger: checksPass") == 2
+    assert "atlas-compras-publicas-api" not in blueprint
+    assert re.search(r"^\s+name:\s+atlas-compras-publicas\s*$", blueprint, re.MULTILINE) is None
+    assert "https://atlas-compras-publicas-analytics.onrender.com" in blueprint
+    assert "https://atlas-compras-publicas-web.onrender.com" in blueprint
 
 
 def test_dashboard_snapshot_matches_frozen_baselines() -> None:
