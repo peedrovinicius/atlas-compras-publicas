@@ -164,6 +164,22 @@ function percent(value: number | null | undefined): string {
   })}%`;
 }
 
+function priceChangePercent(
+  current: number | null | undefined,
+  previous: number | null | undefined,
+): number | null {
+  if (
+    current === null
+    || current === undefined
+    || previous === null
+    || previous === undefined
+    || Number(previous) <= 0
+  ) {
+    return null;
+  }
+  return ((Number(current) - Number(previous)) / Number(previous)) * 100;
+}
+
 function parsePriceInput(value: string): number | null {
   const cleaned = value
     .trim()
@@ -736,6 +752,28 @@ export default function AnalyticsExplorer() {
 
   const summary = bundle?.summary;
   const stats = summary?.price_stats;
+  const pricedHistoryPoints = (
+    bundle?.history.points
+      .filter((point) => point.median_price !== null)
+      .slice()
+      .sort((left, right) => left.month.localeCompare(right.month))
+    ?? []
+  );
+  const latestHistoryPoint = pricedHistoryPoints.at(-1) ?? null;
+  const previousHistoryPoint = pricedHistoryPoints.at(-2) ?? null;
+  const recentMedianDifference = (
+    latestHistoryPoint && previousHistoryPoint
+      ? Number(latestHistoryPoint.median_price) - Number(previousHistoryPoint.median_price)
+      : null
+  );
+  const recentMedianChangePercent = (
+    latestHistoryPoint && previousHistoryPoint
+      ? priceChangePercent(
+          latestHistoryPoint.median_price,
+          previousHistoryPoint.median_price,
+        )
+      : null
+  );
   const parsedOfferPrice = parsePriceInput(offerPrice);
   const offerDifferencePercent = (
     parsedOfferPrice !== null
@@ -1698,6 +1736,38 @@ export default function AnalyticsExplorer() {
                   <p className="analytics-empty">Sem série temporal defensável para este produto.</p>
                 ) : (
                   <>
+                    {latestHistoryPoint && (
+                      <div className="analytics-history-trend">
+                        <div>
+                          <span>Último período</span>
+                          <strong>{money(latestHistoryPoint.median_price)}</strong>
+                          <small>
+                            {date(latestHistoryPoint.month)} · {number(latestHistoryPoint.observations)} observações
+                          </small>
+                        </div>
+                        {previousHistoryPoint && (
+                          <div>
+                            <span>Período anterior</span>
+                            <strong>{money(previousHistoryPoint.median_price)}</strong>
+                            <small>
+                              {date(previousHistoryPoint.month)} · {number(previousHistoryPoint.observations)} observações
+                            </small>
+                          </div>
+                        )}
+                        {previousHistoryPoint && (
+                          <div>
+                            <span>Variação da mediana</span>
+                            <strong>{percent(recentMedianChangePercent)}</strong>
+                            <small>
+                              {money(recentMedianDifference)} entre {date(previousHistoryPoint.month)} e {date(latestHistoryPoint.month)}
+                            </small>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <p className="analytics-history-trend-note">
+                      Comparação entre períodos observados. Não representa projeção de preço futuro.
+                    </p>
                     <HistoryChart points={bundle.history.points} />
                     <details className="analytics-data-disclosure">
                       <summary>
@@ -1882,6 +1952,19 @@ export default function AnalyticsExplorer() {
                   <div><span>Máximo</span><strong>{money(stats.max_price)}</strong></div>
                 </div>
               </section>
+
+              {latestHistoryPoint && previousHistoryPoint && (
+                <section className="analytics-print-report-section">
+                  <h2>Tendência recente observada</h2>
+                  <div className="analytics-print-report-context">
+                    <div><span>Último período</span><strong>{money(latestHistoryPoint.median_price)} · {date(latestHistoryPoint.month)}</strong></div>
+                    <div><span>Período anterior</span><strong>{money(previousHistoryPoint.median_price)} · {date(previousHistoryPoint.month)}</strong></div>
+                    <div><span>Diferença</span><strong>{money(recentMedianDifference)}</strong></div>
+                    <div><span>Variação</span><strong>{percent(recentMedianChangePercent)}</strong></div>
+                  </div>
+                  <p>Comparação histórica entre medianas dos dois períodos mais recentes. Não representa projeção.</p>
+                </section>
+              )}
 
               <section className="analytics-print-report-section">
                 <h2>Cobertura da análise</h2>
