@@ -164,6 +164,44 @@ function percent(value: number | null | undefined): string {
   })}%`;
 }
 
+function parsePriceInput(value: string): number | null {
+  const cleaned = value
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/R\$/gi, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".");
+  if (!cleaned) return null;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function estimatePercentile(
+  value: number,
+  bins: ProductAnalyticsBundle["distribution"]["bins"],
+): number | null {
+  const total = bins.reduce((sum, bin) => sum + bin.count, 0);
+  if (total <= 0) return null;
+
+  let below = 0;
+  for (const bin of bins) {
+    if (value >= bin.upper) {
+      below += bin.count;
+      continue;
+    }
+    if (value <= bin.lower) {
+      break;
+    }
+
+    const width = bin.upper - bin.lower;
+    const fraction = width > 0 ? (value - bin.lower) / width : 0.5;
+    below += bin.count * Math.min(1, Math.max(0, fraction));
+    break;
+  }
+
+  return Math.min(100, Math.max(0, (below / total) * 100));
+}
+
 function readInitialState() {
   const params = new URLSearchParams(window.location.search);
   const sortValue = params.get("sort");
@@ -305,6 +343,7 @@ export default function AnalyticsExplorer() {
   const [error, setError] = useState<string | null>(null);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [offerPrice, setOfferPrice] = useState("");
   const [detailView, setDetailView] = useState<DetailView>("overview");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLElement>(null);
@@ -436,6 +475,7 @@ export default function AnalyticsExplorer() {
     nextOffset = offset,
   ) {
     setSelectedId(productId);
+    setOfferPrice("");
     setDetailView("overview");
     setLoading(true);
     setError(null);
@@ -692,6 +732,43 @@ export default function AnalyticsExplorer() {
 
   const summary = bundle?.summary;
   const stats = summary?.price_stats;
+  const parsedOfferPrice = parsePriceInput(offerPrice);
+  const offerDifferencePercent = (
+    parsedOfferPrice !== null
+    && stats?.median_price !== null
+    && stats?.median_price !== undefined
+    && Number(stats.median_price) > 0
+  )
+    ? ((parsedOfferPrice - Number(stats.median_price)) / Number(stats.median_price)) * 100
+    : null;
+  const offerDifferenceValue = (
+    parsedOfferPrice !== null
+    && stats?.median_price !== null
+    && stats?.median_price !== undefined
+  )
+    ? parsedOfferPrice - Number(stats.median_price)
+    : null;
+  const offerPercentile = (
+    parsedOfferPrice !== null && bundle
+      ? estimatePercentile(parsedOfferPrice, bundle.distribution.bins)
+      : null
+  );
+  const offerPosition = (() => {
+    if (parsedOfferPrice === null || !stats) return null;
+    const min = stats.min_price;
+    const q1 = stats.percentile_25;
+    const median = stats.median_price;
+    const q3 = stats.percentile_75;
+    const max = stats.max_price;
+    if (min !== null && parsedOfferPrice < Number(min)) return "abaixo do mínimo observado";
+    if (q1 !== null && parsedOfferPrice < Number(q1)) return "abaixo do P25";
+    if (median !== null && parsedOfferPrice < Number(median)) return "entre P25 e a mediana";
+    if (median !== null && parsedOfferPrice === Number(median)) return "igual à mediana";
+    if (q3 !== null && parsedOfferPrice <= Number(q3)) return "entre a mediana e o P75";
+    if (max !== null && parsedOfferPrice <= Number(max)) return "acima do P75, dentro da faixa observada";
+    if (max !== null && parsedOfferPrice > Number(max)) return "acima do máximo observado";
+    return "posição disponível apenas com amostra suficiente";
+  })();
   const maxDistributionCount = bundle?.distribution.bins.reduce(
     (maximum, bin) => Math.max(maximum, bin.count),
     0,
@@ -1492,6 +1569,64 @@ export default function AnalyticsExplorer() {
                 <div><span>Período</span><strong>{date(summary.period_start)}</strong><small>até {date(summary.period_end)}</small></div>
               </div>
             </section>
+
+            {detailView === "overview" && (
+              <section className="analytics-offer-checker" aria-labelledby="offer-checker-title">
+                <div className="analytics-offer-checker-copy">
+                  <span className="section-kicker">Compare uma proposta</span>
+                  <h3 id="offer-checker-title">Preço que recebi</h3>
+                  <p>
+                    Digite um valor por {summary.normalized_quantity_unit ?? "unidade normalizada"} para posicioná-lo
+                    na distribuição histórica deste produto.
+                  </p>
+                </div>
+                <div className="analytics-offer-checker-control">
+                  <label htmlFor="offer-price">Valor da proposta</label>
+                  <div className="analytics-offer-input-wrap">
+                    <span>R$</span>
+                    <input
+                      id="offer-price"
+                      inputMode="decimal"
+                      value={offerPrice}
+                      onChange={(event) => setOfferPrice(event.target.value)}
+                      placeholder="0,00"
+                      aria-describedby="offer-price-help"
+                    />
+                  </div>
+                  <small id="offer-price-help">
+                    A comparação usa a mesma amostra de preços defensáveis da análise.
+                  </small>
+                </div>
+                {parsedOfferPrice !== null && (
+                  <div className="analytics-offer-result" aria-live="polite">
+                    <div>
+                      <span>Proposta</span>
+                      <strong>{money(parsedOfferPrice)}</strong>
+                      <small>{offerPosition}</small>
+                    </div>
+                    <div>
+                      <span>Diferença para a mediana</span>
+                      <strong>{money(offerDifferenceValue)}</strong>
+                      <small>{percent(offerDifferencePercent)}</small>
+                    </div>
+                    <div>
+                      <span>Percentil aproximado</span>
+                      <strong>
+                        {offerPercentile === null
+                          ? "Sem referência"
+                          : `P${Math.round(offerPercentile)}`}
+                      </strong>
+                      <small>estimado pela distribuição em faixas</small>
+                    </div>
+                  </div>
+                )}
+                {offerPrice.trim() && parsedOfferPrice === null && (
+                  <p className="analytics-offer-invalid" role="alert">
+                    Informe um valor numérico positivo, como 18,90.
+                  </p>
+                )}
+              </section>
+            )}
 
             {detailView === "market" && (
               <div className="analytics-view-intro">
