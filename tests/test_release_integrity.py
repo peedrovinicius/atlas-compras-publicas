@@ -79,6 +79,22 @@ def test_release_version_is_consistent() -> None:
     assert "destino: `main`" in manifest
 
 
+def test_public_brand_is_consistent() -> None:
+    index = Path("web/index.html").read_text(encoding="utf-8")
+    app = Path("web/src/App.tsx").read_text(encoding="utf-8")
+    brand = Path("web/src/brand.ts").read_text(encoding="utf-8")
+    readme = Path("README.md").read_text(encoding="utf-8")
+    guide = Path("docs/brand.md").read_text(encoding="utf-8")
+
+    assert "<title>Atlas e Preços | Inteligência de Preços Públicos</title>" in index
+    assert 'aria-label="Atlas e Preços"' in app
+    assert "Inteligência em compras públicas" in app
+    assert 'link[rel="icon"]' in app
+    assert "data:image/webp;base64," in brand
+    assert "# Atlas e Preços" in readme
+    assert "# Identidade Atlas e Preços" in guide
+
+
 def test_render_blueprint_keeps_only_canonical_services() -> None:
     blueprint = Path("render.yaml").read_text(encoding="utf-8")
 
