@@ -87,12 +87,20 @@ def test_public_brand_is_consistent() -> None:
     guide = Path("docs/brand.md").read_text(encoding="utf-8")
 
     assert "<title>Atlas e Preços | Inteligência de Preços Públicos</title>" in index
+    assert '<meta name="application-name" content="Atlas e Preços" />' in index
+    assert '"@type": "SoftwareApplication"' in index
+    assert '"name": "Atlas e Preços"' in index
     assert 'aria-label="Atlas e Preços"' in app
     assert "Inteligência em compras públicas" in app
+    assert "Atlas e Preços" in app
     assert 'link[rel="icon"]' in app
     assert "data:image/webp;base64," in brand
     assert "# Atlas e Preços" in readme
     assert "# Identidade Atlas e Preços" in guide
+
+    explorer = Path("web/src/AnalyticsExplorer.tsx").read_text(encoding="utf-8")
+    assert "<span>Atlas e Preços</span>" in explorer
+    assert "processados pelo Atlas e Preços." in explorer
 
 
 def test_render_blueprint_keeps_only_canonical_services() -> None:
