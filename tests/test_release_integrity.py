@@ -81,6 +81,26 @@ def test_render_blueprint_keeps_only_canonical_services() -> None:
     assert "https://atlas-compras-publicas-web.onrender.com" in blueprint
 
 
+def test_production_files_do_not_reference_legacy_render_services() -> None:
+    production_files = [
+        ".github/workflows/ci.yml",
+        ".github/workflows/smoke-production.yml",
+        "render.yaml",
+        "README.md",
+        "pyproject.toml",
+        "web/src/api.ts",
+    ]
+    forbidden_hosts = [
+        "https://atlas-compras-publicas.onrender.com",
+        "https://atlas-compras-publicas-api.onrender.com",
+    ]
+
+    for path in production_files:
+        content = Path(path).read_text(encoding="utf-8")
+        for host in forbidden_hosts:
+            assert host not in content, f"{path} references legacy host {host}"
+
+
 def test_dashboard_snapshot_matches_frozen_baselines() -> None:
     snapshot = json.loads(
         Path("docs/dashboard-quality-snapshot.json").read_text(

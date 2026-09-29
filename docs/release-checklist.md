@@ -65,6 +65,7 @@ Depois que os dois serviços canônicos terminarem o deploy, execute manualmente
 Ele verifica automaticamente:
 
 - frontend público;
+- versão publicada do bundle comparada com `web/package.json`;
 - `/health`;
 - `/ready`;
 - discovery de produtos;
@@ -95,6 +96,7 @@ API:
 
 ## 7. Pós-release
 
+- [ ] confirmar que o smoke test validou a mesma versão declarada em `web/package.json`;
 - [ ] confirmar versão publicada;
 - [ ] registrar qualquer incidente;
 - [ ] fechar issues concluídas;
