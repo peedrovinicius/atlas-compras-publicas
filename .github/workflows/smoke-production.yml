@@ -60,11 +60,53 @@ jobs:
           print(f"Versão publicada confirmada: v{expected}")
           PY
 
-      - name: Check API liveness
+      - name: Check API liveness and version
         run: |
-          curl --fail --location --silent --show-error \
-            --retry 4 --retry-delay 15 --max-time 120 \
-            "$API_URL/health"
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          from pathlib import Path
+
+          expected = json.loads(
+              Path("web/package.json").read_text(encoding="utf-8")
+          )["version"]
+          url = os.environ["API_URL"].rstrip("/") + "/health"
+
+          with urllib.request.urlopen(url, timeout=120) as response:
+              body = json.load(response)
+
+          assert body.get("version") == expected, (
+              f"API publicada em {body.get('version')!r}; esperado {expected!r}"
+          )
+          print(f"API publicada confirmada: v{expected}")
+          PY
+
+      - name: Check OpenAPI contract
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          url = os.environ["API_URL"].rstrip("/") + "/openapi.json"
+          with urllib.request.urlopen(url, timeout=120) as response:
+              schema = json.load(response)
+
+          paths = schema.get("paths", {})
+          required = {
+              "/health",
+              "/ready",
+              "/api/v1/products/discovery",
+              "/api/v1/products/search",
+              "/api/v1/products/{product_id}",
+              "/api/v1/products/{product_id}/history",
+              "/api/v1/products/{product_id}/regions",
+          }
+          missing = sorted(required - set(paths))
+          assert not missing, f"endpoints ausentes no OpenAPI: {missing}"
+          print("Contrato OpenAPI mínimo confirmado.")
+          PY
 
       - name: Check analytics readiness
         run: |
