@@ -46,6 +46,16 @@ O relatório imprimível/PDF passa a incluir:
 - número de macrorregiões;
 - mediana e diferença percentual de cada macrorregião.
 
+## Identidade visual
+
+O frontend passa a usar a identidade `Atlas e Preços` no cabeçalho:
+
+- símbolo metálico da marca;
+- nome renderizado em texto HTML para preservar nitidez;
+- subtítulo `Inteligência em compras públicas`;
+- comportamento responsivo em desktop e mobile;
+- ativo visual otimizado e incorporado ao bundle.
+
 ## Integridade da versão
 
 A versão exibida no cabeçalho do relatório passa a ser verificada por `tests/test_release_integrity.py`.
