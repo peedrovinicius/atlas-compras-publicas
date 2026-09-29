@@ -60,6 +60,18 @@ O merge na `main` deve representar uma unidade pronta para produção.
 
 ## 6. Validação em produção
 
+Depois que os dois serviços canônicos terminarem o deploy, execute manualmente o workflow `Production smoke test` no GitHub Actions.
+
+Ele verifica automaticamente:
+
+- frontend público;
+- `/health`;
+- `/ready`;
+- discovery de produtos;
+- uma busca real na API.
+
+Depois complete a validação funcional abaixo.
+
 Frontend:
 
 - [ ] página inicial abre;
