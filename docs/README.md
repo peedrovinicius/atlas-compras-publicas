@@ -1,5 +1,6 @@
 - [Deploy no Render](deploy-render.md)
 - [Checklist de release](release-checklist.md)
+- [Proteção da main](github-main-protection.md)
 # Documentação do Atlas de Compras Públicas
 
 Este diretório reúne arquitetura, metodologia, benchmarks e registros de release. Os documentos históricos são preservados para rastreabilidade, mas os pontos de entrada atuais estão organizados abaixo.
