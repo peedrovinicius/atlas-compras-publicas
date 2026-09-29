@@ -121,6 +121,55 @@ jobs:
             "$API_URL/api/v1/products/discovery" \
             | python -c 'import json,sys; data=json.load(sys.stdin); assert isinstance(data.get("items"), list)'
 
+      - name: Check public discovery files
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          from xml.etree import ElementTree
+
+          base = os.environ["FRONTEND_URL"].rstrip("/") + "/"
+
+          def read_text(path: str) -> str:
+              with urllib.request.urlopen(base + path, timeout=120) as response:
+                  return response.read().decode("utf-8")
+
+          robots = read_text("robots.txt")
+          sitemap = read_text("sitemap.xml")
+          manifest = json.loads(read_text("site.webmanifest"))
+          security = read_text(".well-known/security.txt")
+
+          assert "Sitemap: " + base + "sitemap.xml" in robots
+          ElementTree.fromstring(sitemap)
+          assert manifest.get("name") == "Atlas e Preços"
+          assert manifest.get("start_url") == "/"
+          assert "Canonical: " + base + ".well-known/security.txt" in security
+          print("Arquivos públicos de descoberta e segurança confirmados.")
+          PY
+
+      - name: Check public page metadata
+        run: |
+          python - <<'PY'
+          import os
+          import urllib.request
+
+          base = os.environ["FRONTEND_URL"].rstrip("/") + "/"
+          with urllib.request.urlopen(base, timeout=120) as response:
+              html = response.read().decode("utf-8")
+
+          required = [
+              '<link rel="canonical" href="' + base + '" />',
+              '<meta property="og:title" content="Atlas e Preços | Inteligência de Preços Públicos" />',
+              '"@type": "SoftwareApplication"',
+              '"name": "Atlas e Preços"',
+              '<link rel="manifest" href="/site.webmanifest" />',
+          ]
+          missing = [item for item in required if item not in html]
+          assert not missing, f"metadados públicos ausentes: {missing}"
+          print("Metadados públicos confirmados.")
+          PY
+
       - name: Check product search
         run: |
           curl --fail --location --silent --show-error \
