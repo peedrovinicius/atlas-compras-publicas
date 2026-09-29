@@ -569,6 +569,10 @@ export default function AnalyticsExplorer() {
     }
   }
 
+  function printAnalysisReport() {
+    window.print();
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSuggestions([]);
@@ -1496,6 +1500,9 @@ export default function AnalyticsExplorer() {
                     >
                       {exporting ? "Exportando..." : "Exportar CSV"}
                     </button>
+                    <button type="button" onClick={printAnalysisReport}>
+                      Gerar relatório / PDF
+                    </button>
                   </div>
                 </details>
               </div>
@@ -1830,6 +1837,113 @@ export default function AnalyticsExplorer() {
                 </div>
               </article>
             </div>
+
+            <section className="analytics-print-report" aria-label="Relatório da análise">
+              <header className="analytics-print-report-header">
+                <div>
+                  <span>Atlas de Compras Públicas</span>
+                  <strong>Relatório de referência de preços</strong>
+                </div>
+                <small>v1.72.0</small>
+              </header>
+
+              <div className="analytics-print-report-title">
+                <span>Produto analisado</span>
+                <h1>{summary.display_name}</h1>
+                <p>{summary.sample_description}</p>
+              </div>
+
+              <div className="analytics-print-report-context">
+                <div>
+                  <span>Consulta</span>
+                  <strong>{appliedQuery}</strong>
+                </div>
+                <div>
+                  <span>Unidade de preço</span>
+                  <strong>{summary.price_unit ?? summary.normalized_quantity_unit ?? "Não informada"}</strong>
+                </div>
+                <div>
+                  <span>Período observado</span>
+                  <strong>{date(summary.period_start)} a {date(summary.period_end)}</strong>
+                </div>
+                <div>
+                  <span>Amostra</span>
+                  <strong>{number(summary.price_sample_count)} preços comparáveis</strong>
+                </div>
+              </div>
+
+              <section className="analytics-print-report-section">
+                <h2>Referência de preços</h2>
+                <div className="analytics-print-report-stats">
+                  <div><span>Mínimo</span><strong>{money(stats.min_price)}</strong></div>
+                  <div><span>P25</span><strong>{money(stats.percentile_25)}</strong></div>
+                  <div className="primary"><span>Mediana</span><strong>{money(stats.median_price)}</strong></div>
+                  <div><span>P75</span><strong>{money(stats.percentile_75)}</strong></div>
+                  <div><span>Máximo</span><strong>{money(stats.max_price)}</strong></div>
+                </div>
+              </section>
+
+              <section className="analytics-print-report-section">
+                <h2>Cobertura da análise</h2>
+                <div className="analytics-print-report-context">
+                  <div><span>Compras</span><strong>{number(summary.procurement_count)}</strong></div>
+                  <div><span>Fornecedores</span><strong>{number(summary.supplier_count)}</strong></div>
+                  <div><span>UFs</span><strong>{number(summary.state_count)}</strong></div>
+                  <div><span>Registros no recorte</span><strong>{number(bundle.records.total)}</strong></div>
+                </div>
+              </section>
+
+              <section className="analytics-print-report-section">
+                <h2>Filtros aplicados</h2>
+                {activeFilterEntries.length === 0 ? (
+                  <p>Sem filtros adicionais.</p>
+                ) : (
+                  <div className="analytics-print-report-filters">
+                    {activeFilterEntries.map(([key, value]) => (
+                      <span key={key}>
+                        <b>{FILTER_LABELS[key]}:</b> {value}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {parsedOfferPrice !== null && (
+                <section className="analytics-print-report-section">
+                  <h2>Proposta informada</h2>
+                  <div className="analytics-print-report-context">
+                    <div><span>Valor</span><strong>{money(parsedOfferPrice)}</strong></div>
+                    <div><span>Diferença para a mediana</span><strong>{money(offerDifferenceValue)} ({percent(offerDifferencePercent)})</strong></div>
+                    <div><span>Posição</span><strong>{offerPosition}</strong></div>
+                    <div><span>Percentil aproximado</span><strong>{offerPercentile === null ? "Sem referência" : `P${Math.round(offerPercentile)}`}</strong></div>
+                  </div>
+                </section>
+              )}
+
+              <section className="analytics-print-report-section analytics-print-report-method">
+                <h2>Metodologia e interpretação</h2>
+                <p>
+                  As estatísticas usam somente observações com normalização de preço classificada como defensável,
+                  valor por unidade base disponível e valor positivo. A mediana é a referência central; P25 e P75
+                  delimitam a metade central das observações.
+                </p>
+                {parsedOfferPrice !== null && (
+                  <p>
+                    O percentil da proposta é aproximado a partir das faixas da distribuição e não substitui o cálculo
+                    sobre observações individuais.
+                  </p>
+                )}
+                <p>
+                  Este relatório é descritivo e não classifica preços como justos, abusivos, corretos ou irregulares.
+                  Os registros de origem permanecem disponíveis na análise do Atlas para auditoria.
+                </p>
+              </section>
+
+              <footer className="analytics-print-report-footer">
+                <span>Fonte: dados públicos do PNCP processados pelo Atlas de Compras Públicas.</span>
+                <span>{window.location.href}</span>
+              </footer>
+            </section>
           </>
         )}
       </section>
