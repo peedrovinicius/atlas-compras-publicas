@@ -2140,7 +2140,7 @@ export default function AnalyticsExplorer() {
               </section>
 
               <footer className="analytics-print-report-footer">
-                <span>Fonte: dados públicos do PNCP processados pelo Atlas de Compras Públicas.</span>
+                <span>Fonte: dados públicos do PNCP processados pelo Atlas e Preços.</span>
                 <span>{window.location.href}</span>
               </footer>
             </section>
