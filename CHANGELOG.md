@@ -2,6 +2,18 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.72.0
+
+- análise detalhada ganha ação "Gerar relatório / PDF";
+- relatório de impressão reúne produto, consulta, unidade, período, amostra e filtros ativos;
+- referência de preços inclui mínimo, P25, mediana, P75 e máximo;
+- relatório registra compras, fornecedores, UFs e quantidade de registros do recorte;
+- quando houver proposta informada, o relatório inclui valor, diferença para a mediana, posição e percentil aproximado;
+- seção metodológica explicita o recorte de preços defensáveis e o caráter descritivo da análise;
+- layout dedicado para impressão em A4, permitindo salvar o relatório como PDF pelo navegador;
+- contrato de versão do cliente PNCP corrigido e sincronizado com a release;
+- pacote, cliente PNCP e frontend sincronizados em 1.72.0.
+
 ## 1.71.0
 
 - análise detalhada passa a aceitar um valor informado pelo usuário em "Preço que recebi";
