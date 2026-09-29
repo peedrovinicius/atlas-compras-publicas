@@ -20,7 +20,8 @@ A release candidata reúne:
 - tendência recente entre os dois períodos mais recentes;
 - contexto geográfico nacional, macrorregional e por UF;
 - comparação de produtos compatíveis;
-- exportação CSV e evidências rastreáveis ao PNCP.
+- exportação CSV e evidências rastreáveis ao PNCP;
+- nova identidade visual `Atlas e Preços` no frontend.
 
 ## Serviços canônicos
 
