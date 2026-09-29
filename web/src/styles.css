@@ -3854,3 +3854,68 @@ select:focus-visible {
     overflow-wrap: anywhere;
   }
 }
+
+
+/* v1.73 recent observed price trend */
+.analytics-history-trend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 12px 0 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+
+.analytics-history-trend > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 13px 14px;
+  border-right: 1px solid var(--line);
+}
+
+.analytics-history-trend > div:last-child {
+  border-right: 0;
+}
+
+.analytics-history-trend span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.analytics-history-trend strong {
+  color: var(--text);
+  font-size: 17px;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-history-trend small,
+.analytics-history-trend-note {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.analytics-history-trend-note {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 760px) {
+  .analytics-history-trend {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-history-trend > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .analytics-history-trend > div:last-child {
+    border-bottom: 0;
+  }
+}
