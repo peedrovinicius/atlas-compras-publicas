@@ -124,6 +124,29 @@ def test_public_discovery_metadata_is_consistent() -> None:
     assert manifest["lang"] == "pt-BR"
 
 
+def test_public_trust_assets_are_consistent() -> None:
+    index = Path("web/index.html").read_text(encoding="utf-8")
+    security = Path(
+        "web/public/.well-known/security.txt"
+    ).read_text(encoding="utf-8")
+
+    canonical = "https://atlas-compras-publicas-web.onrender.com/"
+
+    assert f'<link rel="canonical" href="{canonical}" />' in index
+    assert '"@type": "SoftwareApplication"' in index
+    assert '"name": "Atlas e Preços"' in index
+    assert (
+        "Canonical: "
+        f"{canonical}.well-known/security.txt"
+    ) in security
+    assert (
+        "Policy: "
+        "https://github.com/peedrovinicius/"
+        "atlas-compras-publicas/security/policy"
+    ) in security
+    assert "Preferred-Languages: pt-BR, en" in security
+
+
 def test_render_blueprint_keeps_only_canonical_services() -> None:
     blueprint = Path("render.yaml").read_text(encoding="utf-8")
 
