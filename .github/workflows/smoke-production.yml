@@ -1,0 +1,53 @@
+name: Production smoke test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-smoke-test
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    env:
+      FRONTEND_URL: https://atlas-compras-publicas-web.onrender.com
+      API_URL: https://atlas-compras-publicas-analytics.onrender.com
+
+    steps:
+      - name: Check frontend
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 4 --retry-delay 15 --max-time 120 \
+            "$FRONTEND_URL/" > /dev/null
+
+      - name: Check API liveness
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 4 --retry-delay 15 --max-time 120 \
+            "$API_URL/health"
+
+      - name: Check analytics readiness
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 4 --retry-delay 15 --max-time 120 \
+            "$API_URL/ready"
+
+      - name: Check product discovery
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 3 --retry-delay 10 --max-time 120 \
+            "$API_URL/api/v1/products/discovery" \
+            | python -c 'import json,sys; data=json.load(sys.stdin); assert isinstance(data.get("items"), list)'
+
+      - name: Check product search
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 3 --retry-delay 10 --max-time 120 \
+            "$API_URL/api/v1/products/search?q=adesivo&limit=1&offset=0" \
+            | python -c 'import json,sys; data=json.load(sys.stdin); assert "items" in data and "total" in data'
