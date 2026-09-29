@@ -51,6 +51,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Enforce develop to main release flow
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          test "$HEAD_REF" = "develop" || {
+            echo "Pull Requests para main devem partir de develop."
+            exit 1
+          }
+
       - name: Checkout
         uses: actions/checkout@v4
 
