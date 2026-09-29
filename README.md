@@ -1,8 +1,10 @@
 <div align="center">
 
-# Atlas de Compras Públicas
+# Atlas e Preços
 
-Plataforma de inteligência sobre compras públicas que estrutura itens do PNCP, compara preços homologados e preserva a evidência de origem para auditoria.
+Inteligência de preços em compras públicas com dados do PNCP, comparação de preços homologados, histórico e evidências rastreáveis.
+
+Projeto técnico: **Atlas de Compras Públicas**.
 
 [![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
