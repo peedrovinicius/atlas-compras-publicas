@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.73.0
+
+- histórico de preços ganha resumo dos dois períodos mais recentes;
+- mediana do último período e do período anterior ficam visíveis antes do gráfico;
+- variação absoluta e percentual entre as duas medianas é calculada de forma descritiva;
+- quantidade de observações de cada período é mostrada junto aos valores;
+- relatório imprimível/PDF passa a incluir a tendência recente observada;
+- interface explicita que a comparação histórica não representa projeção de preço futuro;
+- pacote, cliente PNCP e frontend sincronizados em 1.73.0.
+
 ## 1.72.0
 
 - análise detalhada ganha ação "Gerar relatório / PDF";
