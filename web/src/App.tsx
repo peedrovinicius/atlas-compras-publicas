@@ -612,7 +612,7 @@ export default function App() {
 
       <footer className="site-footer">
         <span>
-          Atlas de Compras Públicas
+          Atlas e Preços
           {apiVersion ? ` v${apiVersion}` : ""}
         </span>
         <span className="footer-links">

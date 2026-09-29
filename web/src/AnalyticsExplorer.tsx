@@ -1997,7 +1997,7 @@ export default function AnalyticsExplorer() {
             <section className="analytics-print-report" aria-label="Relatório da análise">
               <header className="analytics-print-report-header">
                 <div>
-                  <span>Atlas de Compras Públicas</span>
+                  <span>Atlas e Preços</span>
                   <strong>Relatório de referência de preços</strong>
                 </div>
                 <small>v1.74.0</small>
@@ -2140,7 +2140,7 @@ export default function AnalyticsExplorer() {
               </section>
 
               <footer className="analytics-print-report-footer">
-                <span>Fonte: dados públicos do PNCP processados pelo Atlas de Compras Públicas.</span>
+                <span>Fonte: dados públicos do PNCP processados pelo Atlas e Preços.</span>
                 <span>{window.location.href}</span>
               </footer>
             </section>
