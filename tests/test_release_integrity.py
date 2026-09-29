@@ -64,6 +64,20 @@ def test_release_version_is_consistent() -> None:
     explorer = Path("web/src/AnalyticsExplorer.tsx").read_text(encoding="utf-8")
     assert f"<small>v{project_version}</small>" in explorer
 
+    changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+    first_release = re.search(r"^##\s+([0-9]+\.[0-9]+\.[0-9]+)\s*$", changelog, re.MULTILINE)
+    assert first_release is not None
+    assert first_release.group(1) == project_version
+
+    candidate_manifest = Path(
+        f"docs/release-candidate-v{project_version}.md"
+    )
+    assert candidate_manifest.exists()
+    manifest = candidate_manifest.read_text(encoding="utf-8")
+    assert f"versão: `{project_version}`" in manifest
+    assert "branch de integração: `develop`" in manifest
+    assert "destino: `main`" in manifest
+
 
 def test_render_blueprint_keeps_only_canonical_services() -> None:
     blueprint = Path("render.yaml").read_text(encoding="utf-8")
