@@ -66,6 +66,8 @@ Ele verifica automaticamente:
 
 - frontend público;
 - versão publicada do bundle comparada com `web/package.json`;
+- canonical, Open Graph, JSON-LD e manifesto;
+- `robots.txt`, `sitemap.xml` e `.well-known/security.txt`;
 - `/health`;
 - `/ready`;
 - discovery de produtos;
@@ -84,7 +86,9 @@ Frontend:
 - [ ] percentil aproximado aparece quando houver distribuição;
 - [ ] `Gerar relatório / PDF` funciona;
 - [ ] exportação CSV funciona;
-- [ ] links para evidências do PNCP continuam válidos.
+- [ ] links para evidências do PNCP continuam válidos;
+- [ ] `robots.txt`, `sitemap.xml`, manifesto e `security.txt` respondem publicamente;
+- [ ] canonical e metadados sociais apontam para a URL oficial.
 
 API:
 
