@@ -11,6 +11,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 - [Arquitetura multidomínio](multidomain-architecture.md)
 - [Fronteiras dos domínios de saúde](architecture-health-domains.md)
 - [API e aplicação analítica](api-dashboard.md)
+- [Identidade Atlas e Preços](brand.md)
 - [Exemplo real e reproduzível do parser](exemplo-parser-real.md)
 - [Contrato do warehouse v1](warehouse-v1.md)
 - [Dataset multi-contratação](multi-contratacao.md)

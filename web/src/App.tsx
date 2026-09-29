@@ -335,6 +335,19 @@ export default function App() {
   }
 
   useEffect(() => {
+    let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.rel = "icon";
+      document.head.appendChild(favicon);
+    }
+
+    favicon.type = "image/webp";
+    favicon.href = ATLAS_LOGO_SYMBOL;
+  }, []);
+
+  useEffect(() => {
     let active = true;
 
     Promise.all([fetchCategories(), checkHealth()])
