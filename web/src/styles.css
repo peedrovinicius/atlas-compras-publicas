@@ -3919,3 +3919,114 @@ select:focus-visible {
     border-bottom: 0;
   }
 }
+
+
+/* v1.74 regional price context */
+.analytics-geography-reference {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 12px 0 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+
+.analytics-geography-reference > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 15px;
+  border-right: 1px solid var(--line);
+}
+
+.analytics-geography-reference > div:last-child {
+  border-right: 0;
+}
+
+.analytics-geography-reference span,
+.analytics-region-grid span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.analytics-geography-reference strong,
+.analytics-region-grid strong {
+  color: var(--text);
+  font-size: 18px;
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-geography-reference small,
+.analytics-region-grid small {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.analytics-geography-subtitle {
+  margin: 16px 0 8px;
+  color: #445066;
+  font-size: 11px;
+  letter-spacing: -.01em;
+}
+
+.analytics-region-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.analytics-region-grid > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.analytics-state-comparison {
+  margin-top: 0;
+}
+
+.analytics-geography-details {
+  margin-top: 10px;
+}
+
+.analytics-print-report-regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.analytics-print-report-regions span {
+  padding: 5px 7px;
+  border: 1px solid #d7dde6;
+  border-radius: 999px;
+  font-size: 8.5pt;
+}
+
+@media (max-width: 760px) {
+  .analytics-geography-reference {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-geography-reference > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .analytics-geography-reference > div:last-child {
+    border-bottom: 0;
+  }
+
+  .analytics-region-grid {
+    grid-template-columns: 1fr;
+  }
+}
