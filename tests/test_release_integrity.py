@@ -103,6 +103,27 @@ def test_public_brand_is_consistent() -> None:
     assert "processados pelo Atlas e Preços." in explorer
 
 
+def test_public_discovery_metadata_is_consistent() -> None:
+    index = Path("web/index.html").read_text(encoding="utf-8")
+    robots = Path("web/public/robots.txt").read_text(encoding="utf-8")
+    sitemap = Path("web/public/sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads(
+        Path("web/public/site.webmanifest").read_text(encoding="utf-8")
+    )
+
+    canonical = "https://atlas-compras-publicas-web.onrender.com/"
+
+    assert '<meta name="robots" content="index,follow,max-image-preview:large" />' in index
+    assert '<link rel="manifest" href="/site.webmanifest" />' in index
+    assert f'Sitemap: {canonical}sitemap.xml' in robots
+    assert f"<loc>{canonical}</loc>" in sitemap
+    assert manifest["name"] == "Atlas e Preços"
+    assert manifest["short_name"] == "Atlas e Preços"
+    assert manifest["start_url"] == "/"
+    assert manifest["scope"] == "/"
+    assert manifest["lang"] == "pt-BR"
+
+
 def test_render_blueprint_keeps_only_canonical_services() -> None:
     blueprint = Path("render.yaml").read_text(encoding="utf-8")
 

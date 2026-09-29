@@ -56,6 +56,18 @@ O frontend passa a usar a identidade `Atlas e Preços` no cabeçalho:
 - comportamento responsivo em desktop e mobile;
 - ativo visual otimizado e incorporado ao bundle.
 
+## Descoberta pública
+
+O frontend também passa a publicar metadados básicos para descoberta e indexação:
+
+- `robots.txt`;
+- `sitemap.xml`;
+- `site.webmanifest`;
+- diretiva explícita de indexação;
+- link do manifesto no HTML.
+
+Esses arquivos são validados automaticamente pela suíte de integridade.
+
 ## Integridade da versão
 
 A versão exibida no cabeçalho do relatório passa a ser verificada por `tests/test_release_integrity.py`.
