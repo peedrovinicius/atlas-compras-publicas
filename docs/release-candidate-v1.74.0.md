@@ -21,7 +21,8 @@ A release candidata reúne:
 - contexto geográfico nacional, macrorregional e por UF;
 - comparação de produtos compatíveis;
 - exportação CSV e evidências rastreáveis ao PNCP;
-- nova identidade visual `Atlas e Preços` no frontend.
+- nova identidade visual `Atlas e Preços` no frontend;
+- metadados de descoberta pública, sitemap, robots e manifesto web.
 
 ## Serviços canônicos
 
