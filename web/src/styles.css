@@ -4030,3 +4030,77 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Atlas e Preços brand */
+.atlas-brand {
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-symbol {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 10px rgb(15 23 42 / 10%));
+}
+
+.atlas-brand .brand-copy {
+  gap: 2px;
+}
+
+.atlas-brand .brand-copy strong {
+  display: block;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 780;
+  line-height: 1;
+  letter-spacing: -.04em;
+  white-space: nowrap;
+}
+
+.atlas-brand .brand-name-secondary {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.atlas-brand .brand-copy small {
+  color: #7a8495;
+  font-size: 8px;
+  letter-spacing: .055em;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .brand-symbol {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .atlas-brand .brand-copy strong {
+    font-size: 15px;
+  }
+
+  .atlas-brand .brand-copy small {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .atlas-brand {
+    gap: 8px;
+  }
+
+  .brand-symbol {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .atlas-brand .brand-copy strong {
+    font-size: 14px;
+  }
+}

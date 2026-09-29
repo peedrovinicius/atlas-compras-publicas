@@ -10,6 +10,8 @@ Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públic
 - UFs continuam priorizadas por tamanho da amostra e a lista completa fica disponível sob demanda;
 - relatório imprimível/PDF passa a registrar a referência geográfica e as medianas por macrorregião;
 - versão exibida no relatório passa a ser protegida por contrato automatizado de release;
+- nova identidade visual `Atlas e Preços` aplicada ao cabeçalho e metadados públicos do frontend;
+- símbolo da marca otimizado e incorporado ao bundle sem dependência externa;
 - pacote, cliente PNCP e frontend sincronizados em 1.74.0.
 
 ## 1.73.0

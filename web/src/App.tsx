@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import AnalyticsExplorer from "./AnalyticsExplorer";
+import { ATLAS_LOGO_SYMBOL } from "./brand";
 
 import {
   API_BASE_URL,
@@ -367,11 +368,19 @@ export default function App() {
         Ir para o conteúdo
       </a>
       <header className="site-header">
-        <a className="brand" href="/" aria-label="Atlas de Compras Públicas">
-          <span className="brand-mark">A</span>
+        <a className="brand atlas-brand" href="/" aria-label="Atlas e Preços">
+          <img
+            className="brand-symbol"
+            src={ATLAS_LOGO_SYMBOL}
+            alt=""
+            aria-hidden="true"
+          />
           <span className="brand-copy">
-            <strong>Atlas</strong>
-            <small>Compras públicas</small>
+            <strong>
+              <span>Atlas</span>
+              <span className="brand-name-secondary"> e Preços</span>
+            </strong>
+            <small>Inteligência em compras públicas</small>
           </span>
         </a>
 
