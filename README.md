@@ -150,7 +150,7 @@ A experiência pública possui duas áreas.
 
 - mediana, percentis e tamanho da amostra comparável;
 - distribuição dos preços normalizados por faixa;
-- histórico mensal de preços;
+- histórico mensal de preços com comparação entre os dois períodos mais recentes;
 - comparação por região e UF;
 - fornecedores e órgãos compradores;
 - sinais estatísticos com aviso metodológico explícito;
@@ -273,6 +273,7 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.73.0](docs/release-v1.73.0.md)
 - [Release v1.72.0](docs/release-v1.72.0.md)
 - [Release v1.71.0](docs/release-v1.71.0.md)
 - [Release v1.70.0](docs/release-v1.70.0.md)
