@@ -2,6 +2,16 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.71.0
+
+- análise detalhada passa a aceitar um valor informado pelo usuário em "Preço que recebi";
+- proposta é comparada à mediana do grupo com diferença absoluta e percentual;
+- posição do valor é descrita em relação a mínimo, P25, mediana, P75 e máximo observados;
+- percentil aproximado é estimado a partir da distribuição em faixas, com indicação explícita de aproximação;
+- entrada aceita formato decimal brasileiro e é reiniciada ao trocar de produto;
+- nenhum rótulo de "preço justo" ou conclusão normativa é produzido;
+- pacote e frontend sincronizados em 1.71.0.
+
 ## 1.70.0
 
 - busca de produtos passa a expor preço mínimo, P25, mediana, P75 e preço máximo para cada grupo comparável;
