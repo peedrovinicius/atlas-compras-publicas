@@ -61,6 +61,9 @@ def test_release_version_is_consistent() -> None:
     assert match.group(1) == ".".join(project_version.split(".")[:2])
     assert Path(f"docs/release-v{project_version}.md").exists()
 
+    explorer = Path("web/src/AnalyticsExplorer.tsx").read_text(encoding="utf-8")
+    assert f"<small>v{project_version}</small>" in explorer
+
 
 def test_render_blueprint_keeps_only_canonical_services() -> None:
     blueprint = Path("render.yaml").read_text(encoding="utf-8")
