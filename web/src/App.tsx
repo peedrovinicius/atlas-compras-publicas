@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import AnalyticsExplorer from "./AnalyticsExplorer";
-import { ATLAS_LOGO_SYMBOL } from "./brand";
-
 import {
   API_BASE_URL,
   checkHealth,
@@ -335,19 +333,6 @@ export default function App() {
   }
 
   useEffect(() => {
-    let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-
-    if (!favicon) {
-      favicon = document.createElement("link");
-      favicon.rel = "icon";
-      document.head.appendChild(favicon);
-    }
-
-    favicon.type = "image/webp";
-    favicon.href = ATLAS_LOGO_SYMBOL;
-  }, []);
-
-  useEffect(() => {
     let active = true;
 
     Promise.all([fetchCategories(), checkHealth()])
@@ -384,7 +369,11 @@ export default function App() {
         <a className="brand atlas-brand" href="/" aria-label="Atlas e Preços">
           <img
             className="brand-symbol"
-            src={ATLAS_LOGO_SYMBOL}
+            src="/atlas-symbol.svg"
+            width="46"
+            height="46"
+            decoding="async"
+            fetchPriority="high"
             alt=""
             aria-hidden="true"
           />
