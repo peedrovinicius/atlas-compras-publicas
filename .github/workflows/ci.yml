@@ -5,6 +5,7 @@ on:
     paths:
       - "README.md"
       - "CONTRIBUTING.md"
+      - "LICENSE"
       - "render.yaml"
       - ".github/pull_request_template.md"
       - "src/**"
@@ -24,6 +25,7 @@ on:
     paths:
       - "README.md"
       - "CONTRIBUTING.md"
+      - "LICENSE"
       - "render.yaml"
       - ".github/pull_request_template.md"
       - "src/**"
