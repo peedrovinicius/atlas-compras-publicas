@@ -56,6 +56,18 @@ O frontend passa a usar a identidade `Atlas e Preços` no cabeçalho:
 - comportamento responsivo em desktop e mobile;
 - ativo visual otimizado e incorporado ao bundle.
 
+## Performance e acessibilidade da marca
+
+A identidade pública recebeu ajustes técnicos adicionais:
+
+- símbolo movido para ativo estático em `/atlas-symbol.svg`, reduzindo o peso do bundle JavaScript;
+- preload do símbolo no HTML;
+- dimensões explícitas no cabeçalho para reduzir layout shift;
+- carregamento assíncrono da imagem;
+- suporte a `prefers-reduced-motion` para usuários que reduzem animações.
+
+Esses contratos passam a ser validados automaticamente.
+
 ## Descoberta pública
 
 O frontend também passa a publicar metadados básicos para descoberta e indexação:

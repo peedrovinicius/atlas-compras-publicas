@@ -82,7 +82,7 @@ def test_release_version_is_consistent() -> None:
 def test_public_brand_is_consistent() -> None:
     index = Path("web/index.html").read_text(encoding="utf-8")
     app = Path("web/src/App.tsx").read_text(encoding="utf-8")
-    brand = Path("web/src/brand.ts").read_text(encoding="utf-8")
+    symbol = Path("web/public/atlas-symbol.svg").read_text(encoding="utf-8")
     readme = Path("README.md").read_text(encoding="utf-8")
     guide = Path("docs/brand.md").read_text(encoding="utf-8")
 
@@ -93,14 +93,38 @@ def test_public_brand_is_consistent() -> None:
     assert 'aria-label="Atlas e Preços"' in app
     assert "Inteligência em compras públicas" in app
     assert "Atlas e Preços" in app
-    assert 'link[rel="icon"]' in app
-    assert "data:image/webp;base64," in brand
+    assert 'src="/atlas-symbol.svg"' in app
+    assert 'width="46"' in app
+    assert 'height="46"' in app
+    assert 'decoding="async"' in app
+    assert 'fetchPriority="high"' in app
+    assert '<link rel="icon" href="/atlas-symbol.svg" type="image/svg+xml" />' in index
+    assert (
+        '<link rel="preload" href="/atlas-symbol.svg" '
+        'as="image" type="image/svg+xml" />'
+    ) in index
+    assert "data:image/webp;base64," in symbol
     assert "# Atlas e Preços" in readme
     assert "# Identidade Atlas e Preços" in guide
 
     explorer = Path("web/src/AnalyticsExplorer.tsx").read_text(encoding="utf-8")
     assert "<span>Atlas e Preços</span>" in explorer
     assert "processados pelo Atlas e Preços." in explorer
+
+
+def test_frontend_brand_performance_and_motion_preferences() -> None:
+    app = Path("web/src/App.tsx").read_text(encoding="utf-8")
+    styles = Path("web/src/styles.css").read_text(encoding="utf-8")
+    symbol = Path("web/public/atlas-symbol.svg")
+    legacy_brand = Path("web/src/brand.ts")
+
+    assert symbol.exists()
+    assert not legacy_brand.exists()
+    assert 'src="/atlas-symbol.svg"' in app
+    assert 'fetchPriority="high"' in app
+    assert "@media (prefers-reduced-motion: reduce)" in styles
+    assert "animation-duration: 0.01ms !important;" in styles
+    assert "transition-duration: 0.01ms !important;" in styles
 
 
 def test_public_discovery_metadata_is_consistent() -> None:
