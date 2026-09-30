@@ -99,7 +99,10 @@ def test_public_brand_is_consistent() -> None:
     assert 'decoding="async"' in app
     assert 'fetchPriority="high"' in app
     assert '<link rel="icon" href="/atlas-symbol.svg" type="image/svg+xml" />' in index
-    assert '<link rel="preload" href="/atlas-symbol.svg" as="image" type="image/svg+xml" />' in index
+    assert (
+        '<link rel="preload" href="/atlas-symbol.svg" '
+        'as="image" type="image/svg+xml" />'
+    ) in index
     assert "data:image/webp;base64," in symbol
     assert "# Atlas e Preços" in readme
     assert "# Identidade Atlas e Preços" in guide
