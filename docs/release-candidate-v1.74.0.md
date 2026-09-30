@@ -22,7 +22,8 @@ A release candidata reúne:
 - comparação de produtos compatíveis;
 - exportação CSV e evidências rastreáveis ao PNCP;
 - nova identidade visual `Atlas e Preços` no frontend;
-- metadados de descoberta pública, sitemap, robots e manifesto web.
+- metadados de descoberta pública, sitemap, robots e manifesto web;
+- otimização de carregamento da marca e suporte a redução de movimento.
 
 ## Serviços canônicos
 
