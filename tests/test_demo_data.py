@@ -18,6 +18,7 @@ def test_demo_data_cli_defaults_are_explicit() -> None:
     assert args.sequence is None
     assert args.output_root == "data/demo"
     assert args.max_result_requests_per_procurement is None
+    assert args.offline_fallback is False
 
 
 def test_build_demo_data_orchestrates_existing_pipeline(
@@ -187,3 +188,35 @@ def test_demo_result_request_limit_argument_wins_over_environment(
 ) -> None:
     monkeypatch.setenv("ATLAS_DEMO_MAX_RESULT_REQUESTS", "8")
     assert _demo_result_request_limit(3) == 3
+
+
+
+def test_build_demo_data_uses_offline_seed_when_pncp_is_unavailable(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    request = httpx.Request("GET", "https://pncp.example.test")
+
+    def unavailable(*args, **kwargs):
+        raise httpx.ReadTimeout("temporary", request=request)
+
+    monkeypatch.setattr(demo_data, "capture_contract", unavailable)
+
+    procurement = demo_data.DemoProcurement(
+        cnpj=demo_data.DEMO_CNPJ,
+        year=demo_data.DEMO_YEAR,
+        sequence=demo_data.DEMO_SEQUENCE,
+        label="indisponível",
+    )
+    result = demo_data.build_demo_data(
+        object(),
+        tmp_path / "demo",
+        procurements=(procurement,),
+        allow_offline_seed=True,
+    )
+
+    assert result.procurement_count == 1
+    assert result.result_count == 12
+    assert result.silver_item_count == 1
+    assert result.silver_award_count == 12
+    assert Path(result.database_path).is_file()
