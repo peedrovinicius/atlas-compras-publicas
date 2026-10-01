@@ -105,7 +105,7 @@ def _build_offline_demo_data(root: Path) -> DemoDataBuildResult:
     items_parquet = root / "silver" / "items.parquet"
     awards_parquet = root / "silver" / "awards.parquet"
     database = root / "atlas-demo.duckdb"
-    procurement_key = "demo:offline:2026:1"
+    procurement_key = "pncp:00000000000000:2026:1"
 
     contract = {
         "numeroControlePNCP": "00000000000000-1-000001/2026",
@@ -148,7 +148,7 @@ def _build_offline_demo_data(root: Path) -> DemoDataBuildResult:
             "sequencialResultado": index,
             "quantidadeHomologada": "10",
             "valorUnitarioHomologado": price,
-            "valorTotalHomologado": str(float(price) * 10),
+            "valorTotalHomologado": f"{float(price) * 10:.2f}",
             "percentualDesconto": None,
             "nomeRazaoSocialFornecedor": supplier,
             "niFornecedor": document,
