@@ -4,10 +4,15 @@ on:
   pull_request:
     paths:
       - "README.md"
+      - "CONTRIBUTING.md"
+      - "LICENSE"
+      - "render.yaml"
+      - ".github/pull_request_template.md"
       - "src/**"
       - "web/**"
       - "tests/**"
       - "data/evaluation/**"
+      - "docs/**"
       - "pyproject.toml"
       - ".github/workflows/**"
       - "docs/dashboard-quality-snapshot.json"
@@ -16,12 +21,18 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
       - "README.md"
+      - "CONTRIBUTING.md"
+      - "LICENSE"
+      - "render.yaml"
+      - ".github/pull_request_template.md"
       - "src/**"
       - "web/**"
       - "tests/**"
       - "data/evaluation/**"
+      - "docs/**"
       - "pyproject.toml"
       - ".github/workflows/**"
       - "docs/dashboard-quality-snapshot.json"
@@ -33,7 +44,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -42,6 +53,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Enforce develop to main release flow
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          test "$HEAD_REF" = "develop" || {
+            echo "Pull Requests para main devem partir de develop."
+            exit 1
+          }
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -74,5 +95,5 @@ jobs:
       - name: Build web
         working-directory: web
         env:
-          VITE_API_BASE_URL: https://atlas-compras-publicas.onrender.com
+          VITE_API_BASE_URL: https://atlas-compras-publicas-analytics.onrender.com
         run: npm run build

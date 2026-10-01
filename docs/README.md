@@ -1,3 +1,6 @@
+- [Deploy no Render](deploy-render.md)
+- [Checklist de release](release-checklist.md)
+- [Proteção da main](github-main-protection.md)
 # Documentação do Atlas de Compras Públicas
 
 Este diretório reúne arquitetura, metodologia, benchmarks e registros de release. Os documentos históricos são preservados para rastreabilidade, mas os pontos de entrada atuais estão organizados abaixo.
@@ -8,6 +11,7 @@ Este diretório reúne arquitetura, metodologia, benchmarks e registros de relea
 - [Arquitetura multidomínio](multidomain-architecture.md)
 - [Fronteiras dos domínios de saúde](architecture-health-domains.md)
 - [API e aplicação analítica](api-dashboard.md)
+- [Identidade Atlas e Preços](brand.md)
 - [Exemplo real e reproduzível do parser](exemplo-parser-real.md)
 - [Contrato do warehouse v1](warehouse-v1.md)
 - [Dataset multi-contratação](multi-contratacao.md)
@@ -39,7 +43,10 @@ O domínio histórico `medications` testa a generalização além da odontologia
 
 ## Release atual
 
+- [Release candidata v1.74.0](release-candidate-v1.74.0.md)
 - [Changelog](../CHANGELOG.md)
+- [Release v1.74.0](release-v1.74.0.md)
+- [Release v1.73.0](release-v1.73.0.md)
 - [Release v1.72.0](release-v1.72.0.md)
 - [Release v1.71.0](release-v1.71.0.md)
 - [Release v1.70.0](release-v1.70.0.md)

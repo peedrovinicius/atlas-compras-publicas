@@ -1,7 +1,7 @@
 {
   "name": "atlas-compras-publicas-web",
   "private": true,
-  "version": "1.72.0",
+  "version": "1.74.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

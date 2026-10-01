@@ -3854,3 +3854,253 @@ select:focus-visible {
     overflow-wrap: anywhere;
   }
 }
+
+
+/* v1.73 recent observed price trend */
+.analytics-history-trend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 12px 0 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+
+.analytics-history-trend > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 13px 14px;
+  border-right: 1px solid var(--line);
+}
+
+.analytics-history-trend > div:last-child {
+  border-right: 0;
+}
+
+.analytics-history-trend span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.analytics-history-trend strong {
+  color: var(--text);
+  font-size: 17px;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-history-trend small,
+.analytics-history-trend-note {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.analytics-history-trend-note {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 760px) {
+  .analytics-history-trend {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-history-trend > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .analytics-history-trend > div:last-child {
+    border-bottom: 0;
+  }
+}
+
+
+/* v1.74 regional price context */
+.analytics-geography-reference {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 12px 0 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+
+.analytics-geography-reference > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 15px;
+  border-right: 1px solid var(--line);
+}
+
+.analytics-geography-reference > div:last-child {
+  border-right: 0;
+}
+
+.analytics-geography-reference span,
+.analytics-region-grid span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.analytics-geography-reference strong,
+.analytics-region-grid strong {
+  color: var(--text);
+  font-size: 18px;
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-geography-reference small,
+.analytics-region-grid small {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.analytics-geography-subtitle {
+  margin: 16px 0 8px;
+  color: #445066;
+  font-size: 11px;
+  letter-spacing: -.01em;
+}
+
+.analytics-region-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.analytics-region-grid > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.analytics-state-comparison {
+  margin-top: 0;
+}
+
+.analytics-geography-details {
+  margin-top: 10px;
+}
+
+.analytics-print-report-regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.analytics-print-report-regions span {
+  padding: 5px 7px;
+  border: 1px solid #d7dde6;
+  border-radius: 999px;
+  font-size: 8.5pt;
+}
+
+@media (max-width: 760px) {
+  .analytics-geography-reference {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-geography-reference > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .analytics-geography-reference > div:last-child {
+    border-bottom: 0;
+  }
+
+  .analytics-region-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Atlas e Preços brand */
+.atlas-brand {
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-symbol {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 10px rgb(15 23 42 / 10%));
+}
+
+.atlas-brand .brand-copy {
+  gap: 2px;
+}
+
+.atlas-brand .brand-copy strong {
+  display: block;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 780;
+  line-height: 1;
+  letter-spacing: -.04em;
+  white-space: nowrap;
+}
+
+.atlas-brand .brand-name-secondary {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.atlas-brand .brand-copy small {
+  color: #7a8495;
+  font-size: 8px;
+  letter-spacing: .055em;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .brand-symbol {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .atlas-brand .brand-copy strong {
+    font-size: 15px;
+  }
+
+  .atlas-brand .brand-copy small {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .atlas-brand {
+    gap: 8px;
+  }
+
+  .brand-symbol {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .atlas-brand .brand-copy strong {
+    font-size: 14px;
+  }
+}

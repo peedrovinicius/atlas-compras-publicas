@@ -44,6 +44,31 @@ pytest -q
 - não apresente sinal estatístico como prova de irregularidade;
 - atualize a documentação quando uma mudança afetar contratos, taxonomias ou metodologia.
 
+## Fluxo de branches
+
+O desenvolvimento normal acontece fora da `main`.
+
+Fluxo recomendado:
+
+1. use `develop` como integração das mudanças em andamento;
+2. execute a CI completa em `develop`;
+3. abra Pull Request de `develop` para `main`;
+4. só faça merge quando o check `quality` estiver aprovado;
+5. trate o merge na `main` como uma release/deploy, não como área de trabalho.
+
+Evite commits incrementais diretamente na `main`. Isso mantém o histórico de release limpo e evita disparar builds de produção para mudanças ainda não consolidadas.
+
+## Deploy
+
+A configuração canônica do Render está em `render.yaml` e possui somente dois serviços:
+
+- `atlas-compras-publicas-web`;
+- `atlas-compras-publicas-analytics`.
+
+Serviços Render criados manualmente fora desse Blueprint não fazem parte da arquitetura canônica.
+
+O deploy de produção deve ocorrer somente após CI aprovada e merge na `main`. Alterações em `develop` não devem ser usadas como origem de produção.
+
 ## Pull Requests
 
 Inclua:
@@ -52,6 +77,7 @@ Inclua:
 - o escopo da alteração;
 - os testes executados;
 - impacto em benchmarks, quando houver;
-- impacto metodológico, quando houver.
+- impacto metodológico, quando houver;
+- confirmação de que a CI passou antes do merge.
 
 Mudanças pequenas e verificáveis são mais fáceis de revisar.

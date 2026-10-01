@@ -2,6 +2,28 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.74.0
+
+- Mercado ganha contexto geográfico com referência nacional explícita;
+- macrorregiões passam a mostrar mediana, diferença percentual para a mediana nacional e tamanho da amostra;
+- comparação por UF passa a mostrar região, observações, compras, mediana e diferença para a referência nacional;
+- UFs continuam priorizadas por tamanho da amostra e a lista completa fica disponível sob demanda;
+- relatório imprimível/PDF passa a registrar a referência geográfica e as medianas por macrorregião;
+- versão exibida no relatório passa a ser protegida por contrato automatizado de release;
+- nova identidade visual `Atlas e Preços` aplicada ao cabeçalho e metadados públicos do frontend;
+- símbolo da marca otimizado e incorporado ao bundle sem dependência externa;
+- pacote, cliente PNCP e frontend sincronizados em 1.74.0.
+
+## 1.73.0
+
+- histórico de preços ganha resumo dos dois períodos mais recentes;
+- mediana do último período e do período anterior ficam visíveis antes do gráfico;
+- variação absoluta e percentual entre as duas medianas é calculada de forma descritiva;
+- quantidade de observações de cada período é mostrada junto aos valores;
+- relatório imprimível/PDF passa a incluir a tendência recente observada;
+- interface explicita que a comparação histórica não representa projeção de preço futuro;
+- pacote, cliente PNCP e frontend sincronizados em 1.73.0.
+
 ## 1.72.0
 
 - análise detalhada ganha ação "Gerar relatório / PDF";

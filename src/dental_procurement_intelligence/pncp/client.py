@@ -49,7 +49,7 @@ class PNCPClient:
             transport=transport,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "atlas-compras-publicas/1.72",
+                "User-Agent": "atlas-compras-publicas/1.74",
             },
         )
 

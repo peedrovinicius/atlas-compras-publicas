@@ -46,6 +46,9 @@ def test_frozen_artifacts_keep_their_git_blob_sha() -> None:
 def test_release_version_is_consistent() -> None:
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
     project_version = pyproject["project"]["version"]
+    web_package = json.loads(
+        Path("web/package.json").read_text(encoding="utf-8")
+    )
 
     client = Path(
         "src/dental_procurement_intelligence/pncp/client.py"
@@ -53,8 +56,155 @@ def test_release_version_is_consistent() -> None:
     match = re.search(r"atlas-compras-publicas/([0-9.]+)", client)
 
     assert project_version == __version__
+    assert web_package["version"] == project_version
     assert match is not None
     assert match.group(1) == ".".join(project_version.split(".")[:2])
+    assert Path(f"docs/release-v{project_version}.md").exists()
+
+    explorer = Path("web/src/AnalyticsExplorer.tsx").read_text(encoding="utf-8")
+    assert f"<small>v{project_version}</small>" in explorer
+
+    changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+    first_release = re.search(r"^##\s+([0-9]+\.[0-9]+\.[0-9]+)\s*$", changelog, re.MULTILINE)
+    assert first_release is not None
+    assert first_release.group(1) == project_version
+
+    candidate_manifest = Path(
+        f"docs/release-candidate-v{project_version}.md"
+    )
+    assert candidate_manifest.exists()
+    manifest = candidate_manifest.read_text(encoding="utf-8")
+    assert f"versão: `{project_version}`" in manifest
+    assert "branch de integração: `develop`" in manifest
+    assert "destino: `main`" in manifest
+
+
+def test_public_brand_is_consistent() -> None:
+    index = Path("web/index.html").read_text(encoding="utf-8")
+    app = Path("web/src/App.tsx").read_text(encoding="utf-8")
+    symbol = Path("web/public/atlas-symbol.svg").read_text(encoding="utf-8")
+    readme = Path("README.md").read_text(encoding="utf-8")
+    guide = Path("docs/brand.md").read_text(encoding="utf-8")
+
+    assert "<title>Atlas e Preços | Inteligência de Preços Públicos</title>" in index
+    assert '<meta name="application-name" content="Atlas e Preços" />' in index
+    assert '"@type": "SoftwareApplication"' in index
+    assert '"name": "Atlas e Preços"' in index
+    assert 'aria-label="Atlas e Preços"' in app
+    assert "Inteligência em compras públicas" in app
+    assert "Atlas e Preços" in app
+    assert 'src="/atlas-symbol.svg"' in app
+    assert 'width="46"' in app
+    assert 'height="46"' in app
+    assert 'decoding="async"' in app
+    assert 'fetchPriority="high"' in app
+    assert '<link rel="icon" href="/atlas-symbol.svg" type="image/svg+xml" />' in index
+    assert (
+        '<link rel="preload" href="/atlas-symbol.svg" '
+        'as="image" type="image/svg+xml" />'
+    ) in index
+    assert "data:image/webp;base64," in symbol
+    assert "# Atlas e Preços" in readme
+    assert "# Identidade Atlas e Preços" in guide
+
+    explorer = Path("web/src/AnalyticsExplorer.tsx").read_text(encoding="utf-8")
+    assert "<span>Atlas e Preços</span>" in explorer
+    assert "processados pelo Atlas e Preços." in explorer
+
+
+def test_frontend_brand_performance_and_motion_preferences() -> None:
+    app = Path("web/src/App.tsx").read_text(encoding="utf-8")
+    styles = Path("web/src/styles.css").read_text(encoding="utf-8")
+    symbol = Path("web/public/atlas-symbol.svg")
+    legacy_brand = Path("web/src/brand.ts")
+
+    assert symbol.exists()
+    assert not legacy_brand.exists()
+    assert 'src="/atlas-symbol.svg"' in app
+    assert 'fetchPriority="high"' in app
+    assert "@media (prefers-reduced-motion: reduce)" in styles
+    assert "animation-duration: 0.01ms !important;" in styles
+    assert "transition-duration: 0.01ms !important;" in styles
+
+
+def test_public_discovery_metadata_is_consistent() -> None:
+    index = Path("web/index.html").read_text(encoding="utf-8")
+    robots = Path("web/public/robots.txt").read_text(encoding="utf-8")
+    sitemap = Path("web/public/sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads(
+        Path("web/public/site.webmanifest").read_text(encoding="utf-8")
+    )
+
+    canonical = "https://atlas-compras-publicas-web.onrender.com/"
+
+    assert '<meta name="robots" content="index,follow,max-image-preview:large" />' in index
+    assert '<link rel="manifest" href="/site.webmanifest" />' in index
+    assert f'Sitemap: {canonical}sitemap.xml' in robots
+    assert f"<loc>{canonical}</loc>" in sitemap
+    assert manifest["name"] == "Atlas e Preços"
+    assert manifest["short_name"] == "Atlas e Preços"
+    assert manifest["start_url"] == "/"
+    assert manifest["scope"] == "/"
+    assert manifest["lang"] == "pt-BR"
+
+
+def test_public_trust_assets_are_consistent() -> None:
+    index = Path("web/index.html").read_text(encoding="utf-8")
+    security = Path(
+        "web/public/.well-known/security.txt"
+    ).read_text(encoding="utf-8")
+
+    canonical = "https://atlas-compras-publicas-web.onrender.com/"
+
+    assert f'<link rel="canonical" href="{canonical}" />' in index
+    assert '"@type": "SoftwareApplication"' in index
+    assert '"name": "Atlas e Preços"' in index
+    assert (
+        "Canonical: "
+        f"{canonical}.well-known/security.txt"
+    ) in security
+    assert (
+        "Policy: "
+        "https://github.com/peedrovinicius/"
+        "atlas-compras-publicas/security/policy"
+    ) in security
+    assert "Preferred-Languages: pt-BR, en" in security
+
+
+def test_render_blueprint_keeps_only_canonical_services() -> None:
+    blueprint = Path("render.yaml").read_text(encoding="utf-8")
+
+    service_names = re.findall(r"^\s+name:\s+([^\s]+)\s*$", blueprint, re.MULTILINE)
+
+    assert service_names == [
+        "atlas-compras-publicas-analytics",
+        "atlas-compras-publicas-web",
+    ]
+    assert blueprint.count("autoDeployTrigger: checksPass") == 2
+    assert "atlas-compras-publicas-api" not in blueprint
+    assert re.search(r"^\s+name:\s+atlas-compras-publicas\s*$", blueprint, re.MULTILINE) is None
+    assert "https://atlas-compras-publicas-analytics.onrender.com" in blueprint
+    assert "https://atlas-compras-publicas-web.onrender.com" in blueprint
+
+
+def test_production_files_do_not_reference_legacy_render_services() -> None:
+    production_files = [
+        ".github/workflows/ci.yml",
+        ".github/workflows/smoke-production.yml",
+        "render.yaml",
+        "README.md",
+        "pyproject.toml",
+        "web/src/api.ts",
+    ]
+    forbidden_hosts = [
+        "https://atlas-compras-publicas.onrender.com",
+        "https://atlas-compras-publicas-api.onrender.com",
+    ]
+
+    for path in production_files:
+        content = Path(path).read_text(encoding="utf-8")
+        for host in forbidden_hosts:
+            assert host not in content, f"{path} references legacy host {host}"
 
 
 def test_dashboard_snapshot_matches_frozen_baselines() -> None:

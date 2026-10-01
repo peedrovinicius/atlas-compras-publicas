@@ -164,6 +164,22 @@ function percent(value: number | null | undefined): string {
   })}%`;
 }
 
+function priceChangePercent(
+  current: number | null | undefined,
+  previous: number | null | undefined,
+): number | null {
+  if (
+    current === null
+    || current === undefined
+    || previous === null
+    || previous === undefined
+    || Number(previous) <= 0
+  ) {
+    return null;
+  }
+  return ((Number(current) - Number(previous)) / Number(previous)) * 100;
+}
+
 function parsePriceInput(value: string): number | null {
   const cleaned = value
     .trim()
@@ -736,6 +752,28 @@ export default function AnalyticsExplorer() {
 
   const summary = bundle?.summary;
   const stats = summary?.price_stats;
+  const pricedHistoryPoints = (
+    bundle?.history.points
+      .filter((point) => point.median_price !== null)
+      .slice()
+      .sort((left, right) => left.month.localeCompare(right.month))
+    ?? []
+  );
+  const latestHistoryPoint = pricedHistoryPoints.at(-1) ?? null;
+  const previousHistoryPoint = pricedHistoryPoints.at(-2) ?? null;
+  const recentMedianDifference = (
+    latestHistoryPoint && previousHistoryPoint
+      ? Number(latestHistoryPoint.median_price) - Number(previousHistoryPoint.median_price)
+      : null
+  );
+  const recentMedianChangePercent = (
+    latestHistoryPoint && previousHistoryPoint
+      ? priceChangePercent(
+          latestHistoryPoint.median_price,
+          previousHistoryPoint.median_price,
+        )
+      : null
+  );
   const parsedOfferPrice = parsePriceInput(offerPrice);
   const offerDifferencePercent = (
     parsedOfferPrice !== null
@@ -801,6 +839,21 @@ export default function AnalyticsExplorer() {
     Object.entries(appliedFilters) as Array<[keyof AnalyticsFilters, string]>
   ).filter(([, value]) => value.trim().length > 0);
   const hasAppliedFilters = activeFilterEntries.length > 0;
+  const nationalMedian = bundle?.regions.national.median_price ?? null;
+  const regionalComparisons = (bundle?.regions.regions ?? []).map((region) => ({
+    ...region,
+    difference_from_national_percent: priceChangePercent(
+      region.median_price,
+      nationalMedian,
+    ),
+  }));
+  const stateComparisons = (bundle?.regions.states ?? [])
+    .slice()
+    .sort((left, right) => {
+      const observations = right.observations - left.observations;
+      if (observations !== 0) return observations;
+      return left.state_code.localeCompare(right.state_code);
+    });
   const refinementGroups = Object.entries(facets)
     .map(([key, values]) => ({
       key,
@@ -1698,6 +1751,38 @@ export default function AnalyticsExplorer() {
                   <p className="analytics-empty">Sem série temporal defensável para este produto.</p>
                 ) : (
                   <>
+                    {latestHistoryPoint && (
+                      <div className="analytics-history-trend">
+                        <div>
+                          <span>Último período</span>
+                          <strong>{money(latestHistoryPoint.median_price)}</strong>
+                          <small>
+                            {date(latestHistoryPoint.month)} · {number(latestHistoryPoint.observations)} observações
+                          </small>
+                        </div>
+                        {previousHistoryPoint && (
+                          <div>
+                            <span>Período anterior</span>
+                            <strong>{money(previousHistoryPoint.median_price)}</strong>
+                            <small>
+                              {date(previousHistoryPoint.month)} · {number(previousHistoryPoint.observations)} observações
+                            </small>
+                          </div>
+                        )}
+                        {previousHistoryPoint && (
+                          <div>
+                            <span>Variação da mediana</span>
+                            <strong>{percent(recentMedianChangePercent)}</strong>
+                            <small>
+                              {money(recentMedianDifference)} entre {date(previousHistoryPoint.month)} e {date(latestHistoryPoint.month)}
+                            </small>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <p className="analytics-history-trend-note">
+                      Comparação entre períodos observados. Não representa projeção de preço futuro.
+                    </p>
                     <HistoryChart points={bundle.history.points} />
                     <details className="analytics-data-disclosure">
                       <summary>
@@ -1724,17 +1809,88 @@ export default function AnalyticsExplorer() {
                 )}
               </article>
 
-              <article className="analytics-card" hidden={detailView !== "market"}>
+              <article className="analytics-card analytics-card-wide" hidden={detailView !== "market"}>
                 <span className="section-kicker">Geografia</span>
-                <h3>Comparação por UF</h3>
-                <div className="analytics-rank-list">
-                  {bundle.regions.states.slice(0, 8).map((state) => (
+                <h3>Contexto regional de preços</h3>
+                <div className="analytics-geography-reference">
+                  <div>
+                    <span>Referência nacional</span>
+                    <strong>{money(bundle.regions.national.median_price)}</strong>
+                    <small>
+                      {number(bundle.regions.national.observations)} observações · {number(bundle.regions.national.procurement_count)} compras
+                    </small>
+                  </div>
+                  <div>
+                    <span>UFs com amostra</span>
+                    <strong>{number(bundle.regions.national.state_count)}</strong>
+                    <small>no recorte atual</small>
+                  </div>
+                </div>
+
+                {regionalComparisons.length > 0 && (
+                  <>
+                    <h4 className="analytics-geography-subtitle">Macrorregiões</h4>
+                    <div className="analytics-region-grid">
+                      {regionalComparisons.map((region) => (
+                        <div key={region.macroregion}>
+                          <span>{region.macroregion}</span>
+                          <strong>{money(region.median_price)}</strong>
+                          <small>
+                            {percent(region.difference_from_national_percent)} vs. mediana nacional · {number(region.observations)} observações
+                          </small>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <h4 className="analytics-geography-subtitle">Unidades da Federação</h4>
+                <div className="analytics-rank-list analytics-state-comparison">
+                  {stateComparisons.slice(0, 8).map((state) => (
                     <div key={state.state_code}>
-                      <span><strong>{state.state_code}</strong><small>{state.macroregion ?? "Região não informada"}</small></span>
-                      <span><strong>{money(state.median_price)}</strong><small>{percent(state.difference_from_national_percent)}</small></span>
+                      <span>
+                        <strong>{state.state_code}</strong>
+                        <small>
+                          {state.macroregion ?? "Região não informada"} · {number(state.observations)} observações
+                        </small>
+                      </span>
+                      <span>
+                        <strong>{money(state.median_price)}</strong>
+                        <small>{percent(state.difference_from_national_percent)} vs. mediana nacional</small>
+                      </span>
                     </div>
                   ))}
                 </div>
+                {stateComparisons.length > 8 && (
+                  <details className="analytics-data-disclosure analytics-geography-details">
+                    <summary>
+                      <span>Ver todas as UFs</span>
+                      <small>{number(stateComparisons.length)} UFs</small>
+                    </summary>
+                    <div className="analytics-table-wrap">
+                      <table>
+                        <thead>
+                          <tr><th>UF</th><th>Região</th><th>Mediana</th><th>Vs. nacional</th><th>Observações</th><th>Compras</th></tr>
+                        </thead>
+                        <tbody>
+                          {stateComparisons.map((state) => (
+                            <tr key={state.state_code}>
+                              <td>{state.state_code}</td>
+                              <td>{state.macroregion ?? "Não informada"}</td>
+                              <td>{money(state.median_price)}</td>
+                              <td>{percent(state.difference_from_national_percent)}</td>
+                              <td>{number(state.observations)}</td>
+                              <td>{number(state.procurement_count)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+                )}
+                <p className="analytics-note">
+                  As diferenças mostram somente a posição da mediana local em relação à mediana nacional do mesmo recorte.
+                </p>
               </article>
 
               <article className="analytics-card" hidden={detailView !== "market"}>
@@ -1841,10 +1997,10 @@ export default function AnalyticsExplorer() {
             <section className="analytics-print-report" aria-label="Relatório da análise">
               <header className="analytics-print-report-header">
                 <div>
-                  <span>Atlas de Compras Públicas</span>
+                  <span>Atlas e Preços</span>
                   <strong>Relatório de referência de preços</strong>
                 </div>
-                <small>v1.72.0</small>
+                <small>v1.74.0</small>
               </header>
 
               <div className="analytics-print-report-title">
@@ -1881,6 +2037,50 @@ export default function AnalyticsExplorer() {
                   <div><span>P75</span><strong>{money(stats.percentile_75)}</strong></div>
                   <div><span>Máximo</span><strong>{money(stats.max_price)}</strong></div>
                 </div>
+              </section>
+
+              {latestHistoryPoint && previousHistoryPoint && (
+                <section className="analytics-print-report-section">
+                  <h2>Tendência recente observada</h2>
+                  <div className="analytics-print-report-context">
+                    <div><span>Último período</span><strong>{money(latestHistoryPoint.median_price)} · {date(latestHistoryPoint.month)}</strong></div>
+                    <div><span>Período anterior</span><strong>{money(previousHistoryPoint.median_price)} · {date(previousHistoryPoint.month)}</strong></div>
+                    <div><span>Diferença</span><strong>{money(recentMedianDifference)}</strong></div>
+                    <div><span>Variação</span><strong>{percent(recentMedianChangePercent)}</strong></div>
+                  </div>
+                  <p>Comparação histórica entre medianas dos dois períodos mais recentes. Não representa projeção.</p>
+                </section>
+              )}
+
+              <section className="analytics-print-report-section">
+                <h2>Contexto geográfico</h2>
+                <div className="analytics-print-report-context">
+                  <div>
+                    <span>Mediana nacional</span>
+                    <strong>{money(bundle.regions.national.median_price)}</strong>
+                  </div>
+                  <div>
+                    <span>Observações nacionais</span>
+                    <strong>{number(bundle.regions.national.observations)}</strong>
+                  </div>
+                  <div>
+                    <span>UFs com amostra</span>
+                    <strong>{number(bundle.regions.national.state_count)}</strong>
+                  </div>
+                  <div>
+                    <span>Macrorregiões</span>
+                    <strong>{number(regionalComparisons.length)}</strong>
+                  </div>
+                </div>
+                {regionalComparisons.length > 0 && (
+                  <div className="analytics-print-report-regions">
+                    {regionalComparisons.map((region) => (
+                      <span key={region.macroregion}>
+                        <b>{region.macroregion}:</b> {money(region.median_price)} ({percent(region.difference_from_national_percent)})
+                      </span>
+                    ))}
+                  </div>
+                )}
               </section>
 
               <section className="analytics-print-report-section">
@@ -1940,7 +2140,7 @@ export default function AnalyticsExplorer() {
               </section>
 
               <footer className="analytics-print-report-footer">
-                <span>Fonte: dados públicos do PNCP processados pelo Atlas de Compras Públicas.</span>
+                <span>Fonte: dados públicos do PNCP processados pelo Atlas e Preços.</span>
                 <span>{window.location.href}</span>
               </footer>
             </section>

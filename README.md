@@ -1,8 +1,10 @@
 <div align="center">
 
-# Atlas de Compras Públicas
+# Atlas e Preços
 
-Plataforma de inteligência sobre compras públicas que estrutura itens do PNCP, compara preços homologados e preserva a evidência de origem para auditoria.
+Inteligência de preços em compras públicas com dados do PNCP, comparação de preços homologados, histórico e evidências rastreáveis.
+
+Projeto técnico: **Atlas de Compras Públicas**.
 
 [![CI](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml/badge.svg)](https://github.com/peedrovinicius/atlas-compras-publicas/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
@@ -150,8 +152,8 @@ A experiência pública possui duas áreas.
 
 - mediana, percentis e tamanho da amostra comparável;
 - distribuição dos preços normalizados por faixa;
-- histórico mensal de preços;
-- comparação por região e UF;
+- histórico mensal de preços com comparação entre os dois períodos mais recentes;
+- comparação por região e UF com referência explícita à mediana nacional;
 - fornecedores e órgãos compradores;
 - sinais estatísticos com aviso metodológico explícito;
 - cartões de evidência com contexto da compra, status da normalização, hashes de origem e link para o PNCP;
@@ -273,6 +275,8 @@ tests/               testes automatizados
 
 ## Documentação
 
+- [Release v1.74.0](docs/release-v1.74.0.md)
+- [Release v1.73.0](docs/release-v1.73.0.md)
 - [Release v1.72.0](docs/release-v1.72.0.md)
 - [Release v1.71.0](docs/release-v1.71.0.md)
 - [Release v1.70.0](docs/release-v1.70.0.md)

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import AnalyticsExplorer from "./AnalyticsExplorer";
-
 import {
   API_BASE_URL,
   checkHealth,
@@ -367,11 +366,23 @@ export default function App() {
         Ir para o conteúdo
       </a>
       <header className="site-header">
-        <a className="brand" href="/" aria-label="Atlas de Compras Públicas">
-          <span className="brand-mark">A</span>
+        <a className="brand atlas-brand" href="/" aria-label="Atlas e Preços">
+          <img
+            className="brand-symbol"
+            src="/atlas-symbol.svg"
+            width="46"
+            height="46"
+            decoding="async"
+            fetchPriority="high"
+            alt=""
+            aria-hidden="true"
+          />
           <span className="brand-copy">
-            <strong>Atlas</strong>
-            <small>Compras públicas</small>
+            <strong>
+              <span>Atlas</span>
+              <span className="brand-name-secondary"> e Preços</span>
+            </strong>
+            <small>Inteligência em compras públicas</small>
           </span>
         </a>
 
@@ -590,7 +601,7 @@ export default function App() {
 
       <footer className="site-footer">
         <span>
-          Atlas de Compras Públicas
+          Atlas e Preços
           {apiVersion ? ` v${apiVersion}` : ""}
         </span>
         <span className="footer-links">

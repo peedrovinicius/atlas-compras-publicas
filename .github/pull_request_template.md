@@ -19,7 +19,15 @@ Informe os comandos executados e o resultado relevante.
 ```bash
 ruff check .
 pytest -q
+cd web && npm run build
 ```
+
+Para PRs destinados à `main`:
+
+- [ ] o trabalho foi consolidado e validado fora da `main`;
+- [ ] o check `quality` está aprovado;
+- [ ] a versão e a documentação de release estão sincronizadas quando aplicável;
+- [ ] o impacto no deploy dos serviços canônicos foi verificado.
 
 ## Impacto metodológico
 

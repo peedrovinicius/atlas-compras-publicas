@@ -1,0 +1,178 @@
+name: Production smoke test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-smoke-test
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    env:
+      FRONTEND_URL: https://atlas-compras-publicas-web.onrender.com
+      API_URL: https://atlas-compras-publicas-analytics.onrender.com
+
+    steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@v4
+
+      - name: Check frontend
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 4 --retry-delay 15 --max-time 120 \
+            "$FRONTEND_URL/" > /dev/null
+
+      - name: Check deployed frontend version
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import urllib.request
+          from pathlib import Path
+          from urllib.parse import urljoin
+
+          expected = json.loads(
+              Path("web/package.json").read_text(encoding="utf-8")
+          )["version"]
+          base = os.environ["FRONTEND_URL"].rstrip("/") + "/"
+
+          with urllib.request.urlopen(base, timeout=120) as response:
+              html = response.read().decode("utf-8")
+
+          match = re.search(r'<script[^>]+src="([^"]+\.js)"', html)
+          assert match is not None, "JavaScript bundle não encontrado no frontend publicado"
+
+          bundle_url = urljoin(base, match.group(1))
+          with urllib.request.urlopen(bundle_url, timeout=120) as response:
+              bundle = response.read().decode("utf-8")
+
+          assert f"v{expected}" in bundle, (
+              f"frontend publicado não contém a versão esperada v{expected}"
+          )
+          print(f"Versão publicada confirmada: v{expected}")
+          PY
+
+      - name: Check API liveness and version
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          from pathlib import Path
+
+          expected = json.loads(
+              Path("web/package.json").read_text(encoding="utf-8")
+          )["version"]
+          url = os.environ["API_URL"].rstrip("/") + "/health"
+
+          with urllib.request.urlopen(url, timeout=120) as response:
+              body = json.load(response)
+
+          assert body.get("version") == expected, (
+              f"API publicada em {body.get('version')!r}; esperado {expected!r}"
+          )
+          print(f"API publicada confirmada: v{expected}")
+          PY
+
+      - name: Check OpenAPI contract
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          url = os.environ["API_URL"].rstrip("/") + "/openapi.json"
+          with urllib.request.urlopen(url, timeout=120) as response:
+              schema = json.load(response)
+
+          paths = schema.get("paths", {})
+          required = {
+              "/health",
+              "/ready",
+              "/api/v1/products/discovery",
+              "/api/v1/products/search",
+              "/api/v1/products/{product_id}",
+              "/api/v1/products/{product_id}/history",
+              "/api/v1/products/{product_id}/regions",
+          }
+          missing = sorted(required - set(paths))
+          assert not missing, f"endpoints ausentes no OpenAPI: {missing}"
+          print("Contrato OpenAPI mínimo confirmado.")
+          PY
+
+      - name: Check analytics readiness
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 4 --retry-delay 15 --max-time 120 \
+            "$API_URL/ready"
+
+      - name: Check product discovery
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 3 --retry-delay 10 --max-time 120 \
+            "$API_URL/api/v1/products/discovery" \
+            | python -c 'import json,sys; data=json.load(sys.stdin); assert isinstance(data.get("items"), list)'
+
+      - name: Check public discovery files
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          from xml.etree import ElementTree
+
+          base = os.environ["FRONTEND_URL"].rstrip("/") + "/"
+
+          def read_text(path: str) -> str:
+              with urllib.request.urlopen(base + path, timeout=120) as response:
+                  return response.read().decode("utf-8")
+
+          robots = read_text("robots.txt")
+          sitemap = read_text("sitemap.xml")
+          manifest = json.loads(read_text("site.webmanifest"))
+          security = read_text(".well-known/security.txt")
+
+          assert "Sitemap: " + base + "sitemap.xml" in robots
+          ElementTree.fromstring(sitemap)
+          assert manifest.get("name") == "Atlas e Preços"
+          assert manifest.get("start_url") == "/"
+          assert "Canonical: " + base + ".well-known/security.txt" in security
+          print("Arquivos públicos de descoberta e segurança confirmados.")
+          PY
+
+      - name: Check public page metadata
+        run: |
+          python - <<'PY'
+          import os
+          import urllib.request
+
+          base = os.environ["FRONTEND_URL"].rstrip("/") + "/"
+          with urllib.request.urlopen(base, timeout=120) as response:
+              html = response.read().decode("utf-8")
+
+          required = [
+              '<link rel="canonical" href="' + base + '" />',
+              '<meta property="og:title" content="Atlas e Preços | Inteligência de Preços Públicos" />',
+              '"@type": "SoftwareApplication"',
+              '"name": "Atlas e Preços"',
+              '<link rel="manifest" href="/site.webmanifest" />',
+          ]
+          missing = [item for item in required if item not in html]
+          assert not missing, f"metadados públicos ausentes: {missing}"
+          print("Metadados públicos confirmados.")
+          PY
+
+      - name: Check product search
+        run: |
+          curl --fail --location --silent --show-error \
+            --retry 3 --retry-delay 10 --max-time 120 \
+            "$API_URL/api/v1/products/search?q=adesivo&limit=1&offset=0" \
+            | python -c 'import json,sys; data=json.load(sys.stdin); assert "items" in data and "total" in data'
