@@ -172,6 +172,11 @@ def build_parser() -> argparse.ArgumentParser:
             "Quando omitido, usa ATLAS_DEMO_MAX_RESULT_REQUESTS se definido."
         ),
     )
+    demo_data.add_argument(
+        "--offline-fallback",
+        action="store_true",
+        help="Permite amostra local se o PNCP estiver indisponível.",
+    )
 
     signals = subparsers.add_parser(
         "detect-anomalies",
@@ -323,6 +328,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_result_requests_per_procurement=_demo_result_request_limit(
                     args.max_result_requests_per_procurement
                 ),
+                allow_offline_seed=args.offline_fallback,
             )
         print(_serialize(asdict(result)))
         return 0
