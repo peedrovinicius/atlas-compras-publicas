@@ -274,7 +274,7 @@ Resumo:
 - 41 arquivos JSON;
 - 21 arquivos JSONL;
 - nenhum `.env` real versionado;
-- nenhum backup, arquivo temporário, cache, screenshot ou arquivo com nome ligado a ChatGPT, OpenAI ou Codex encontrado pela inspeção estrutural de nomes.
+- nenhum backup, arquivo temporário ou cache encontrado pela inspeção estrutural de nomes.
 
 O `.gitignore` cobre ambientes locais, caches Python, arquivos `.env`, bancos DuckDB, Parquet, dados locais e artefatos de editor/sistema operacional.
 
@@ -364,7 +364,7 @@ Portanto, não é correto afirmar que existe uma GitHub Release v1.49.0. A relea
 
 O metadata do repositório indica que a busca de código não está indexada para esta conexão.
 
-Por isso, resultados vazios em buscas textuais por termos como ChatGPT, OpenAI ou Codex não foram usados como prova isolada. A conclusão de higiene estrutural foi baseada na inspeção completa da árvore de arquivos e nomes versionados.
+Por isso, resultados vazios na busca de código não foram usados como prova isolada. A conclusão de higiene estrutural foi baseada na inspeção completa da árvore de arquivos e nomes versionados.
 
 
 ### 25. CI normalizado
