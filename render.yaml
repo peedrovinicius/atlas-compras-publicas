@@ -30,7 +30,7 @@ services:
     runtime: static
     branch: main
     autoDeployTrigger: checksPass
-    buildCommand: cd web && npm install --no-audit --no-fund && npm run build
+    buildCommand: cd web && npm ci --no-audit --no-fund && npm run build
     staticPublishPath: web/dist
     envVars:
       - key: VITE_API_BASE_URL
