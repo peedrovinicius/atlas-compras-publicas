@@ -29,3 +29,7 @@ data/demo/raw/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Frontend build and dependencies
+node_modules/
+*.tsbuildinfo
