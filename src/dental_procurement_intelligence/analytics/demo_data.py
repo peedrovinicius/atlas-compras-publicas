@@ -218,9 +218,13 @@ def build_demo_data(
             "Use procurements ou cnpj/year/sequence, não os dois formatos."
         )
 
+    explicit = (cnpj, year, sequence)
+    uses_default_procurements = (
+        procurements is None and all(value is None for value in explicit)
+    )
+
     if procurements is None:
-        explicit = (cnpj, year, sequence)
-        if all(value is None for value in explicit):
+        if uses_default_procurements:
             procurements = DEMO_PROCUREMENTS
         elif any(value is None for value in explicit):
             raise ValueError(
@@ -263,13 +267,13 @@ def build_demo_data(
         captures.append(capture)
 
     if not captures:
-        if allow_offline_seed:
+        if allow_offline_seed or uses_default_procurements:
             return _build_offline_demo_data(root)
         raise RuntimeError(
             "Nenhuma contratação da amostra pôde ser capturada no PNCP."
         )
     if sum(capture.result_count for capture in captures) == 0:
-        if allow_offline_seed:
+        if allow_offline_seed or uses_default_procurements:
             return _build_offline_demo_data(root)
         raise RuntimeError(
             "A amostra foi capturada, mas não retornou resultados homologados."
