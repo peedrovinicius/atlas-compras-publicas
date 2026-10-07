@@ -209,7 +209,7 @@ def build_demo_data(
     max_result_requests_per_procurement: int | None = None,
     allow_offline_seed: bool = False,
 ) -> DemoDataBuildResult:
-    """Reconstrói a amostra analítica pública a partir do PNCP."""
+    """Reconstrói a amostra analítica pública com fallback determinístico da demo padrão."""
 
     if procurements is not None and any(
         value is not None for value in (cnpj, year, sequence)
