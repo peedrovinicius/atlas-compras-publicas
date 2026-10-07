@@ -175,7 +175,7 @@ def build_parser() -> argparse.ArgumentParser:
     demo_data.add_argument(
         "--offline-fallback",
         action="store_true",
-        help="Permite amostra local se o PNCP estiver indisponível.",
+        help=(\n            "Permite fallback local também para uma contratação explícita. "\n            "A amostra padrão já usa fallback determinístico se o PNCP falhar."\n        ),
     )
 
     signals = subparsers.add_parser(
