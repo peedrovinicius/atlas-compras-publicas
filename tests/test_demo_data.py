@@ -2,6 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import httpx
+import pytest
 
 from dental_procurement_intelligence.analytics import demo_data
 from dental_procurement_intelligence.cli import (
@@ -189,6 +190,59 @@ def test_demo_result_request_limit_argument_wins_over_environment(
     monkeypatch.setenv("ATLAS_DEMO_MAX_RESULT_REQUESTS", "8")
     assert _demo_result_request_limit(3) == 3
 
+
+
+def test_default_demo_data_falls_back_without_network_flag(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    request = httpx.Request("GET", "https://pncp.example.test")
+
+    def unavailable(*args, **kwargs):
+        raise httpx.ReadTimeout("temporary", request=request)
+
+    monkeypatch.setattr(demo_data, "capture_contract", unavailable)
+
+    result = demo_data.build_demo_data(
+        object(),
+        tmp_path / "demo",
+    )
+
+    assert result.procurement_count == 1
+    assert result.procurement_keys == ("pncp:00000000000000:2026:1",)
+    assert result.result_count == 12
+    assert result.silver_item_count == 1
+    assert result.silver_award_count == 12
+    assert Path(result.database_path).is_file()
+
+
+def test_explicit_demo_data_remains_strict_without_offline_fallback(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    request = httpx.Request("GET", "https://pncp.example.test")
+
+    def unavailable(*args, **kwargs):
+        raise httpx.ReadTimeout("temporary", request=request)
+
+    monkeypatch.setattr(demo_data, "capture_contract", unavailable)
+
+    procurement = demo_data.DemoProcurement(
+        cnpj=demo_data.DEMO_CNPJ,
+        year=demo_data.DEMO_YEAR,
+        sequence=demo_data.DEMO_SEQUENCE,
+        label="indisponível",
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Nenhuma contratação da amostra pôde ser capturada no PNCP",
+    ):
+        demo_data.build_demo_data(
+            object(),
+            tmp_path / "demo",
+            procurements=(procurement,),
+        )
 
 
 def test_build_demo_data_uses_offline_seed_when_pncp_is_unavailable(
