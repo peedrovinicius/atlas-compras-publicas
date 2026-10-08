@@ -63,7 +63,7 @@ Sinal estatístico não é tratado como prova de irregularidade.
 
 ## Resultado comprovado
 
-A extração de atributos técnicos possui 12 ciclos independentes de benchmark.
+A extração de atributos técnicos possui 12 ciclos históricos de benchmark, realizados durante a evolução das regras do parser.
 
 | Métrica | Resultado |
 | --- | ---: |
