@@ -1,6 +1,6 @@
 <div align="center">
 
-# Atlas de Compras Públicas
+# Atlas e Preços
 
 **Dados públicos do PNCP transformados em análises de preços rastreáveis.**
 
@@ -71,7 +71,7 @@ A cobertura publicada **não corresponde ao universo completo do PNCP**. Contage
 
 Backend em Python (Polars, Pydantic, DuckDB e FastAPI) e frontend React/TypeScript. O CI executa Ruff, pytest e build TypeScript/Vite. **O build não equivale a testes automatizados de interface**; essa cobertura ainda precisa ser implementada e validada.
 
-O nome público e do projeto é **Atlas de Compras Públicas**. O pacote Python interno `dental_procurement_intelligence` e o alias legado `dpi` permanecem por compatibilidade até uma migração testada.
+O nome público da aplicação é **Atlas e Preços**; o repositório técnico mantém o identificador `atlas-compras-publicas`. O pacote Python interno `dental_procurement_intelligence` e o alias legado `dpi` permanecem por compatibilidade até uma migração testada.
 
 **English:** Atlas de Compras Públicas is an auditable public-procurement analytics project focused on product normalization, comparable prices, and traceable evidence from Brazil's PNCP. Statistical outlier signals do not imply wrongdoing.
 
