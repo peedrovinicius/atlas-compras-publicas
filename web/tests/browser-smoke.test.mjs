@@ -42,7 +42,7 @@ test("keyboard: skip link reaches main content", async () => {
   } finally { await context.close(); }
 });
 
-for (const width of [375, 390]) {
+for (const width of [320, 375, 390, 768]) {
   test(`mobile ${width}px: navigation works without horizontal document overflow`, async () => {
     const { page, context } = await openAtlas({ width, height: 812 });
     try {
