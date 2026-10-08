@@ -18,7 +18,7 @@ Dados de compras públicas chegam com descrições heterogêneas. O mesmo produt
 
 O Atlas captura contratações, itens e resultados do PNCP, preserva as respostas originais com SHA-256 e manifestos, normaliza descrições, extrai atributos técnicos e constrói identidades comparáveis.
 
-Hoje, a vertical odontológica possui 548 exemplos independentes e 984 campos técnicos avaliados, com micro accuracy ponderada de 91,36%.
+**Validação:** a vertical odontológica preserva avaliações independentes e um holdout v5 congelado. O agregado histórico de 548 exemplos e 984 campos (91,36% de acertos por campo) reúne 12 ciclos de evolução do parser; **não representa a precisão de uma única versão em dados novos**. Consulte os resultados por ciclo e a metodologia antes de comparar versões: [benchmarks v1–v12](docs/benchmark-technical-consolidated-v1-v12.md).
 
 A aplicação pública já permite pesquisar produtos, comparar preços homologados, acompanhar histórico e diferenças regionais, identificar fornecedores e órgãos compradores, comparar uma proposta recebida e gerar relatório imprimível/PDF com rastreabilidade até o PNCP.
 
@@ -63,7 +63,7 @@ Sinal estatístico não é tratado como prova de irregularidade.
 
 ## Resultado comprovado
 
-A extração de atributos técnicos possui 12 ciclos independentes de benchmark.
+A extração de atributos técnicos possui 12 ciclos históricos de benchmark, realizados durante a evolução das regras do parser.
 
 | Métrica | Resultado |
 | --- | ---: |
@@ -72,7 +72,7 @@ A extração de atributos técnicos possui 12 ciclos independentes de benchmark.
 | Campos corretos | 899 |
 | Micro accuracy ponderada | 91,36% |
 
-As baselines independentes são preservadas. Resultados pós-tuning são registrados separadamente e não substituem medições anteriores.
+**Interpretação:** estes totais agregam ciclos v1–v12 com ajustes sucessivos nas regras. Não são um teste único de generalização. Para estimar desempenho fora da amostra, priorize cada holdout congelado, com numerador, denominador e intervalo de confiança (por exemplo, Wilson 95%) calculados no nível correto de observação. Não agregue observações dependentes como se fossem independentes. Resultados pós-tuning não substituem baselines anteriores.
 
 [Ver consolidação técnica v1-v12](docs/benchmark-technical-consolidated-v1-v12.md)
 
@@ -94,11 +94,13 @@ As consultas SQL do portfólio são executadas no CI contra um schema DuckDB com
 - [Contrato do warehouse v1](docs/warehouse-v1.md)
 - [Como reconstruir a amostra analítica](data/demo/README.md)
 
-Para reconstruir a base local usada na evolução analítica:
+Para reconstruir a base de demonstração:
 
 ```bash
 atlas build-demo-data
 ```
+
+**Atenção:** o comando tenta acessar contratos públicos do PNCP e, na amostra padrão, pode usar dados locais determinísticos de fallback. Os dados gerados pelo fallback **não são preços homologados reais** e não devem fundamentar conclusões sobre o mercado. Veja [origem e funcionamento da demo](data/demo/README.md).
 
 ## Arquitetura e rastreabilidade
 
