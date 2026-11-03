@@ -167,6 +167,30 @@ def test_normalize_rate_limit_is_enforced() -> None:
     assert response.headers["retry-after"] == "60"
 
 
+def test_normalize_rate_limit_ignores_spoofed_forwarded_for() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app("data/analytics.duckdb"))
+    params = {"description": "RESINA COMPOSTA A2 SERINGA 4G"}
+
+    for attempt in range(60):
+        response = client.get(
+            "/api/v1/normalize",
+            params=params,
+            headers={"X-Forwarded-For": f"203.0.113.{attempt + 1}"},
+        )
+        assert response.status_code == 200
+
+    response = client.get(
+        "/api/v1/normalize",
+        params=params,
+        headers={"X-Forwarded-For": "198.51.100.250"},
+    )
+
+    assert response.status_code == 429
+
+
 def test_supported_parser_categories_match_product_category_enum() -> None:
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
