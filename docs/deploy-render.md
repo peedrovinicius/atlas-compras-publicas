@@ -127,7 +127,10 @@ Antes de integrar ou publicar uma alteração no limitador:
    Não tentar resolver isso lendo o primeiro IP de `X-Forwarded-For` na rota.
 5. Se o serviço ganhar múltiplas instâncias ou workers, substituir os contadores locais
    por armazenamento distribuído com expiração e limites definidos. Mesmo com um só
-   processo, a cardinalidade de clientes em memória exige monitoramento.
+   processo, monitorar o limite de 4.096 clientes ativos por janela, a limpeza de
+   entradas expiradas e possíveis respostas 429 quando a capacidade é atingida.
+   Essa proteção limita memória, mas não impede esgotamento deliberado de cotas
+   por requisições de origens variadas.
 
 Referências operacionais:
 [Uvicorn — proxies confiáveis](https://uvicorn.dev/deployment/),

@@ -1,16 +1,14 @@
 import csv
 import io
 import os
-from collections import defaultdict, deque
 from pathlib import Path
-from threading import Lock
-from time import monotonic
 from typing import Any
 
 import duckdb
 
 from dental_procurement_intelligence import __version__
 from dental_procurement_intelligence.api.catalog import parser_categories
+from dental_procurement_intelligence.api.rate_limit import SlidingWindowRateLimiter
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
     analytics_awards,
@@ -132,28 +130,24 @@ def create_app(database_path: str | Path | None = None) -> Any:
         allow_headers=["Content-Type"],
     )
 
-    rate_window_seconds = 60.0
-    rate_limit = 60
-    normalization_requests: dict[str, deque[float]] = defaultdict(deque)
-    rate_lock = Lock()
+    # Armazenamento por instancia, com expiracao e capacidade finita.
+    normalization_limiter = SlidingWindowRateLimiter(
+        limit=60,
+        window_seconds=60.0,
+        max_clients=4096,
+    )
 
     def enforce_normalization_rate_limit(request: Any) -> None:
-        # Usar a identidade resolvida pelo ASGI (incluindo a política de
-        # proxies confiáveis do servidor), nunca ler X-Forwarded-For aqui.
+        # Usar a identidade resolvida pelo ASGI (incluindo a politica de
+        # proxies confiaveis do servidor), nunca ler X-Forwarded-For aqui.
         client_ip = request.client.host if request.client is not None else "unknown"
 
-        now = monotonic()
-        with rate_lock:
-            bucket = normalization_requests[client_ip]
-            while bucket and now - bucket[0] >= rate_window_seconds:
-                bucket.popleft()
-            if len(bucket) >= rate_limit:
-                raise HTTPException(
-                    status_code=429,
-                    detail="Limite de normalizações atingido. Tente novamente em instantes.",
-                    headers={"Retry-After": "60"},
-                )
-            bucket.append(now)
+        if not normalization_limiter.allow(client_ip):
+            raise HTTPException(
+                status_code=429,
+                detail="Limite de normalizações atingido. Tente novamente em instantes.",
+                headers={"Retry-After": "60"},
+            )
 
     def execute(callable_: Any, *args: Any, **kwargs: Any) -> Any:
         try:
