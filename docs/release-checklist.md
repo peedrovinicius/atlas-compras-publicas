@@ -98,7 +98,23 @@ API:
 - [ ] análise detalhada responde;
 - [ ] endpoints de distribuição, histórico, regiões, fornecedores, compradores, sinais e registros respondem.
 
-## 7. Pós-release
+## 7. Proveniência da amostra
+
+- [ ] inspecionar `/api/v1/meta` e `/ready` no serviço publicado;
+- [ ] a origem deve ser `pncp_sample` ou `offline_synthetic`;
+- [ ] se `unknown`, não declarar nem publicar valores como preços reais;
+- [ ] conferir data UTC, chaves de contratações e contagens de observações;
+- [ ] comparar a origem da API com o aviso visual no frontend;
+- [ ] se a origem for `offline_synthetic`, confirmar o aviso explícito de
+      valores fictícios, inclusive no relatório/PDF e exportação CSV;
+- [ ] conferir no CSV a coluna `data_source_type` e o nome do arquivo;
+- [ ] registrar a proveniência efetivamente publicada no release.
+
+O smoke de produção deve **falhar fechado** se a proveniência estiver ausente,
+inválida ou declarada como `unknown`. Um ambiente offline sintético pode ser
+aceito como demonstração, mas não como histórico de compras públicas reais.
+
+## 8. Pós-release
 
 - [ ] confirmar que o smoke test validou a mesma versão declarada em `web/package.json`;
 - [ ] confirmar versão publicada;
