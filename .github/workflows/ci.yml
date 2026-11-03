@@ -123,4 +123,4 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/ > /dev/null
-          node --test tests/browser-smoke.test.mjs
+          node --test e2e/browser-smoke.test.mjs
