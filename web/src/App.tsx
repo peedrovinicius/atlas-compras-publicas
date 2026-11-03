@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import AnalyticsExplorer from "./AnalyticsExplorer";
+import { UNKNOWN_PROVENANCE } from "./provenance";
 import {
   API_BASE_URL,
   checkHealth,
   fetchCategories,
+  fetchDataProvenance,
   normalizeDescriptions,
 } from "./api";
 import type {
+  DemoProvenance,
   NormalizationResult,
   ParserCategory,
   TechnicalAttributes,
@@ -239,6 +242,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
   const [apiVersion, setApiVersion] = useState<string | null>(null);
+  const [provenance, setProvenance] = useState<DemoProvenance>(UNKNOWN_PROVENANCE);
   const [message, setMessage] = useState(
     "Cole uma descrição do PNCP ou escolha um exemplo rápido.",
   );
@@ -353,6 +357,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    void fetchDataProvenance()
+      .then((data) => {
+        if (active) setProvenance(data);
+      })
+      .catch(() => {
+        if (active) setProvenance(UNKNOWN_PROVENANCE);
+      });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     if (mode !== "laboratory") return;
 
     window.requestAnimationFrame(() => {
@@ -443,7 +459,7 @@ export default function App() {
 
       <main id="main-content" tabIndex={-1}>
         {mode === "analytics" ? (
-          <AnalyticsExplorer />
+          <AnalyticsExplorer provenance={provenance} />
         ) : (
           <>
         <section className="hero laboratory-hero">
@@ -608,7 +624,7 @@ export default function App() {
           <a href={`${API_BASE_URL}/docs`} target="_blank" rel="noreferrer">
             API
           </a>
-          <span>Dados públicos · PNCP · rastreabilidade</span>
+          <span>Origem da amostra identificada no painel · metodologia rastreável</span>
         </span>
       </footer>
     </div>
