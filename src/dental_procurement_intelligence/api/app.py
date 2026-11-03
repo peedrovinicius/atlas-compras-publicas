@@ -138,11 +138,9 @@ def create_app(database_path: str | Path | None = None) -> Any:
     rate_lock = Lock()
 
     def enforce_normalization_rate_limit(request: Any) -> None:
-        forwarded = request.headers.get("x-forwarded-for", "")
-        client_ip = forwarded.split(",", 1)[0].strip()
-        if not client_ip and request.client is not None:
-            client_ip = request.client.host
-        client_ip = client_ip or "unknown"
+        # O peer ASGI é definido pelo servidor. Não usar o X-Forwarded-For
+        # enviado pelo solicitante sem validar explicitamente o proxy.
+        client_ip = request.client.host if request.client is not None else "unknown"
 
         now = monotonic()
         with rate_lock:
