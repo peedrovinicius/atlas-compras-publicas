@@ -96,6 +96,10 @@ jobs:
         working-directory: web
         run: npm test
 
+      - name: Audit web dependencies for high and critical advisories
+        working-directory: web
+        run: npm audit --audit-level=high --no-fund
+
       - name: Build web
         working-directory: web
         env:
