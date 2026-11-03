@@ -130,3 +130,21 @@ def test_csv_contains_synthetic_source_independent_of_frontend(
     assert response.headers["x-atlas-provenance"] == "offline_synthetic"
     assert "offline_synthetic" in response.headers["content-disposition"]
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_malformed_nested_provenance_keys_are_unknown_not_http_500(database: Path) -> None:
+    write_provenance(
+        database,
+        source_type="pncp_sample",
+        procurement_keys=("pncp:15126437000305:2026:212",),
+        result_count=3,
+        observation_count=2,
+    )
+    with duckdb.connect(str(database)) as connection:
+        connection.execute(
+            "UPDATE atlas_demo_provenance SET procurement_keys = ?",
+            ['[["malformed-nested-key"]]'],
+        )
+    assert read_provenance(database)["source_type"] == "unknown"
+    client = TestClient(create_app(database))
+    assert client.get("/api/v1/meta").json()["provenance"]["source_type"] == "unknown"
