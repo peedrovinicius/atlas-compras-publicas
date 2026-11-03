@@ -9,14 +9,14 @@ A produção usa somente dois serviços definidos em `render.yaml`:
 1. `atlas-compras-publicas-web`
    - tipo: Static Site
    - origem: branch `main`
-   - build: `cd web && npm install --no-audit --no-fund && npm run build`
+   - build: `cd web && npm ci --no-audit --no-fund && npm run build`
    - publish path: `web/dist`
 
 2. `atlas-compras-publicas-analytics`
    - tipo: Web Service
    - runtime: Python
    - origem: branch `main`
-   - build: `pip install -e ".[api]" && atlas build-demo-data --output-root data/demo`
+   - build: `pip install -e ".[api]" && atlas build-demo-data --output-root data/demo --offline-fallback`
    - start: `uvicorn "dental_procurement_intelligence.api.app:create_app" --factory --host 0.0.0.0 --port $PORT`
    - readiness: `/ready`
 
@@ -81,6 +81,28 @@ Nesse estado:
 - usar GitHub Actions como validação;
 - restaurar a capacidade de build do workspace antes da próxima publicação.
 
+## Proveniência dos dados publicados
+
+A geração da base analítica no Blueprint utiliza `--offline-fallback`. Se a coleta de
+contratações e resultados do PNCP falhar ou for insuficiente, o gerador poderá usar
+a amostra **inteiramente sintética** de `analytics/demo_data.py` para manter a demo
+disponível. Esse comportamento **não prova que o deploy publicado contenha preços
+homologados reais**.
+
+Antes de afirmar que um resultado apresentado no site veio do PNCP:
+
+1. inspecionar o resultado e os manifestos da captura no build da versão publicada;
+2. verificar se as chaves de contratos e os hashes representam a amostra PNCP esperada;
+3. identificar uso de `offline-seed` ou de `Fornecedor demonstrativo`, que caracteriza
+   dados fictícios;
+4. registrar a origem e a data de reconstrução no relatório de release;
+5. não apresentar dados sintéticos como preços reais de compras homologadas.
+
+A aplicação ainda precisa de um indicador automatizado e visível de proveniência
+na API e no frontend, registrado na issue
+[#77](https://github.com/peedrovinicius/atlas-compras-publicas/issues/77).
+Até a implementação, a inspeção manual é uma etapa obrigatória da publicação.
+
 ## Identidade do cliente e limite de normalização (PR #78)
 
 A API aplica um limite de 60 normalizações por 60 segundos, mantendo contadores **em memória por
@@ -129,6 +151,7 @@ Depois de cada release, verificar:
 - relatório imprimível/PDF abre corretamente;
 - `/health` responde;
 - `/ready` confirma disponibilidade do DuckDB;
+- proveniência da base publicada confirmada (PNCP versus fallback sintético);
 - links de evidência para o PNCP continuam acessíveis.
 
 ## Regra operacional
