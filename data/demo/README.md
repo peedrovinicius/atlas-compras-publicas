@@ -25,6 +25,24 @@ O comando executa:
 5. geração de `gold_price_signals`;
 6. criação das visões de qualidade.
 
+## Proveniência obrigatória da demonstração
+
+O gerador grava uma tabela `atlas_demo_provenance` **dentro de
+`atlas-demo.duckdb`**, identificando a origem exata do build:
+
+- `pncp_sample`: capturas efetivamente obtidas do PNCP, com resultados;
+- `offline_synthetic`: fallback 100% fictício, com fornecedores e preços
+  demonstrativos, **não** equivalentes a preços públicos homologados;
+- `unknown`: banco sem metadados, inconsistente ou indisponível. A API deve
+  tratar como origem não verificada, nunca presumir dados reais.
+
+A tabela contém a data/hora UTC de geração/captura, chaves PNCP da amostra
+e contagem de contratações, resultados e observações. A API divulga esses
+dados nos endpoints `/api/v1/meta`, `/health` e `/ready`, e cada CSV
+inclui a coluna `data_source_type`. O frontend e o relatório impresso
+mostram o mesmo aviso. Não substituir o valor `unknown` por uma declaração
+de origem PNCP sem reconstruir e verificar a base.
+
 Artefatos gerados:
 
 ```text
