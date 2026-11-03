@@ -10,6 +10,7 @@ from typing import Any
 import duckdb
 
 from dental_procurement_intelligence import __version__
+from dental_procurement_intelligence.analytics.provenance import read_provenance
 from dental_procurement_intelligence.api.catalog import parser_categories
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
@@ -130,6 +131,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
         allow_credentials=False,
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["Content-Type"],
+        expose_headers=["X-Atlas-Provenance"],
     )
 
     rate_window_seconds = 60.0
@@ -168,8 +170,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @app.get("/health")
-    def health() -> dict[str, str]:
-        return {"status": "ok", "version": __version__}
+    def health() -> dict[str, Any]:
+        return {
+            "status": "ok",
+            "version": __version__,
+            "provenance": read_provenance(resolved_database_path),
+        }
 
     @app.get("/ready")
     def ready() -> dict[str, str]:
@@ -182,6 +188,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
             "status": "ready",
             "version": __version__,
             "database": resolved_database_path.name,
+            "provenance": read_provenance(resolved_database_path),
         }
 
     @app.get("/", include_in_schema=False)
@@ -281,6 +288,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
             "database_available": resolved_database_path.exists(),
             "database_name": resolved_database_path.name,
             "frontend_url": frontend_url,
+            "provenance": read_provenance(resolved_database_path),
         }
 
     @app.get("/api/v1/domains")
@@ -385,7 +393,9 @@ def create_app(database_path: str | Path | None = None) -> Any:
             start_date=start_date,
             end_date=end_date,
         )
+        source_type = read_provenance(resolved_database_path)["source_type"]
         columns = [
+            "data_source_type",
             "award_key",
             "procurement_key",
             "item_number",
@@ -414,15 +424,18 @@ def create_app(database_path: str | Path | None = None) -> Any:
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=columns, extrasaction="ignore")
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows({"data_source_type": source_type, **row} for row in rows)
         content = "\ufeff" + output.getvalue()
         return Response(
             content=content,
             media_type="text/csv; charset=utf-8",
             headers={
                 "Content-Disposition": (
-                    f'attachment; filename="atlas-{product_id[:8]}-registros.csv"'
-                )
+                    f'attachment; filename="atlas-{source_type}-'
+                    f'{product_id[:8]}-registros.csv"'
+                ),
+                "X-Atlas-Provenance": source_type,
+                "Cache-Control": "no-store",
             },
         )
 
