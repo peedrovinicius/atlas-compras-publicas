@@ -4104,3 +4104,77 @@ select:focus-visible {
     font-size: 14px;
   }
 }
+
+
+/* Rótulo permanente de origem da amostra: visível antes da análise. */
+.atlas-provenance {
+  max-width: 1160px;
+  margin: 0 auto 22px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #e0b47c;
+  background: #fff7ec;
+  color: #653a16;
+}
+
+.atlas-provenance strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.atlas-provenance p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.atlas-provenance small {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  opacity: .85;
+}
+
+.atlas-provenance-pncp_sample {
+  border-color: #b6cddd;
+  background: #eff6fb;
+  color: #23445e;
+}
+
+.analytics-print-provenance {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  margin: 13px 0;
+  border: 1px solid #8c6b3c;
+  background: #fff5df;
+  font-size: 10pt;
+  break-inside: avoid;
+}
+
+.analytics-print-provenance p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.analytics-print-provenance-pncp_sample {
+  border-color: #64748b;
+  background: #f1f5f9;
+}
+
+@media (max-width: 720px) {
+  .atlas-provenance {
+    margin-left: 14px;
+    margin-right: 14px;
+    padding: 13px 15px;
+  }
+}
+
+@media print {
+  .analytics-print-provenance {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
