@@ -34,9 +34,11 @@ def _unknown() -> dict[str, Any]:
 
 
 def _valid_keys(source: str, keys: list[str]) -> bool:
-    if not keys or len(keys) > 1000 or len(set(keys)) != len(keys):
+    if not keys or len(keys) > 1000:
         return False
     if any(not isinstance(k, str) or not _KEY.fullmatch(k) for k in keys):
+        return False
+    if len(set(keys)) != len(keys):
         return False
     if source == "offline_synthetic":
         return keys == [_SYNTHETIC]
