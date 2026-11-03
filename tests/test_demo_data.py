@@ -81,6 +81,7 @@ def test_build_demo_data_orchestrates_existing_pipeline(
         "build_quality_views",
         lambda database: calls.append(("quality", database)),
     )
+    monkeypatch.setattr(demo_data, "write_provenance", lambda *args, **kwargs: None)
 
     procurement = demo_data.DemoProcurement(
         cnpj=demo_data.DEMO_CNPJ,
@@ -161,6 +162,7 @@ def test_build_demo_data_skips_failed_procurement(
         ),
     )
     monkeypatch.setattr(demo_data, "build_quality_views", lambda database: None)
+    monkeypatch.setattr(demo_data, "write_provenance", lambda *args, **kwargs: None)
 
     procurements = (
         demo_data.DemoProcurement("11111111111111", 2026, 1, "falha"),
