@@ -34,6 +34,17 @@ from dental_procurement_intelligence.api.service import (
 from dental_procurement_intelligence.identity import available_domains, parse_product
 
 
+def _safe_csv_record(row: dict[str, Any]) -> dict[str, Any]:
+    """Protege planilhas contra fórmulas em descrições externas do PNCP."""
+    safe = {}
+    for key, value in row.items():
+        if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
+            safe[key] = "'" + value
+        else:
+            safe[key] = value
+    return safe
+
+
 def _bootstrap_demo_database(path: Path) -> Path:
     if path.exists():
         return path
@@ -424,7 +435,10 @@ def create_app(database_path: str | Path | None = None) -> Any:
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=columns, extrasaction="ignore")
         writer.writeheader()
-        writer.writerows({"data_source_type": source_type, **row} for row in rows)
+        writer.writerows(
+            _safe_csv_record({"data_source_type": source_type, **row})
+            for row in rows
+        )
         content = "\ufeff" + output.getvalue()
         return Response(
             content=content,
