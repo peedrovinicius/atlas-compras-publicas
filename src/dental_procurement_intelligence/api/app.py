@@ -156,6 +156,12 @@ def create_app(database_path: str | Path | None = None) -> Any:
             trust_cloudflare=trust_cloudflare,
         )
 
+        if client_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Não foi possível validar a identidade da requisição.",
+            )
+
         if not normalization_limiter.allow(client_id):
             raise HTTPException(
                 status_code=429,

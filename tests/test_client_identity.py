@@ -75,7 +75,7 @@ def test_render_rejects_untrusted_or_ambiguous_header_values(
             render_runtime=True,
             trust_cloudflare=True,
         )
-        == "render:unverified-shared"
+        is None
     )
 
 

@@ -203,8 +203,10 @@ configuração em produção sem aceitar explicitamente esse impacto.**
 
 Existe uma opção futura `ATLAS_TRUST_CF_CONNECTING_IP=true`, desativada
 por padrão, que usa um único endereço válido em `CF-Connecting-IP` como
-identidade, com normalização IPv4/IPv6. Cabeçalhos ausentes, duplicados
-ou inválidos recaem na cota compartilhada. **Somente habilitar após
+identidade, com normalização IPv4/IPv6. Quando a confiança estiver habilitada,
+cabeçalhos ausentes, duplicados ou inválidos recebem HTTP 400 **antes**
+de consumir a cota de qualquer visitante. Quando a confiança continuar
+desabilitada, a cota compartilhada permanece. **Somente habilitar após
 confirmação humana do Render** de que as requisições ao serviço público
 não contornam a Cloudflare e de que ela sempre sobrescreve o valor recebido.
 O teste com Uvicorn usando `--forwarded-allow-ips=*` reproduz o cenário,

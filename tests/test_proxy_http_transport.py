@@ -188,13 +188,15 @@ def test_http_render_cf_trust_opt_in_separates_clients_and_ignores_xff(
         assert other.status_code == 200
 
 
-def test_http_render_invalid_cf_header_falls_back_to_shared_bucket(
+def test_http_render_trusted_cf_rejects_invalid_headers_without_consuming_quota(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # Se houver garantia explicita sobre o proxy Cloudflare, header malformado
+    # nao deve ocupar um bucket compartilhado e prejudicar outras origens.
     monkeypatch.setenv("RENDER", "true")
     monkeypatch.setenv("ATLAS_TRUST_CF_CONNECTING_IP", "true")
     with local_uvicorn("*") as client:
-        for i in range(60):
+        for i in range(80):
             invalid = client.get(
                 "/api/v1/normalize",
                 params=PARAMS,
@@ -203,14 +205,18 @@ def test_http_render_invalid_cf_header_falls_back_to_shared_bucket(
                     "CF-Connecting-IP": "198.51.100.1, 198.51.100.2",
                 },
             )
-            assert invalid.status_code == 200
+            assert invalid.status_code == 400
+            assert invalid.headers.get("retry-after") is None
 
-        blocked = client.get(
+        missing = client.get("/api/v1/normalize", params=PARAMS)
+        assert missing.status_code == 400
+
+        invalid_single = client.get(
             "/api/v1/normalize",
             params=PARAMS,
             headers={"CF-Connecting-IP": "not-an-ip"},
         )
-        assert blocked.status_code == 429
+        assert invalid_single.status_code == 400
 
         valid = client.get(
             "/api/v1/normalize",

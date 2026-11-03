@@ -13,7 +13,7 @@ def resolve_normalization_client_identity(
     *,
     render_runtime: bool,
     trust_cloudflare: bool,
-) -> str:
+) -> str | None:
     if render_runtime:
         if trust_cloudflare:
             values = request.headers.getlist("cf-connecting-ip")
@@ -31,8 +31,12 @@ def resolve_normalization_client_identity(
                         if address.version == 6 and address.ipv4_mapped is not None:
                             address = address.ipv4_mapped
                         return f"cloudflare:{address}"
-        # Nao usar request.client.host em Render sem trust boundary validada.
-        # Isso inclui o caso de header Cloudflare ausente ou malformado.
+            # Quando a confianca foi habilitada, um header CF invalido
+            # indica que a identidade nao foi autenticada pelo ingresso.
+            # A rota rejeita a requisicao antes do rate limiter.
+            return None
+
+        # Sem validacao da borda, nao confiar no cliente ASGI no Render.
         return "render:unverified-shared"
 
     # Em desenvolvimento ou em servidores sem a topologia do Render,
