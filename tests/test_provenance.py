@@ -148,3 +148,25 @@ def test_malformed_nested_provenance_keys_are_unknown_not_http_500(database: Pat
     assert read_provenance(database)["source_type"] == "unknown"
     client = TestClient(create_app(database))
     assert client.get("/api/v1/meta").json()["provenance"]["source_type"] == "unknown"
+
+
+def test_csv_sanitizes_pncp_text_that_looks_like_spreadsheet_formula(
+    database: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "dental_procurement_intelligence.api.app.analytics_product_records_export",
+        lambda *args, **kwargs: [
+            {
+                "award_key": "a1",
+                "supplier_name": '=HYPERLINK("https://example.invalid", "Abrir")',
+                "original_description": "+SUM(1,1)",
+            }
+        ],
+    )
+    response = TestClient(create_app(database)).get(
+        f"/api/v1/products/{'b' * 32}/records.csv"
+    )
+    assert response.status_code == 200
+    assert "'=HYPERLINK" in response.text
+    assert "'+SUM(1,1)" in response.text
+    assert response.headers["x-atlas-provenance"] == "unknown"
