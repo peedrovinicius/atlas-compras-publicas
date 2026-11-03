@@ -191,6 +191,22 @@ def test_normalize_rate_limit_ignores_spoofed_forwarded_for() -> None:
     assert response.status_code == 429
 
 
+def test_normalize_rate_limit_separates_asgi_client_addresses() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    app = create_app("data/analytics.duckdb")
+    first = TestClient(app, client=("198.51.100.10", 4300))
+    second = TestClient(app, client=("198.51.100.11", 4300))
+    params = {"description": "RESINA COMPOSTA A2 SERINGA 4G"}
+
+    for _ in range(60):
+        assert first.get("/api/v1/normalize", params=params).status_code == 200
+
+    assert first.get("/api/v1/normalize", params=params).status_code == 429
+    assert second.get("/api/v1/normalize", params=params).status_code == 200
+
+
 def test_supported_parser_categories_match_product_category_enum() -> None:
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient

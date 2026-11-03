@@ -81,6 +81,41 @@ Nesse estado:
 - usar GitHub Actions como validação;
 - restaurar a capacidade de build do workspace antes da próxima publicação.
 
+## Identidade do cliente e limite de normalização (PR #78)
+
+A API aplica um limite de 60 normalizações por 60 segundos, mantendo contadores **em memória por
+instância**. O código usa `request.client.host` do escopo ASGI e não interpreta diretamente
+`X-Forwarded-For`. Isso evita confiar em cabeçalhos do usuário *dentro da aplicação*, mas
+**não basta para garantir uma identidade segura em produção**: o Uvicorn pode alterar o
+endereço do escopo ASGI quando recebe cabeçalhos de um proxy configurado como confiável.
+
+Antes de integrar ou publicar uma alteração no limitador:
+
+1. Conferir o comando efetivo de inicialização do serviço `atlas-compras-publicas-analytics`
+   no painel do Render, além da definição versionada em `render.yaml`.
+2. Conferir o valor efetivo de `FORWARDED_ALLOW_IPS` e as opções
+   `--proxy-headers` / `--forwarded-allow-ips` do Uvicorn. A confiança irrestrita
+   (`*`) **não é segura por padrão**; só pode ser adotada se toda conexão vier de
+   um proxy confiável que remova ou sobrescreva valores potencialmente falsificados.
+3. Verificar, em ambiente controlado e sem registrar endereços IP brutos em logs públicos,
+   se requisições da mesma origem com `X-Forwarded-For` falsificado compartilham
+   o limite e se duas origens legítimas não dividem indevidamente o mesmo contador.
+4. Se o servidor enxergar somente o IP do balanceador, corrigir a resolução do cliente
+   pela camada de proxy confiável **antes** de chamar o rate limiting de "por usuário".
+   Não tentar resolver isso lendo o primeiro IP de `X-Forwarded-For` na rota.
+5. Se o serviço ganhar múltiplas instâncias ou workers, substituir os contadores locais
+   por armazenamento distribuído com expiração e limites definidos. Mesmo com um só
+   processo, a cardinalidade de clientes em memória exige monitoramento.
+
+Referências operacionais:
+[Uvicorn — proxies confiáveis](https://uvicorn.dev/deployment/),
+[Uvicorn — parâmetros](https://uvicorn.dev/settings/) e
+[Render — tráfego e rate limiting](https://render.com/articles/how-render-handles-ddos-attacks/).
+
+Os testes de `tests/test_api_app.py` cobrem falsificação de cabeçalho no TestClient
+e isolamento de dois endereços ASGI sintéticos. **Esses testes não inspecionam a
+configuração do proxy real do Render.**
+
 ## Validação pós-deploy
 
 Depois de cada release, verificar:
