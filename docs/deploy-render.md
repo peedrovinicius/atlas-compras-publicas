@@ -147,8 +147,11 @@ No workspace `My Workspace`, o serviço canônico `atlas-compras-publicas-analyt
 estava ligado à `main` com **uma instância**, `autoDeployTrigger: checksPass`,
 e o comando `uvicorn ... --factory --host 0.0.0.0 --port $PORT`.
 Na tela de Environment fornecida pelo proprietário, **não aparecia**
-`FORWARDED_ALLOW_IPS`. O Uvicorn, sem uma lista explícita, aceita cabeçalhos
-de encaminhamento apenas de `127.0.0.1` e `::1` (padrões atuais).
+`FORWARDED_ALLOW_IPS` entre as variáveis personalizadas. Entretanto,
+[a documentação oficial do Render](https://render.com/docs/environment-variables)
+registra o valor padrão `FORWARDED_ALLOW_IPS=*` no runtime Python 3.
+Portanto, a tela não prova que Uvicorn use somente `127.0.0.1` e `::1`.
+A configuração efetiva precisa ser confirmada no processo.
 O Render informa que o tráfego público chega via Cloudflare e balanceadores;
 portanto **a identidade real do visitante não foi demonstrada em produção**:
 a origem do socket vista pelo Uvicorn e a integridade da cadeia `X-Forwarded-For`
