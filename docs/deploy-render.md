@@ -163,9 +163,11 @@ identidades distintas e rejeição de cabeçalhos vindos de peer não autorizado
 Esses testes asseguram o contrato do middleware nessa topologia sintética,
 **não** certificam quais IPs ou cabeçalhos o Render utiliza.
 
-Não ativar `FORWARDED_ALLOW_IPS=*` como solução rápida. Antes do merge e do
-deploy, obter evidência da cadeia confiável, configurar apenas os peers verificados
-no Uvicorn e testar se usuários distintos são contabilizados separadamente,
+O Render documenta `FORWARDED_ALLOW_IPS=*` como padrão do runtime Python.
+Não presumir que a variável esteja ausente no processo só porque não aparece
+na tela de configuração. Antes do merge e do deploy, confirmar o comportamento
+da cadeia de proxies e dos cabeçalhos encaminhados, definir uma política
+compatível de confiança e testar a separação das cotas entre visitantes,
 sem expor IPs reais em logs públicos. Se a plataforma não permitir essa
 garantia, registrar a limitação e escolher um limitador por identidade autenticada
 ou uma solução de borda gerenciada, em vez de confiar em cabeçalhos arbitrários.
