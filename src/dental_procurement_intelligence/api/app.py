@@ -8,7 +8,9 @@ import duckdb
 
 from dental_procurement_intelligence import __version__
 from dental_procurement_intelligence.api.catalog import parser_categories
-from dental_procurement_intelligence.api.client_identity import resolve_normalization_client_identity
+from dental_procurement_intelligence.api.client_identity import (
+    resolve_normalization_client_identity,
+)
 from dental_procurement_intelligence.api.rate_limit import SlidingWindowRateLimiter
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
