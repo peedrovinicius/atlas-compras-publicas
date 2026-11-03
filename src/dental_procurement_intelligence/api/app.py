@@ -8,6 +8,7 @@ import duckdb
 
 from dental_procurement_intelligence import __version__
 from dental_procurement_intelligence.api.catalog import parser_categories
+from dental_procurement_intelligence.api.client_identity import resolve_normalization_client_identity
 from dental_procurement_intelligence.api.rate_limit import SlidingWindowRateLimiter
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
@@ -137,12 +138,23 @@ def create_app(database_path: str | Path | None = None) -> Any:
         max_clients=4096,
     )
 
-    def enforce_normalization_rate_limit(request: Any) -> None:
-        # Usar a identidade resolvida pelo ASGI (incluindo a politica de
-        # proxies confiaveis do servidor), nunca ler X-Forwarded-For aqui.
-        client_ip = request.client.host if request.client is not None else "unknown"
+    render_runtime = os.environ.get("RENDER", "").strip().lower() == "true"
+    trust_cloudflare = (
+        os.environ.get("ATLAS_TRUST_CF_CONNECTING_IP", "").strip().lower() == "true"
+    )
 
-        if not normalization_limiter.allow(client_ip):
+    def enforce_normalization_rate_limit(request: Any) -> None:
+        # O Render define FORWARDED_ALLOW_IPS='*' por padrao. Portanto,
+        # request.client.host pode ter sido reescrito por X-Forwarded-For.
+        # Enquanto o header da Cloudflare nao for validado para o servico,
+        # todos os visitantes compartilham uma cota conservadora.
+        client_id = resolve_normalization_client_identity(
+            request,
+            render_runtime=render_runtime,
+            trust_cloudflare=trust_cloudflare,
+        )
+
+        if not normalization_limiter.allow(client_id):
             raise HTTPException(
                 status_code=429,
                 detail="Limite de normalizações atingido. Tente novamente em instantes.",

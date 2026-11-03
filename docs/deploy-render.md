@@ -190,6 +190,34 @@ Mesmo com esses testes aprovados, **a identidade dos visitantes no Render
 continua não comprovada** até verificar os peers reais e a integridade da
 cadeia de encaminhamento no ambiente de hospedagem.
 
+### Identidade defensiva em serviços Render (preparação, ainda sem deploy)
+
+A API detecta o ambiente `RENDER=true`. Como o runtime Python pode
+injetar `FORWARDED_ALLOW_IPS=*`, o limitador **não usa**
+`request.client.host` para determinar a identidade nesse ambiente:
+até a confiança na borda ser validada, usa uma **cota compartilhada de
+60 normalizações por minuto por instância**. Isso impede contornar
+a cota forjando `X-Forwarded-For`, mas também cria um limite global
+capaz de bloquear usuários legítimos sob carga. **Não liberar essa
+configuração em produção sem aceitar explicitamente esse impacto.**
+
+Existe uma opção futura `ATLAS_TRUST_CF_CONNECTING_IP=true`, desativada
+por padrão, que usa um único endereço válido em `CF-Connecting-IP` como
+identidade, com normalização IPv4/IPv6. Cabeçalhos ausentes, duplicados
+ou inválidos recaem na cota compartilhada. **Somente habilitar após
+confirmação humana do Render** de que as requisições ao serviço público
+não contornam a Cloudflare e de que ela sempre sobrescreve o valor recebido.
+O teste com Uvicorn usando `--forwarded-allow-ips=*` reproduz o cenário,
+mas não prova a integridade do cabeçalho na infraestrutura real.
+
+A implementação não adiciona `ATLAS_TRUST_CF_CONNECTING_IP` ao
+`render.yaml` nem altera o painel, pois isso ativaria uma hipótese
+de confiança ainda não validada.
+
+Referências:
+[Variáveis padrão Render](https://render.com/docs/environment-variables) e
+[Render: PocketBase e IP de visitantes](https://render.com/articles/host-pocketbase-on-render).
+
 ## Validação pós-deploy
 
 Depois de cada release, verificar:

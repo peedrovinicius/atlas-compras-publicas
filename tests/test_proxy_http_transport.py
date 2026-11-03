@@ -7,6 +7,7 @@ from threading import Thread
 from time import monotonic, sleep
 
 import httpx
+import pytest
 import uvicorn
 from fastapi import Request
 
@@ -121,3 +122,99 @@ def test_http_trust_everything_exposes_spoofed_address() -> None:
         )
         assert response.status_code == 200
         assert response.json() == {"host": "203.0.113.42"}
+
+
+
+def test_http_render_without_cf_trust_cannot_bypass_through_xff(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Simula env padrao do Render com Uvicorn confiando em qualquer proxy.
+    # Sem permitir explicitamente Cloudflare, nao usa ASGI host falsificado.
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.delenv("ATLAS_TRUST_CF_CONNECTING_IP", raising=False)
+    with local_uvicorn("*") as client:
+        for attempt in range(60):
+            r = client.get(
+                "/api/v1/normalize",
+                params=PARAMS,
+                headers={
+                    "X-Forwarded-For": f"203.0.113.{attempt + 1}",
+                    "CF-Connecting-IP": f"198.51.100.{attempt + 1}",
+                },
+            )
+            assert r.status_code == 200
+
+        blocked = client.get(
+            "/api/v1/normalize",
+            params=PARAMS,
+            headers={
+                "X-Forwarded-For": "203.0.113.250",
+                "CF-Connecting-IP": "198.51.100.250",
+            },
+        )
+        assert blocked.status_code == 429
+
+
+def test_http_render_cf_trust_opt_in_separates_clients_and_ignores_xff(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Simulacao somente: nao demonstra que Render sanitiza esse header.
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.setenv("ATLAS_TRUST_CF_CONNECTING_IP", "true")
+    with local_uvicorn("*") as client:
+        for attempt in range(60):
+            r = client.get(
+                "/api/v1/normalize",
+                params=PARAMS,
+                headers={
+                    "X-Forwarded-For": f"203.0.113.{attempt + 1}",
+                    "CF-Connecting-IP": "198.51.100.42",
+                },
+            )
+            assert r.status_code == 200
+
+        blocked = client.get(
+            "/api/v1/normalize",
+            params=PARAMS,
+            headers={"X-Forwarded-For": "203.0.113.251", "CF-Connecting-IP": "198.51.100.42"},
+        )
+        assert blocked.status_code == 429
+
+        other = client.get(
+            "/api/v1/normalize",
+            params=PARAMS,
+            headers={"X-Forwarded-For": "203.0.113.251", "CF-Connecting-IP": "198.51.100.43"},
+        )
+        assert other.status_code == 200
+
+
+def test_http_render_invalid_cf_header_falls_back_to_shared_bucket(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.setenv("ATLAS_TRUST_CF_CONNECTING_IP", "true")
+    with local_uvicorn("*") as client:
+        for i in range(60):
+            invalid = client.get(
+                "/api/v1/normalize",
+                params=PARAMS,
+                headers={
+                    "X-Forwarded-For": f"203.0.113.{i + 1}",
+                    "CF-Connecting-IP": "198.51.100.1, 198.51.100.2",
+                },
+            )
+            assert invalid.status_code == 200
+
+        blocked = client.get(
+            "/api/v1/normalize",
+            params=PARAMS,
+            headers={"CF-Connecting-IP": "not-an-ip"},
+        )
+        assert blocked.status_code == 429
+
+        valid = client.get(
+            "/api/v1/normalize",
+            params=PARAMS,
+            headers={"CF-Connecting-IP": "2001:db8::1"},
+        )
+        assert valid.status_code == 200
