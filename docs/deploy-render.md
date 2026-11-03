@@ -138,6 +138,32 @@ Os testes de `tests/test_api_app.py` cobrem falsificação de cabeçalho no Test
 e isolamento de dois endereços ASGI sintéticos. **Esses testes não inspecionam a
 configuração do proxy real do Render.**
 
+### Verificação do Render em 03/11/2026
+
+No workspace `My Workspace`, o serviço canônico `atlas-compras-publicas-analytics`
+estava ligado à `main` com **uma instância**, `autoDeployTrigger: checksPass`,
+e o comando `uvicorn ... --factory --host 0.0.0.0 --port $PORT`.
+Na tela de Environment fornecida pelo proprietário, **não aparecia**
+`FORWARDED_ALLOW_IPS`. O Uvicorn, sem uma lista explícita, aceita cabeçalhos
+de encaminhamento apenas de `127.0.0.1` e `::1` (padrões atuais).
+O Render informa que o tráfego público chega via Cloudflare e balanceadores;
+portanto **a identidade real do visitante não foi demonstrada em produção**:
+a origem do socket vista pelo Uvicorn e a integridade da cadeia `X-Forwarded-For`
+ainda precisam ser verificadas em um ambiente controlado.
+
+Os dois novos testes reproduzem casos com `ProxyHeadersMiddleware` real
+do Uvicorn: cadeia sintética com dois proxies permitidos, prefixo falsificado,
+identidades distintas e rejeição de cabeçalhos vindos de peer não autorizado.
+Esses testes asseguram o contrato do middleware nessa topologia sintética,
+**não** certificam quais IPs ou cabeçalhos o Render utiliza.
+
+Não ativar `FORWARDED_ALLOW_IPS=*` como solução rápida. Antes do merge e do
+deploy, obter evidência da cadeia confiável, configurar apenas os peers verificados
+no Uvicorn e testar se usuários distintos são contabilizados separadamente,
+sem expor IPs reais em logs públicos. Se a plataforma não permitir essa
+garantia, registrar a limitação e escolher um limitador por identidade autenticada
+ou uma solução de borda gerenciada, em vez de confiar em cabeçalhos arbitrários.
+
 ## Validação pós-deploy
 
 Depois de cada release, verificar:

@@ -207,6 +207,73 @@ def test_normalize_rate_limit_separates_asgi_client_addresses() -> None:
     assert second.get("/api/v1/normalize", params=params).status_code == 200
 
 
+def test_normalize_rate_limit_with_trusted_proxy_chain_rejects_spoofed_prefix() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    # Cenario sintetico: o peer ASGI e um proxy local confiavel; o segundo proxy
+    # tambem e confiavel. O IP a esquerda e controlado pelo solicitante.
+    app = ProxyHeadersMiddleware(
+        create_app("data/analytics.duckdb"),
+        trusted_hosts=["127.0.0.1", "10.0.0.10"],
+    )
+    client = TestClient(app, client=("127.0.0.1", 5000))
+    params = {"description": "RESINA COMPOSTA A2 SERINGA 4G"}
+
+    for attempt in range(60):
+        response = client.get(
+            "/api/v1/normalize",
+            params=params,
+            headers={
+                "X-Forwarded-For": f"203.0.113.{attempt + 1}, 198.51.100.42, 10.0.0.10"
+            },
+        )
+        assert response.status_code == 200
+
+    blocked = client.get(
+        "/api/v1/normalize",
+        params=params,
+        headers={"X-Forwarded-For": "203.0.113.250, 198.51.100.42, 10.0.0.10"},
+    )
+    assert blocked.status_code == 429
+
+    different_client = client.get(
+        "/api/v1/normalize",
+        params=params,
+        headers={"X-Forwarded-For": "203.0.113.250, 198.51.100.43, 10.0.0.10"},
+    )
+    assert different_client.status_code == 200
+
+
+def test_normalize_rate_limit_does_not_trust_forwarded_headers_from_unknown_peer() -> None:
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    app = ProxyHeadersMiddleware(
+        create_app("data/analytics.duckdb"),
+        trusted_hosts="127.0.0.1",
+    )
+    client = TestClient(app, client=("192.0.2.10", 5000))
+    params = {"description": "RESINA COMPOSTA A2 SERINGA 4G"}
+
+    for attempt in range(60):
+        response = client.get(
+            "/api/v1/normalize",
+            params=params,
+            headers={"X-Forwarded-For": f"203.0.113.{attempt + 1}"},
+        )
+        assert response.status_code == 200
+
+    blocked = client.get(
+        "/api/v1/normalize",
+        params=params,
+        headers={"X-Forwarded-For": "198.51.100.250"},
+    )
+    assert blocked.status_code == 429
+
+
 def test_supported_parser_categories_match_product_category_enum() -> None:
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
