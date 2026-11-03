@@ -19,16 +19,18 @@ def resolve_normalization_client_identity(
             values = request.headers.getlist("cf-connecting-ip")
             if len(values) == 1:
                 raw = values[0].strip()
-                # Um header de IP deve conter um unico endereco, nao uma cadeia.
-                # Valores repetidos ou invalidos falham de forma conservadora.
-                try:
-                    address = ip_address(raw)
-                except ValueError:
-                    pass
-                else:
-                    if address.version == 6 and address.ipv4_mapped is not None:
-                        address = address.ipv4_mapped
-                    return f"cloudflare:{address}"
+                # Um header de IP nao deve conter uma cadeia, porta nem escopo
+                # IPv6 (%interface). ip_address aceita identificadores de
+                # escopo, que criariam varias cotas para o mesmo IP.
+                if "%" not in raw:
+                    try:
+                        address = ip_address(raw)
+                    except ValueError:
+                        pass
+                    else:
+                        if address.version == 6 and address.ipv4_mapped is not None:
+                            address = address.ipv4_mapped
+                        return f"cloudflare:{address}"
         # Nao usar request.client.host em Render sem trust boundary validada.
         # Isso inclui o caso de header Cloudflare ausente ou malformado.
         return "render:unverified-shared"
