@@ -164,6 +164,24 @@ sem expor IPs reais em logs públicos. Se a plataforma não permitir essa
 garantia, registrar a limitação e escolher um limitador por identidade autenticada
 ou uma solução de borda gerenciada, em vez de confiar em cabeçalhos arbitrários.
 
+### Experimento HTTP local com Uvicorn real
+
+A suíte `tests/test_proxy_http_transport.py` abre um socket **somente em
+`127.0.0.1`**, inicia o próprio Uvicorn em uma thread temporária, executa
+requisições HTTP usando `httpx` e encerra o servidor ao final.
+Os testes verificam três cenários reproduzíveis:
+
+- **Peer não confiável:** variar o cabeçalho forjado não evita o HTTP 429;
+- **Dois proxies explicitamente confiáveis:** prefixos falsos são ignorados,
+  uma origem atinge HTTP 429 e outra origem preserva sua cota;
+- **Contraprova com `*`:** o Uvicorn aceita como cliente o primeiro endereço
+  falsificável da cadeia, demonstrando por que não adotar confiança irrestrita.
+
+Não são feitas requisições ao Render. Nenhum IP real de usuário é coletado.
+Mesmo com esses testes aprovados, **a identidade dos visitantes no Render
+continua não comprovada** até verificar os peers reais e a integridade da
+cadeia de encaminhamento no ambiente de hospedagem.
+
 ## Validação pós-deploy
 
 Depois de cada release, verificar:
