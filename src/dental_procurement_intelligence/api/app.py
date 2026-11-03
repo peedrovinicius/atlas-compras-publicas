@@ -178,7 +178,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
         }
 
     @app.get("/ready")
-    def ready() -> dict[str, str]:
+    def ready() -> dict[str, Any]:
         if not _analytics_database_ready(resolved_database_path):
             raise HTTPException(
                 status_code=503,
