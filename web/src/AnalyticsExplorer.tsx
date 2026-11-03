@@ -2174,6 +2174,7 @@ export default function AnalyticsExplorer({ provenance }: { provenance: DemoProv
 
               <footer className="analytics-print-report-footer">
                 <span>{provenanceInfo.reportSource}</span>
+                <span>Dados processados pelo Atlas e Preços.</span>
                 <span>{window.location.href}</span>
               </footer>
             </section>
