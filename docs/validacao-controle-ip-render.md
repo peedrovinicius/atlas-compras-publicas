@@ -37,6 +37,47 @@ O PR #78 suporta:
 
 A coleta deve registrar exclusivamente versão testada, horário UTC, flags relevantes, contagens 200/400/429, se houve separação A/B e conclusão do teste. Não guardar IPs pessoais, valores de headers, tokens ou payloads pessoais.
 
+## Smoke reutilizável, bloqueado para produção
+
+O script `scripts/smoke_proxy_staging.py` é **inofensivo por padrão**: sem as duas flags
+`--execute --confirm-staging`, nenhuma chamada HTTP é enviada. Ele só aceita
+a raiz HTTPS do serviço dedicado `atlas-compras-publicas-proxy-staging.onrender.com`
+(ou nome com sufixo no mesmo prefixo), e rejeita o hostname da API de produção,
+outros hosts, portas, caminhos e URLs com credenciais.
+
+**Somente após criar e autorizar staging isolado**, sem dados ou segredos reais:
+
+```bash
+python scripts/smoke_proxy_staging.py \
+  --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+  --mode basic --execute --confirm-staging
+
+# Origem A: 60 sucessos e a 61ª tentativa bloqueada, mudando apenas XFF.
+python scripts/smoke_proxy_staging.py \
+  --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+  --mode quota-a --execute --confirm-staging
+
+# Origem B: executar em uma rede externa distinta, imediatamente após A.
+python scripts/smoke_proxy_staging.py \
+  --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+  --mode quota-b --execute --confirm-staging
+
+# Teste separado: a Cloudflare deve rejeitar um CF-Connecting-IP enviado pelo cliente.
+python scripts/smoke_proxy_staging.py \
+  --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+  --mode cf-rejection --execute --confirm-staging
+```
+
+A fase B **não** pode ser simulada apenas variando `X-Forwarded-For` na mesma
+conexão, pois isso não prova separação de IPs legítimos. A fase de rejeição
+CF só registra o status HTTP; a origem da rejeição (borda ou aplicação)
+ainda precisa ser verificada de forma independente. O script não imprime
+IPs de visitantes ou conteúdo das respostas.
+
+**Não executar fases de cota na API de produção** nem compartilhar as
+requisições de estágio com usuários reais; limitar as tentativas a
+um período único e registrar resultados agregados.
+
 ## Critérios de aceite do PR #78
 
 - [ ] Plano Free, limitação de recebimento de tráfego privado e integridade do ingresso público confirmados novamente para o serviço no gate de release;
