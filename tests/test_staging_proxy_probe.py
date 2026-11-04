@@ -1,12 +1,16 @@
 """Proteção contra uso acidental do smoke em serviços públicos de produção."""
 
+from pathlib import Path
+from runpy import run_path
+
 import pytest
 
-from scripts.smoke_proxy_staging import (
-    cf_rejection_observed,
-    quota_a_passed,
-    validate_target,
-)
+# Os testes rodam com pythonpath=src no pytest; carregar o CLI por caminho
+# sem depender da raiz do repositorio constar no sys.path.
+_smoke = run_path(str(Path(__file__).resolve().parents[1] / "scripts/smoke_proxy_staging.py"))
+cf_rejection_observed = _smoke["cf_rejection_observed"]
+quota_a_passed = _smoke["quota_a_passed"]
+validate_target = _smoke["validate_target"]
 
 
 @pytest.mark.parametrize(
