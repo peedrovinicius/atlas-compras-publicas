@@ -8,14 +8,14 @@ A [documentação de variáveis do Render](https://render.com/docs/environment-v
 
 O [guia oficial de PocketBase no Render](https://render.com/articles/host-pocketbase-on-render) afirma que requisições a web services públicos passam pelo Cloudflare e que ele sobrescreve `CF-Connecting-IP` com o IP do visitante. Isso fundamenta a hipótese de segurança, mas não demonstra sozinho a topologia da instância específica, seus caminhos alternativos de ingresso ou configurações de runtime.
 
-Nas mensagens de suporte consultadas até 04/11/2026, havia apenas respostas automáticas. Ainda falta confirmação técnica individual, ou validação operacional autorizada de staging.
+Em 04/11/2026 às 15:10:53 UTC, John, do suporte humano do Render, confirmou por e-mail que o tráfego público passa pelo Cloudflare e pelos balanceadores do Render; que requisições públicas com `CF-Connecting-IP` fornecido pelo cliente são rejeitadas pelo Cloudflare; e que não se deve usar `X-Forwarded-For`. Confirmou também que requisições pela rede privada do mesmo workspace/região **não passam pelo Cloudflare** e podem carregar `CF-Connecting-IP` definido pelo serviço chamador. O suporte declarou que **não há mecanismo fornecido para distinguir na aplicação requisições internas de externas**. Portanto, a resposta humana valida o caminho público, mas **não autoriza confiar indistintamente em `CF-Connecting-IP` em todos os caminhos de ingresso**. O suporte não informou o valor efetivo de `FORWARDED_ALLOW_IPS` nesta instância. A validação operacional de staging permanece pendente.
 
 ## Escolha arquitetural que permanece pendente
 
 O PR #78 suporta:
 
 - **Modo não confiável:** `RENDER=true` e `ATLAS_TRUST_CF_CONNECTING_IP` ausente ou falso. Ignora os IPs de headers, porém **todos os usuários dividem 60 normalizações por 60 segundos por instância**. Seguro contra rotação simples de `X-Forwarded-For`, mas vulnerável à indisponibilidade de usuários legítimos por saturação da cota comum.
-- **Modo com ingresso CF confiável:** `ATLAS_TRUST_CF_CONNECTING_IP=true` e `RENDER=true`. Usa um IP canônico por visitante; cabeçalho ausente, duplicado ou inválido gera HTTP 400; 60 normalizações/minuto por identidade, **por instância**. Exige contrato de ingresso confiável validado antes de habilitar.
+- **Modo com ingresso CF confiável:** `ATLAS_TRUST_CF_CONNECTING_IP=true` e `RENDER=true`. Usa um IP canônico por visitante; cabeçalho ausente, duplicado ou inválido gera HTTP 400; 60 normalizações/minuto por identidade, **por instância**. **Não habilitar enquanto o serviço aceitar tráfego privado capaz de definir esse header, pois o código não distingue ingressos internos e públicos.** Exige isolamento comprovado do ingresso ou outro controle de confiança antes de habilitar.
 - **Sem identidade de rede confiável:** usar controle gerenciado na borda ou autenticação/identidade comprovada. Não declarar o limitador como `por IP` se todos compartilham um único bucket.
 
 ## Experimento somente em ambiente de teste isolado
