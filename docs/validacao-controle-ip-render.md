@@ -1,6 +1,6 @@
 # Validação controlada de identidade do visitante no Render
 
-> **Estado em 04/11/2026:** procedimento preparado para a issue #76 / PR #78. **Não executado na produção.** Nenhum passo deste documento autoriza deploy, mudança de variáveis ou tráfego de teste contra o serviço público.
+> **Estado em 04/11/2026:** smoke executado em **staging Free isolado**, com dados sintéticos, sem alterações na produção. A aprovação do staging **não autoriza** habilitar variáveis em produção nem executar merge ou deploy.
 
 ## Hipótese documentada e limite da evidência
 
@@ -78,10 +78,42 @@ IPs de visitantes ou conteúdo das respostas.
 requisições de estágio com usuários reais; limitar as tentativas a
 um período único e registrar resultados agregados.
 
+## Resultado efetivo do staging — 04/11/2026
+
+Serviço isolado `atlas-compras-publicas-proxy-staging`, ID
+`srv-dbls24l9el5s73ek6rk0`, plano **Free**, uma instância, branch do PR #78,
+`autoDeployTrigger=off`, banco gerado localmente com dados **exclusivamente
+sintéticos**. O primeiro deploy `dep-dbls24t9el5s73ek6sr0` concluiu
+`live` no commit `088517ad`. A confiança em
+`CF-Connecting-IP` foi habilitada **somente nesse staging**, não em produção.
+
+Execução: [GitHub Actions #41935194080](https://github.com/peedrovinicius/atlas-compras-publicas/actions/runs/41935194080), concluída com sucesso.
+
+- `/health` e `/ready`: HTTP 200.
+- Origem A com variação apenas de `X-Forwarded-For`: **60 HTTP 200**,
+  depois **1 HTTP 429**, sem usar `CF-Connecting-IP` fornecido pelo cliente.
+- Origem B, em outro GitHub Actions runner, com **IP público diferente**
+  comprovado pela comparação de hashes (sem registrar endereços brutos):
+  **HTTP 200**, **12,9 segundos** após conclusão de A.
+- Header `CF-Connecting-IP` enviado manualmente em teste separado:
+  **HTTP 403**, compatível com rejeição pela borda Cloudflare descrita pelo
+  Render. O código da aplicação não gera 403 nesse endpoint, mas os registros
+  do Render consultados não permitem demonstrar independentemente qual
+  componente produziu o 403.
+- CI e CodeQL do head `134792af`: aprovados.
+
+**Resultado:** proteção contra falsificação simples de `X-Forwarded-For` e
+separação de cotas entre duas origens reais demonstradas na topologia
+**pública Free de uma instância**. Não extrapolar para plano pago, ingresso
+privado ou múltiplos workers. Nenhum teste foi direcionado aos serviços
+de produção. Para economizar horas gratuitas, desativar/excluir o serviço
+temporário no painel Render quando a validação for arquivada; esta revisão
+não executou exclusão.
+
 ## Critérios de aceite do PR #78
 
 - [ ] Plano Free, limitação de recebimento de tráfego privado e integridade do ingresso público confirmados novamente para o serviço no gate de release;
-- [ ] Testes locais e staging aprovados, incluindo duas origens independentes;
+- [x] Testes locais e staging aprovados, incluindo duas origens independentes (GitHub Actions #41935194080);
 - [ ] Falhas 400/429, cota e expiração verificados sem vazamento de dados;
 - [ ] Decisão explícita de operação quanto ao risco de indisponibilidade da cota compartilhada;
 - [ ] Compatibilidade da configuração com o número de instâncias/workers confirmada;
