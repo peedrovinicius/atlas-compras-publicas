@@ -192,6 +192,9 @@ for (const source of ["pncp_sample", "offline_synthetic", "unknown"]) {
         format: "A4", printBackground: true,
       });
       assert.ok(pdf.byteLength > 3000);
+      // Evita regressão: elementos invisíveis não podem gerar folhas vazias.
+      const pages = pdf.toString("latin1").match(/\\/Type\\s*\\/Page\\b/g) ?? [];
+      assert.equal(pages.length, 1, "Relatório de teste gerou folhas adicionais");
       await page.emulateMedia({ media: "screen" });
 
       await page.locator(".analytics-actions-menu summary").click();
