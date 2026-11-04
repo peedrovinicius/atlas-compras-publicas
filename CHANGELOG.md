@@ -2,6 +2,17 @@
 
 Este arquivo registra mudanças públicas relevantes do Atlas de Compras Públicas. Benchmarks e auditorias detalhadas permanecem documentados em `docs/`.
 
+## 1.75.0
+
+- Identificação da proveniência da amostra analítica com `pncp_sample`, `offline_synthetic` ou `unknown`, persistida e conferida no DuckDB;
+- API passa a divulgar origem, horário de geração e contagens em `/health`, `/ready` e `/api/v1/meta`;
+- interface, relatório imprimível/PDF e CSV tornam explícitos dados fictícios ou origem não verificada, impedindo interpretação como preços públicos observados;
+- CSV passa a identificar a origem por registro, cabeçalho e nome do arquivo, com neutralização de conteúdo que possa ser interpretado como fórmula em planilhas;
+- testes isolados para falha de captura PNCP, origem inconsistente e exportações; evidência visual de desktop, mobile e impressão com Chromium;
+- testes de contrato da API no frontend, auditoria de dependências e manutenção de segurança do Vite incorporados ao fluxo de CI;
+- documentação do Render e checklist de release revisados, com validação obrigatória da origem efetivamente publicada após o deploy autorizado;
+- versões Python, frontend, cliente PNCP e relatório sincronizadas em 1.75.0.
+
 ## 1.74.0
 
 - Mercado ganha contexto geográfico com referência nacional explícita;
