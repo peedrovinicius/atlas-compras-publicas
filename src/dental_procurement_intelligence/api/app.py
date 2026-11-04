@@ -7,6 +7,7 @@ from typing import Any
 import duckdb
 
 from dental_procurement_intelligence import __version__
+from dental_procurement_intelligence.analytics.provenance import read_provenance
 from dental_procurement_intelligence.api.catalog import parser_categories
 from dental_procurement_intelligence.api.client_identity import (
     resolve_normalization_client_identity,
@@ -32,6 +33,17 @@ from dental_procurement_intelligence.api.service import (
     analytics_unrecognized,
 )
 from dental_procurement_intelligence.identity import available_domains, parse_product
+
+
+def _safe_csv_record(row: dict[str, Any]) -> dict[str, Any]:
+    """Protege planilhas contra fórmulas em descrições externas do PNCP."""
+    safe = {}
+    for key, value in row.items():
+        if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
+            safe[key] = "'" + value
+        else:
+            safe[key] = value
+    return safe
 
 
 def _bootstrap_demo_database(path: Path) -> Path:
@@ -131,6 +143,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
         allow_credentials=False,
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["Content-Type"],
+        expose_headers=["X-Atlas-Provenance"],
     )
 
     # Armazenamento por instancia, com expiracao e capacidade finita.
@@ -180,11 +193,15 @@ def create_app(database_path: str | Path | None = None) -> Any:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @app.get("/health")
-    def health() -> dict[str, str]:
-        return {"status": "ok", "version": __version__}
+    def health() -> dict[str, Any]:
+        return {
+            "status": "ok",
+            "version": __version__,
+            "provenance": read_provenance(resolved_database_path),
+        }
 
     @app.get("/ready")
-    def ready() -> dict[str, str]:
+    def ready() -> dict[str, Any]:
         if not _analytics_database_ready(resolved_database_path):
             raise HTTPException(
                 status_code=503,
@@ -194,6 +211,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
             "status": "ready",
             "version": __version__,
             "database": resolved_database_path.name,
+            "provenance": read_provenance(resolved_database_path),
         }
 
     @app.get("/", include_in_schema=False)
@@ -293,6 +311,7 @@ def create_app(database_path: str | Path | None = None) -> Any:
             "database_available": resolved_database_path.exists(),
             "database_name": resolved_database_path.name,
             "frontend_url": frontend_url,
+            "provenance": read_provenance(resolved_database_path),
         }
 
     @app.get("/api/v1/domains")
@@ -397,7 +416,9 @@ def create_app(database_path: str | Path | None = None) -> Any:
             start_date=start_date,
             end_date=end_date,
         )
+        source_type = read_provenance(resolved_database_path)["source_type"]
         columns = [
+            "data_source_type",
             "award_key",
             "procurement_key",
             "item_number",
@@ -426,15 +447,21 @@ def create_app(database_path: str | Path | None = None) -> Any:
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=columns, extrasaction="ignore")
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(
+            _safe_csv_record({"data_source_type": source_type, **row})
+            for row in rows
+        )
         content = "\ufeff" + output.getvalue()
         return Response(
             content=content,
             media_type="text/csv; charset=utf-8",
             headers={
                 "Content-Disposition": (
-                    f'attachment; filename="atlas-{product_id[:8]}-registros.csv"'
-                )
+                    f'attachment; filename="atlas-{source_type}-'
+                    f'{product_id[:8]}-registros.csv"'
+                ),
+                "X-Atlas-Provenance": source_type,
+                "Cache-Control": "no-store",
             },
         )
 

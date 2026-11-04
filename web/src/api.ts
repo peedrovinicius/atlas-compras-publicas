@@ -1,6 +1,7 @@
 import type {
   AnalyticsFilters,
   BatchResponse,
+  DemoProvenance,
   NormalizationResult,
   ParserCategory,
   ProductAnalyticsBundle,
@@ -17,6 +18,7 @@ import type {
   ProductSuppliers,
 } from "./types";
 import { analyticsFilterParams, decodeApiResponse } from "./api-utils";
+import { parseProvenance, provenanceDisplay } from "./provenance";
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ??
@@ -26,6 +28,11 @@ const API_BASE_URL = (
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`);
   return decodeApiResponse<T>(response);
+}
+
+export async function fetchDataProvenance(): Promise<DemoProvenance> {
+  const metadata = await get<{ provenance?: unknown }>("/api/v1/meta");
+  return parseProvenance(metadata.provenance);
 }
 
 export async function fetchCategories(): Promise<ParserCategory[]> {
@@ -139,7 +146,14 @@ export async function downloadProductRecordsCsv(
   const href = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = href;
-  anchor.download = `atlas-${productId.slice(0, 8)}-registros.csv`;
+  const declared = response.headers.get("X-Atlas-Provenance");
+  const source = (
+    declared === "pncp_sample" || declared === "offline_synthetic"
+      ? declared
+      : "unknown"
+  );
+  const label = provenanceDisplay(source).filenameLabel;
+  anchor.download = `atlas-${label}-${productId.slice(0, 8)}-registros.csv`;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

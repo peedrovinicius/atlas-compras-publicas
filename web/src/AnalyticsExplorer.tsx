@@ -1,8 +1,10 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { downloadProductRecordsCsv, fetchProductAnalytics, fetchProductDiscovery, searchProducts, suggestProducts } from "./api";
+import { provenanceDisplay } from "./provenance";
 import type {
   AnalyticsFilters,
+  DemoProvenance,
   ProductAnalyticsBundle,
   ProductDiscoveryItem,
   ProductSearchFacets,
@@ -328,7 +330,9 @@ function HistoryChart({
   );
 }
 
-export default function AnalyticsExplorer() {
+export default function AnalyticsExplorer({ provenance }: { provenance: DemoProvenance }) {
+  const provenanceInfo = provenanceDisplay(provenance.source_type);
+  const isPncpSample = provenance.source_type === "pncp_sample";
   const initialState = useRef(readInitialState()).current;
   const [query, setQuery] = useState(initialState.query);
   const [filters, setFilters] = useState<AnalyticsFilters>({ ...initialState.filters });
@@ -875,16 +879,38 @@ export default function AnalyticsExplorer() {
     <>
       <section className="hero analytics-hero analytics-hero-compact">
         <span className="eyebrow">Inteligência de preços públicos</span>
-        <h1>Descubra quanto o governo paga pelo produto que você procura.</h1>
+        <h1>
+          {isPncpSample
+            ? "Explore preços de uma amostra de compras públicas."
+            : "Explore os recursos de análise de preços do Atlas."}
+        </h1>
         <p>
-          Pesquise do seu jeito. O Atlas organiza dados públicos do PNCP para comparar
-          preços homologados, histórico e evidências em uma única análise.
+          {isPncpSample
+            ? "Amostra capturada do PNCP, com histórico e evidências. Não representa o mercado inteiro."
+            : "Demonstração da metodologia e das ferramentas. A origem da base está indicada abaixo."}
         </p>
         <div className="analytics-trust-row" aria-label="Características do Atlas">
-          <span>Dados públicos</span>
-          <span>Preços homologados</span>
-          <span>Fonte rastreável</span>
+          <span>Origem identificada</span>
+          <span>Metodologia auditável</span>
+          <span>Dados de demonstração</span>
         </div>
+      </section>
+
+      <section
+        className={`atlas-provenance atlas-provenance-${provenance.source_type}`}
+        role="status"
+        aria-live="polite"
+        aria-label="Proveniência dos dados"
+      >
+        <strong>{provenanceInfo.title}</strong>
+        <p>{provenanceInfo.description}</p>
+        {provenance.captured_at && (
+          <small>
+            Amostra gerada em {new Date(provenance.captured_at).toLocaleString("pt-BR")}
+            {" · "}{provenance.observation_count ?? 0} observações
+            {" · "}{provenance.procurement_count ?? 0} contratações
+          </small>
+        )}
       </section>
 
       <section className="panel analytics-search-panel">
@@ -1913,7 +1939,7 @@ export default function AnalyticsExplorer() {
                   {bundle.buyers.items.map((buyer, index) => (
                     <div key={`${buyer.organization_cnpj ?? "org"}-${buyer.buyer_unit_code ?? index}`}>
                       <span><strong>{buyer.organization_name ?? buyer.buyer_unit_name ?? "Órgão sem nome"}</strong><small>{buyer.state_code ?? "UF não informada"} · {number(buyer.procurement_count)} compras</small></span>
-                      <span><strong>{money(buyer.median_price)}</strong><small>{money(buyer.awarded_total_value)} homologados</small></span>
+                      <span><strong>{money(buyer.median_price)}</strong><small>{money(buyer.awarded_total_value)} {isPncpSample ? "homologados" : "na amostra"}</small></span>
                     </div>
                   ))}
                 </div>
@@ -1942,7 +1968,9 @@ export default function AnalyticsExplorer() {
                               <td>{money(signal.median_price)}</td>
                               <td>{signal.detection_method ?? "Não informado"}</td>
                               <td>{signal.state_code ?? "Não informada"}</td>
-                              <td>{signal.pncp_url ? <a href={signal.pncp_url} target="_blank" rel="noreferrer">PNCP</a> : "Sem link"}</td>
+                              <td>{isPncpSample && signal.pncp_url
+                          ? <a href={signal.pncp_url} target="_blank" rel="noreferrer">PNCP</a>
+                          : "Origem não verificada"}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1977,7 +2005,7 @@ export default function AnalyticsExplorer() {
                         <div><span>Unidade compradora</span><strong>{record.buyer_unit_name ?? "Não informada"}</strong></div>
                         <div><span>Local</span><strong>{[record.municipality_name, record.state_code].filter(Boolean).join(" / ") || "Não informado"}</strong></div>
                         <div><span>Modalidade</span><strong>{record.modality ?? "Não informada"}</strong></div>
-                        <div><span>Quantidade homologada</span><strong>{record.awarded_quantity ?? "Não informada"}</strong></div>
+                        <div><span>{isPncpSample ? "Quantidade homologada" : "Quantidade na amostra"}</span><strong>{record.awarded_quantity ?? "Não informada"}</strong></div>
                         <div><span>Valor total</span><strong>{money(record.awarded_total_value)}</strong></div>
                         <div><span>Status do preço</span><strong>{record.price_normalization_status ?? "Não informado"}</strong></div>
                         <div><span>Motivo</span><strong>{record.price_normalization_reason ?? "Não informado"}</strong></div>
@@ -1986,7 +2014,7 @@ export default function AnalyticsExplorer() {
                         <small>contratação {shortHash(record.contract_source_sha256)}</small>
                         <small>item {shortHash(record.item_source_sha256)}</small>
                         <small>resultado {shortHash(record.result_source_sha256)}</small>
-                        {record.pncp_url && <a href={record.pncp_url} target="_blank" rel="noreferrer">Abrir no PNCP</a>}
+                        {isPncpSample && record.pncp_url && <a href={record.pncp_url} target="_blank" rel="noreferrer">Abrir no PNCP</a>}
                       </div>
                     </details>
                   ))}
@@ -2007,6 +2035,11 @@ export default function AnalyticsExplorer() {
                 <span>Produto analisado</span>
                 <h1>{summary.display_name}</h1>
                 <p>{summary.sample_description}</p>
+              </div>
+
+              <div className={`analytics-print-provenance analytics-print-provenance-${provenance.source_type}`}>
+                <strong>{provenanceInfo.title}</strong>
+                <p>{provenanceInfo.description}</p>
               </div>
 
               <div className="analytics-print-report-context">
@@ -2140,7 +2173,8 @@ export default function AnalyticsExplorer() {
               </section>
 
               <footer className="analytics-print-report-footer">
-                <span>Fonte: dados públicos do PNCP processados pelo Atlas e Preços.</span>
+                <span>{provenanceInfo.reportSource}</span>
+                <span>Dados processados pelo Atlas e Preços.</span>
                 <span>{window.location.href}</span>
               </footer>
             </section>

@@ -105,11 +105,10 @@ def test_ready_accepts_analytics_database(tmp_path) -> None:
     response = client.get("/ready")
 
     assert response.status_code == 200
-    assert response.json() == {
-        "status": "ready",
-        "version": __version__,
-        "database": "analytics.duckdb",
-    }
+    assert response.json()["status"] == "ready"
+    assert response.json()["version"] == __version__
+    assert response.json()["database"] == "analytics.duckdb"
+    assert response.json()["provenance"]["source_type"] == "unknown"
 
 
 def test_health_exposes_current_version() -> None:
@@ -120,7 +119,9 @@ def test_health_exposes_current_version() -> None:
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": __version__}
+    assert response.json()["status"] == "ok"
+    assert response.json()["version"] == __version__
+    assert response.json()["provenance"]["source_type"] == "unknown"
 
 
 @pytest.mark.parametrize("description", ["", "  "])
@@ -374,12 +375,10 @@ def test_meta_reports_configured_database(tmp_path, monkeypatch) -> None:
     response = client.get("/api/v1/meta")
 
     assert response.status_code == 200
-    assert response.json() == {
-        "version": __version__,
-        "database_available": True,
-        "database_name": "atlas-demo.duckdb",
-        "frontend_url": "https://atlas-compras-publicas-web.onrender.com",
-    }
+    assert response.json()["version"] == __version__
+    assert response.json()["database_available"] is True
+    assert response.json()["database_name"] == "atlas-demo.duckdb"
+    assert response.json()["provenance"]["source_type"] == "unknown"
 
 
 
@@ -416,7 +415,9 @@ def test_records_csv_returns_downloadable_utf8_file(
     assert response.content.startswith(b"\xef\xbb\xbf")
     assert "text/csv" in response.headers["content-type"]
     assert "attachment;" in response.headers["content-disposition"]
-    assert "award_key" in response.text
+    assert "data_source_type,award_key" in response.text
+    assert "unknown,award-1" in response.text
+    assert response.headers["x-atlas-provenance"] == "unknown"
     assert "Fornecedor Alfa" in response.text
 
 

@@ -105,3 +105,31 @@ jobs:
         env:
           VITE_API_BASE_URL: https://atlas-compras-publicas-analytics.onrender.com
         run: npm run build
+
+      - name: Install Chromium browser test dependency
+        working-directory: web
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+
+      - name: Install Chromium
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Visual provenance smoke (desktop, mobile, print and CSV)
+        working-directory: web
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/atlas-vite-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/ > /dev/null
+          node --test e2e/provenance-visual.test.mjs
+
+      - name: Save Chromium visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-visual-${{ github.run_attempt }}
+          path: web/e2e/artifacts/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -10,6 +10,7 @@ from dental_procurement_intelligence.analytics.awards import (
     build_awards,
 )
 from dental_procurement_intelligence.analytics.lakehouse import build_analytics_dataset
+from dental_procurement_intelligence.analytics.provenance import write_provenance
 from dental_procurement_intelligence.analytics.quality import build_quality_views
 from dental_procurement_intelligence.ingestion import (
     EvidenceStore,
@@ -180,6 +181,13 @@ def _build_offline_demo_data(root: Path) -> DemoDataBuildResult:
     )
     signals = build_price_signals(database)
     build_quality_views(database)
+    write_provenance(
+        database,
+        source_type="offline_synthetic",
+        procurement_keys=(procurement_key,),
+        result_count=len(results_payload),
+        observation_count=awards.row_count,
+    )
 
     return DemoDataBuildResult(
         procurement_count=1,
@@ -304,6 +312,13 @@ def build_demo_data(
 
     signals = build_price_signals(database)
     build_quality_views(database)
+    write_provenance(
+        database,
+        source_type="pncp_sample",
+        procurement_keys=tuple(capture.procurement_key for capture in captures),
+        result_count=sum(capture.result_count for capture in captures),
+        observation_count=awards.row_count,
+    )
 
     return DemoDataBuildResult(
         procurement_count=len(captures),
