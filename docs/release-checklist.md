@@ -40,6 +40,34 @@ Também confirme:
 
 Não faça merge em `main` enquanto o Render estiver bloqueado por falta de minutos.
 
+
+### Conferência de divergência entre Blueprint e serviço ativo (03/11/2026)
+
+A configuração **consultada no Render** para o serviço `atlas-compras-publicas-analytics`
+(`main`, auto-deploy após checks) usa atualmente:
+
+```bash
+pip install -e ".[api]" && atlas build-demo-data --output-root data/demo
+```
+
+O `render.yaml` versionado acrescenta `--offline-fallback`. Esta diferença
+**não impede** o fallback para a amostra padrão: `build_demo_data()` chama o
+fallback quando a captura padrão falha ou não produz resultados, mesmo com
+`allow_offline_seed=False`. A flag é necessária apenas para permitir fallback
+em uma contratação fornecida explicitamente (`--cnpj/--year/--sequence`).
+
+O Blueprint também declara `healthCheckPath: /ready`, enquanto o serviço
+ativo consultado não apresenta health check configurado. Assim, o Blueprint
+**não deve ser presumido como a configuração efetivamente aplicada**.
+
+- [ ] antes da próxima publicação autorizada, conferir no painel do Render
+      build command, health check, branch, gatilho automático e variáveis
+      relevantes contra `render.yaml`;
+- [ ] manter o fallback padrão e a identificação `offline_synthetic` testados;
+- [ ] após deploy autorizado, registrar o commit dos dois serviços e conferir
+      `/health`, `/ready`, `/api/v1/meta`, CSV e aviso visual;
+- [ ] não alterar a configuração do Render durante esta conferência.
+
 ## 4. Pull Request
 
 - [ ] PR aponta de `develop` para `main`;
@@ -98,7 +126,23 @@ API:
 - [ ] análise detalhada responde;
 - [ ] endpoints de distribuição, histórico, regiões, fornecedores, compradores, sinais e registros respondem.
 
-## 7. Pós-release
+## 7. Proveniência da amostra
+
+- [ ] inspecionar `/api/v1/meta` e `/ready` no serviço publicado;
+- [ ] a origem deve ser `pncp_sample` ou `offline_synthetic`;
+- [ ] se `unknown`, não declarar nem publicar valores como preços reais;
+- [ ] conferir data UTC, chaves de contratações e contagens de observações;
+- [ ] comparar a origem da API com o aviso visual no frontend;
+- [ ] se a origem for `offline_synthetic`, confirmar o aviso explícito de
+      valores fictícios, inclusive no relatório/PDF e exportação CSV;
+- [ ] conferir no CSV a coluna `data_source_type` e o nome do arquivo;
+- [ ] registrar a proveniência efetivamente publicada no release.
+
+O smoke de produção deve **falhar fechado** se a proveniência estiver ausente,
+inválida ou declarada como `unknown`. Um ambiente offline sintético pode ser
+aceito como demonstração, mas não como histórico de compras públicas reais.
+
+## 8. Pós-release
 
 - [ ] confirmar que o smoke test validou a mesma versão declarada em `web/package.json`;
 - [ ] confirmar versão publicada;

@@ -1,3 +1,15 @@
+export type ProvenanceSourceType = "pncp_sample" | "offline_synthetic" | "unknown";
+
+export type DemoProvenance = {
+  source_type: ProvenanceSourceType;
+  captured_at: string | null;
+  procurement_keys: string[];
+  procurement_count: number | null;
+  result_count: number | null;
+  observation_count: number | null;
+  notice: string;
+};
+
 export type ProductDiscoveryItem = {
   product_category: string;
   label: string;
