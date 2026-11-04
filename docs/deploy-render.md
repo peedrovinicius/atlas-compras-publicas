@@ -228,6 +228,34 @@ Referências:
 [Variáveis padrão Render](https://render.com/docs/environment-variables) e
 [Render: PocketBase e IP de visitantes](https://render.com/articles/host-pocketbase-on-render).
 
+### Evidência complementar de confiança no ingresso (04/11/2026)
+
+O suporte Render informou por e-mail que conexões pela internet pública passam pelo
+Cloudflare e pelo balanceador e que requisições externas contendo `CF-Connecting-IP`
+enviado pelo solicitante são rejeitadas pelo Cloudflare. **Não usar `X-Forwarded-For`**:
+seu prefixo pode ser controlado pelo solicitante e, com
+`FORWARDED_ALLOW_IPS=*`, pode afetar `request.client.host`.
+A mensagem de suporte não identifica explicitamente seu autor como engenheiro humano,
+nem substitui testes operacionais antes de um release.
+
+A consulta ao serviço `atlas-compras-publicas-analytics` confirmou **plano Free,
+uma instância e branch `main`**. A [documentação de Free services](https://render.com/docs/free)
+e a [matriz de private networking](https://render.com/articles/how-render-handles-private-networking)
+esclarecem que web services Free **não recebem tráfego da rede privada**.
+Isso resolve a exceção de IP forjável via conexão privada para o plano
+**atualmente contratado**, mas não é uma garantia para futura migração a plano
+que aceite ingresso privado. **Não habilitar `ATLAS_TRUST_CF_CONNECTING_IP`
+em um serviço que aceite rede privada sem autenticar/distinguir o ingresso**.
+
+O [plano de validação](validacao-controle-ip-render.md) agora diferencia dois testes:
+(a) variar somente `X-Forwarded-For` e conferir a cota de um cliente legítimo,
+sem enviar manualmente `CF-Connecting-IP`; (b) em rodada separada, verificar que
+a borda rejeita requisição externa que contenha `CF-Connecting-IP` fornecido pelo
+cliente. **Não esperar HTTP 200 no caso (b)**. Ambas as verificações exigem
+um staging isolado autorizado; não executar essa bateria na produção.
+Antes de ativar o modo por visitante, reconfirmar plano, caminho de rede,
+ausência de acesso privado, comportamento de cabeçalhos e estratégia de reversão.
+
 ## Validação pós-deploy
 
 Depois de cada release, verificar:
