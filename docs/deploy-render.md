@@ -207,15 +207,16 @@ identidade, com normalização IPv4/IPv6. Quando a confiança estiver habilitada
 cabeçalhos ausentes, duplicados ou inválidos recebem HTTP 400 **antes**
 de consumir a cota de qualquer visitante. Quando a confiança continuar
 desabilitada, a cota compartilhada permanece. **Não habilitar apenas com a confirmação humana sobre o tráfego público.**
-Em 04/11/2026, John, do suporte do Render, confirmou que o Cloudflare
+Uma resposta de suporte recebida em 04/11/2026 informou que o Cloudflare
 rejeita requisições públicas que já enviem `CF-Connecting-IP`, mas também
-esclareceu que serviços do mesmo workspace e região podem acessar o ingresso
-privado sem passar pelo Cloudflare, definindo esse header por conta própria.
-O Render não fornece mecanismo para a aplicação distinguir os dois caminhos.
-Assim, o modo de confiança por IP exige isolamento demonstrado do ingresso
-privado ou outro mecanismo verificável de autenticação da origem; caso
-contrário, um serviço interno autorizado pode escolher arbitrariamente a
-identidade e contornar as cotas. O valor efetivo de `FORWARDED_ALLOW_IPS`
+esclareceu que chamadas recebidas pela rede privada de serviços elegíveis não
+passam pelo Cloudflare e podem trazer esse header definido pelo chamador.
+O Render não fornece um mecanismo à aplicação para distinguir esses ingressos.
+**No serviço atual, de plano Free, o ingresso privado é indisponível segundo
+a documentação oficial**; portanto essa exceção não ocorre na configuração
+verificada. Em eventual migração a plano com ingresso privado, a flag de
+confiança deverá ser desativada ou a identidade autenticada na borda antes
+de permitir o tráfego interno. O valor efetivo de `FORWARDED_ALLOW_IPS`
 no processo ainda precisa ser verificado.
 O teste com Uvicorn usando `--forwarded-allow-ips=*` reproduz o cenário,
 mas não prova a integridade do cabeçalho na infraestrutura real.
