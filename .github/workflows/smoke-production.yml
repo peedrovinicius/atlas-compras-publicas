@@ -114,6 +114,37 @@ jobs:
             --retry 4 --retry-delay 15 --max-time 120 \
             "$API_URL/ready"
 
+      - name: Verify public demo provenance before publication approval
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          base = os.environ["API_URL"].rstrip("/")
+          payloads = []
+          for endpoint in ("/health", "/ready", "/api/v1/meta"):
+              with urllib.request.urlopen(base + endpoint, timeout=120) as response:
+                  payloads.append(json.load(response).get("provenance"))
+          assert all(item == payloads[0] for item in payloads), (
+              "Proveniência diverge entre os endpoints"
+          )
+          origin = payloads[0]
+          assert isinstance(origin, dict), "Proveniência ausente"
+          assert origin.get("source_type") in ("pncp_sample", "offline_synthetic"), (
+              "Proveniência desconhecida: não afirmar valores reais"
+          )
+          assert origin.get("captured_at"), "Data de captura/geração ausente"
+          assert isinstance(origin.get("procurement_keys"), list), (
+              "Chaves de contratações ausentes"
+          )
+          assert len(origin["procurement_keys"]) == origin.get("procurement_count")
+          assert origin.get("observation_count", 0) > 0
+          print("Proveniência publicada:", origin["source_type"])
+          if origin["source_type"] == "offline_synthetic":
+              print("ATENÇÃO: amostra sintética; não representa compras homologadas")
+          PY
+
       - name: Check product discovery
         run: |
           curl --fail --location --silent --show-error \

@@ -5,6 +5,7 @@ import httpx
 import pytest
 
 from dental_procurement_intelligence.analytics import demo_data
+from dental_procurement_intelligence.analytics.provenance import read_provenance
 from dental_procurement_intelligence.cli import (
     _demo_result_request_limit,
     build_parser,
@@ -81,6 +82,7 @@ def test_build_demo_data_orchestrates_existing_pipeline(
         "build_quality_views",
         lambda database: calls.append(("quality", database)),
     )
+    monkeypatch.setattr(demo_data, "write_provenance", lambda *args, **kwargs: None)
 
     procurement = demo_data.DemoProcurement(
         cnpj=demo_data.DEMO_CNPJ,
@@ -161,6 +163,7 @@ def test_build_demo_data_skips_failed_procurement(
         ),
     )
     monkeypatch.setattr(demo_data, "build_quality_views", lambda database: None)
+    monkeypatch.setattr(demo_data, "write_provenance", lambda *args, **kwargs: None)
 
     procurements = (
         demo_data.DemoProcurement("11111111111111", 2026, 1, "falha"),
@@ -214,6 +217,10 @@ def test_default_demo_data_falls_back_without_network_flag(
     assert result.silver_item_count == 1
     assert result.silver_award_count == 12
     assert Path(result.database_path).is_file()
+    metadata = read_provenance(result.database_path)
+    assert metadata["source_type"] == "offline_synthetic"
+    assert metadata["observation_count"] == 12
+    assert metadata["procurement_keys"] == ["pncp:00000000000000:2026:1"]
 
 
 def test_explicit_demo_data_remains_strict_without_offline_fallback(
@@ -274,3 +281,4 @@ def test_build_demo_data_uses_offline_seed_when_pncp_is_unavailable(
     assert result.silver_item_count == 1
     assert result.silver_award_count == 12
     assert Path(result.database_path).is_file()
+    assert read_provenance(result.database_path)["source_type"] == "offline_synthetic"

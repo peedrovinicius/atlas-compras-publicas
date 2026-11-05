@@ -7,6 +7,7 @@ name = "atlas-compras-publicas"
 version = "1.74.0"
 description = "Inteligência de dados auditável para compras públicas no Brasil."
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 keywords = ["compras-publicas", "pncp", "dados-publicos", "engenharia-de-dados", "analise-de-dados", "brasil"]
 dependencies = [

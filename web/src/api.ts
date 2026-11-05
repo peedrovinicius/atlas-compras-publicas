@@ -1,6 +1,7 @@
 import type {
   AnalyticsFilters,
   BatchResponse,
+  DemoProvenance,
   NormalizationResult,
   ParserCategory,
   ProductAnalyticsBundle,
@@ -16,47 +17,22 @@ import type {
   ProductSummary,
   ProductSuppliers,
 } from "./types";
+import { analyticsFilterParams, decodeApiResponse } from "./api-utils";
+import { parseProvenance, provenanceDisplay } from "./provenance";
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ??
   "https://atlas-compras-publicas-analytics.onrender.com"
 ).replace(/\/$/, "");
 
-async function decode<T>(response: Response): Promise<T> {
-  let body: unknown;
-
-  try {
-    body = await response.json();
-  } catch {
-    body = null;
-  }
-
-  if (!response.ok) {
-    const detail =
-      body &&
-      typeof body === "object" &&
-      "detail" in body &&
-      typeof body.detail === "string"
-        ? body.detail
-        : "Não foi possível concluir a solicitação.";
-    throw new Error(detail);
-  }
-
-  return body as T;
-}
-
-function analyticsFilterParams(filters: AnalyticsFilters): URLSearchParams {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(filters)) {
-    const cleaned = value.trim();
-    if (cleaned) params.set(key, cleaned);
-  }
-  return params;
-}
-
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`);
-  return decode<T>(response);
+  return decodeApiResponse<T>(response);
+}
+
+export async function fetchDataProvenance(): Promise<DemoProvenance> {
+  const metadata = await get<{ provenance?: unknown }>("/api/v1/meta");
+  return parseProvenance(metadata.provenance);
 }
 
 export async function fetchCategories(): Promise<ParserCategory[]> {
@@ -76,7 +52,7 @@ export async function normalizeDescriptions(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(descriptions),
   });
-  const body = await decode<BatchResponse>(response);
+  const body = await decodeApiResponse<BatchResponse>(response);
   return body.items;
 }
 
@@ -163,14 +139,21 @@ export async function downloadProductRecordsCsv(
   const path = `/api/v1/products/${encoded}/records.csv${query ? `?${query}` : ""}`;
   const response = await fetch(`${API_BASE_URL}${path}`);
   if (!response.ok) {
-    await decode<never>(response);
+    await decodeApiResponse<never>(response);
   }
 
   const blob = await response.blob();
   const href = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = href;
-  anchor.download = `atlas-${productId.slice(0, 8)}-registros.csv`;
+  const declared = response.headers.get("X-Atlas-Provenance");
+  const source = (
+    declared === "pncp_sample" || declared === "offline_synthetic"
+      ? declared
+      : "unknown"
+  );
+  const label = provenanceDisplay(source).filenameLabel;
+  anchor.download = `atlas-${label}-${productId.slice(0, 8)}-registros.csv`;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
