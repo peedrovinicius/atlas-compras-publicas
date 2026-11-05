@@ -68,6 +68,27 @@ ativo consultado não apresenta health check configurado. Assim, o Blueprint
       `/health`, `/ready`, `/api/v1/meta`, CSV e aviso visual;
 - [ ] não alterar a configuração do Render durante esta conferência.
 
+### Gate adicional para o limitador de IP no Render (issue #76)
+
+**Obrigatório em qualquer release que inclua o PR #78.**
+A sequência detalhada está em [`docs/runbook-release-proxy-render.md`](runbook-release-proxy-render.md).
+Os testes locais e o smoke do staging não configuram a produção automaticamente.
+
+- [ ] confirmar serviço canônico, plano **Free**, uma instância e **ausência de ingresso privado**; reavaliar se houver mudança de plano;
+- [ ] conferir o valor padrão do runtime Python `FORWARDED_ALLOW_IPS=*` e **não confiar em `X-Forwarded-For`** para identificar o visitante;
+- [ ] antes do merge em `main`, salvar `ATLAS_TRUST_CF_CONNECTING_IP=true` **somente com `Save only`** no Dashboard Render, após autorização expressa, sem iniciar deploy; o conector de atualização disponível **não garante `Save only`**;
+- [ ] verificar no painel que a variável ficou salva no **serviço canônico** e que não houve novo deploy; não confundir o valor salvo com configuração já ativa;
+- [ ] resolver a divergência do health check: serviço ativo ainda sem caminho HTTP, enquanto `render.yaml` prevê `/ready`; confirmar saúde do banco antes de permitir o deploy;
+- [ ] confirmar CI e CodeQL no **commit final** dos PRs #78 e de release, sem revisões pendentes;
+- [ ] validar em staging por dois IPs públicos distintos que 60 pedidos do visitante A são permitidos e a 61ª é bloqueada, enquanto B recebe 200; **não executar esse ensaio na produção**;
+- [ ] conferir o plano de rollback e a disponibilidade do último build estável, considerando que o rollback não restaura automaticamente todas as variáveis;
+- [ ] **não publicar a implementação nova com `ATLAS_TRUST_CF_CONNECTING_IP` ausente/`false`**, porque todos os visitantes então dividem uma única cota de 60/min;
+- [ ] após o merge autorizado e deploy, testar apenas uma normalização normal e verificar logs agregados de 400/429 sem coletar endereços de visitantes.
+
+A opção **Save only** é documentada pelo Render em
+[Environment Variables and Secrets](https://render.com/docs/configure-environment-variables).
+Esse gate **não** autoriza editar o Render, realizar merge, publicar ou encerrar a issue #76.
+
 ## 4. Pull Request
 
 - [ ] PR aponta de `develop` para `main`;
