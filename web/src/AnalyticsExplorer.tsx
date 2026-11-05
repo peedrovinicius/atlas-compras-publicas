@@ -2028,7 +2028,7 @@ export default function AnalyticsExplorer({ provenance }: { provenance: DemoProv
                   <span>Atlas e Preços</span>
                   <strong>Relatório de referência de preços</strong>
                 </div>
-                <small>v1.74.0</small>
+                <small>v1.75.0</small>
               </header>
 
               <div className="analytics-print-report-title">
