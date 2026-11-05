@@ -103,6 +103,160 @@ na API e no frontend, registrado na issue
 [#77](https://github.com/peedrovinicius/atlas-compras-publicas/issues/77).
 Até a implementação, a inspeção manual é uma etapa obrigatória da publicação.
 
+## Identidade do cliente e limite de normalização (PR #78)
+
+A API aplica um limite de 60 normalizações por 60 segundos, mantendo contadores **em memória por
+instância**. O código usa `request.client.host` do escopo ASGI e não interpreta diretamente
+`X-Forwarded-For`. Isso evita confiar em cabeçalhos do usuário *dentro da aplicação*, mas
+**não basta para garantir uma identidade segura em produção**: o Uvicorn pode alterar o
+endereço do escopo ASGI quando recebe cabeçalhos de um proxy configurado como confiável.
+
+Antes de integrar ou publicar uma alteração no limitador:
+
+1. Conferir o comando efetivo de inicialização do serviço `atlas-compras-publicas-analytics`
+   no painel do Render, além da definição versionada em `render.yaml`.
+2. Conferir o valor efetivo de `FORWARDED_ALLOW_IPS` e as opções
+   `--proxy-headers` / `--forwarded-allow-ips` do Uvicorn. A confiança irrestrita
+   (`*`) **não é segura por padrão**; só pode ser adotada se toda conexão vier de
+   um proxy confiável que remova ou sobrescreva valores potencialmente falsificados.
+3. Verificar, em ambiente controlado e sem registrar endereços IP brutos em logs públicos,
+   se requisições da mesma origem com `X-Forwarded-For` falsificado compartilham
+   o limite e se duas origens legítimas não dividem indevidamente o mesmo contador.
+4. Se o servidor enxergar somente o IP do balanceador, corrigir a resolução do cliente
+   pela camada de proxy confiável **antes** de chamar o rate limiting de "por usuário".
+   Não tentar resolver isso lendo o primeiro IP de `X-Forwarded-For` na rota.
+5. Se o serviço ganhar múltiplas instâncias ou workers, substituir os contadores locais
+   por armazenamento distribuído com expiração e limites definidos. Mesmo com um só
+   processo, monitorar o limite de 4.096 clientes ativos por janela, a limpeza de
+   entradas expiradas e possíveis respostas 429 quando a capacidade é atingida.
+   Essa proteção limita memória, mas não impede esgotamento deliberado de cotas
+   por requisições de origens variadas.
+
+Referências operacionais:
+[Uvicorn — proxies confiáveis](https://uvicorn.dev/deployment/),
+[Uvicorn — parâmetros](https://uvicorn.dev/settings/) e
+[Render — tráfego e rate limiting](https://render.com/articles/how-render-handles-ddos-attacks/).
+
+Os testes de `tests/test_api_app.py` cobrem falsificação de cabeçalho no TestClient
+e isolamento de dois endereços ASGI sintéticos. **Esses testes não inspecionam a
+configuração do proxy real do Render.**
+
+### Verificação do Render em 03/11/2026
+
+No workspace `My Workspace`, o serviço canônico `atlas-compras-publicas-analytics`
+estava ligado à `main` com **uma instância**, `autoDeployTrigger: checksPass`,
+e o comando `uvicorn ... --factory --host 0.0.0.0 --port $PORT`.
+Na tela de Environment fornecida pelo proprietário, **não aparecia**
+`FORWARDED_ALLOW_IPS` entre as variáveis personalizadas. Entretanto,
+[a documentação oficial do Render](https://render.com/docs/environment-variables)
+registra o valor padrão `FORWARDED_ALLOW_IPS=*` no runtime Python 3.
+Portanto, a tela não prova que Uvicorn use somente `127.0.0.1` e `::1`.
+A configuração efetiva precisa ser confirmada no processo.
+O Render informa que o tráfego público chega via Cloudflare e balanceadores;
+portanto **a identidade real do visitante não foi demonstrada em produção**:
+a origem do socket vista pelo Uvicorn e a integridade da cadeia `X-Forwarded-For`
+ainda precisam ser verificadas em um ambiente controlado.
+
+Os dois novos testes reproduzem casos com `ProxyHeadersMiddleware` real
+do Uvicorn: cadeia sintética com dois proxies permitidos, prefixo falsificado,
+identidades distintas e rejeição de cabeçalhos vindos de peer não autorizado.
+Esses testes asseguram o contrato do middleware nessa topologia sintética,
+**não** certificam quais IPs ou cabeçalhos o Render utiliza.
+
+O Render documenta `FORWARDED_ALLOW_IPS=*` como padrão do runtime Python.
+Não presumir que a variável esteja ausente no processo só porque não aparece
+na tela de configuração. Antes do merge e do deploy, confirmar o comportamento
+da cadeia de proxies e dos cabeçalhos encaminhados, definir uma política
+compatível de confiança e testar a separação das cotas entre visitantes,
+sem expor IPs reais em logs públicos. Se a plataforma não permitir essa
+garantia, registrar a limitação e escolher um limitador por identidade autenticada
+ou uma solução de borda gerenciada, em vez de confiar em cabeçalhos arbitrários.
+
+### Experimento HTTP local com Uvicorn real
+
+A suíte `tests/test_proxy_http_transport.py` abre um socket **somente em
+`127.0.0.1`**, inicia o próprio Uvicorn em uma thread temporária, executa
+requisições HTTP usando `httpx` e encerra o servidor ao final.
+Os testes verificam três cenários reproduzíveis:
+
+- **Peer não confiável:** variar o cabeçalho forjado não evita o HTTP 429;
+- **Dois proxies explicitamente confiáveis:** prefixos falsos são ignorados,
+  uma origem atinge HTTP 429 e outra origem preserva sua cota;
+- **Contraprova com `*`:** o Uvicorn aceita como cliente o primeiro endereço
+  falsificável da cadeia, demonstrando por que não adotar confiança irrestrita.
+
+Não são feitas requisições ao Render. Nenhum IP real de usuário é coletado.
+Mesmo com esses testes aprovados, **a identidade dos visitantes no Render
+continua não comprovada** até verificar os peers reais e a integridade da
+cadeia de encaminhamento no ambiente de hospedagem.
+
+### Identidade defensiva em serviços Render (preparação, ainda sem deploy)
+
+A API detecta o ambiente `RENDER=true`. Como o runtime Python pode
+injetar `FORWARDED_ALLOW_IPS=*`, o limitador **não usa**
+`request.client.host` para determinar a identidade nesse ambiente:
+até a confiança na borda ser validada, usa uma **cota compartilhada de
+60 normalizações por minuto por instância**. Isso impede contornar
+a cota forjando `X-Forwarded-For`, mas também cria um limite global
+capaz de bloquear usuários legítimos sob carga. **Não liberar essa
+configuração em produção sem aceitar explicitamente esse impacto.**
+
+Existe uma opção futura `ATLAS_TRUST_CF_CONNECTING_IP=true`, desativada
+por padrão, que usa um único endereço válido em `CF-Connecting-IP` como
+identidade, com normalização IPv4/IPv6. Quando a confiança estiver habilitada,
+cabeçalhos ausentes, duplicados ou inválidos recebem HTTP 400 **antes**
+de consumir a cota de qualquer visitante. Quando a confiança continuar
+desabilitada, a cota compartilhada permanece. **Não habilitar apenas com a confirmação humana sobre o tráfego público.**
+Uma resposta de suporte recebida em 04/11/2026 informou que o Cloudflare
+rejeita requisições públicas que já enviem `CF-Connecting-IP`, mas também
+esclareceu que chamadas recebidas pela rede privada de serviços elegíveis não
+passam pelo Cloudflare e podem trazer esse header definido pelo chamador.
+O Render não fornece um mecanismo à aplicação para distinguir esses ingressos.
+**No serviço atual, de plano Free, o ingresso privado é indisponível segundo
+a documentação oficial**; portanto essa exceção não ocorre na configuração
+verificada. Em eventual migração a plano com ingresso privado, a flag de
+confiança deverá ser desativada ou a identidade autenticada na borda antes
+de permitir o tráfego interno. O valor efetivo de `FORWARDED_ALLOW_IPS`
+no processo ainda precisa ser verificado.
+O teste com Uvicorn usando `--forwarded-allow-ips=*` reproduz o cenário,
+mas não prova a integridade do cabeçalho na infraestrutura real.
+
+A implementação não adiciona `ATLAS_TRUST_CF_CONNECTING_IP` ao
+`render.yaml` nem altera o painel, pois isso ativaria uma hipótese
+de confiança ainda não validada.
+
+Referências:
+[Variáveis padrão Render](https://render.com/docs/environment-variables) e
+[Render: PocketBase e IP de visitantes](https://render.com/articles/host-pocketbase-on-render).
+
+### Evidência complementar de confiança no ingresso (04/11/2026)
+
+O suporte Render informou por e-mail que conexões pela internet pública passam pelo
+Cloudflare e pelo balanceador e que requisições externas contendo `CF-Connecting-IP`
+enviado pelo solicitante são rejeitadas pelo Cloudflare. **Não usar `X-Forwarded-For`**:
+seu prefixo pode ser controlado pelo solicitante e, com
+`FORWARDED_ALLOW_IPS=*`, pode afetar `request.client.host`.
+A mensagem de suporte não identifica explicitamente seu autor como engenheiro humano,
+nem substitui testes operacionais antes de um release.
+
+A consulta ao serviço `atlas-compras-publicas-analytics` confirmou **plano Free,
+uma instância e branch `main`**. A [documentação de Free services](https://render.com/docs/free)
+e a [matriz de private networking](https://render.com/articles/how-render-handles-private-networking)
+esclarecem que web services Free **não recebem tráfego da rede privada**.
+Isso resolve a exceção de IP forjável via conexão privada para o plano
+**atualmente contratado**, mas não é uma garantia para futura migração a plano
+que aceite ingresso privado. **Não habilitar `ATLAS_TRUST_CF_CONNECTING_IP`
+em um serviço que aceite rede privada sem autenticar/distinguir o ingresso**.
+
+O [plano de validação](validacao-controle-ip-render.md) agora diferencia dois testes:
+(a) variar somente `X-Forwarded-For` e conferir a cota de um cliente legítimo,
+sem enviar manualmente `CF-Connecting-IP`; (b) em rodada separada, verificar que
+a borda rejeita requisição externa que contenha `CF-Connecting-IP` fornecido pelo
+cliente. **Não esperar HTTP 200 no caso (b)**. Ambas as verificações exigem
+um staging isolado autorizado; não executar essa bateria na produção.
+Antes de ativar o modo por visitante, reconfirmar plano, caminho de rede,
+ausência de acesso privado, comportamento de cabeçalhos e estratégia de reversão.
+
 ## Validação pós-deploy
 
 Depois de cada release, verificar:

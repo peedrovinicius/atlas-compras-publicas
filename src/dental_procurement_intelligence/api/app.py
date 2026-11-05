@@ -1,10 +1,7 @@
 import csv
 import io
 import os
-from collections import defaultdict, deque
 from pathlib import Path
-from threading import Lock
-from time import monotonic
 from typing import Any
 
 import duckdb
@@ -12,6 +9,10 @@ import duckdb
 from dental_procurement_intelligence import __version__
 from dental_procurement_intelligence.analytics.provenance import read_provenance
 from dental_procurement_intelligence.api.catalog import parser_categories
+from dental_procurement_intelligence.api.client_identity import (
+    resolve_normalization_client_identity,
+)
+from dental_procurement_intelligence.api.rate_limit import SlidingWindowRateLimiter
 from dental_procurement_intelligence.api.service import (
     analytics_anomalies,
     analytics_awards,
@@ -145,30 +146,41 @@ def create_app(database_path: str | Path | None = None) -> Any:
         expose_headers=["X-Atlas-Provenance"],
     )
 
-    rate_window_seconds = 60.0
-    rate_limit = 60
-    normalization_requests: dict[str, deque[float]] = defaultdict(deque)
-    rate_lock = Lock()
+    # Armazenamento por instancia, com expiracao e capacidade finita.
+    normalization_limiter = SlidingWindowRateLimiter(
+        limit=60,
+        window_seconds=60.0,
+        max_clients=4096,
+    )
+
+    render_runtime = os.environ.get("RENDER", "").strip().lower() == "true"
+    trust_cloudflare = (
+        os.environ.get("ATLAS_TRUST_CF_CONNECTING_IP", "").strip().lower() == "true"
+    )
 
     def enforce_normalization_rate_limit(request: Any) -> None:
-        forwarded = request.headers.get("x-forwarded-for", "")
-        client_ip = forwarded.split(",", 1)[0].strip()
-        if not client_ip and request.client is not None:
-            client_ip = request.client.host
-        client_ip = client_ip or "unknown"
+        # O Render define FORWARDED_ALLOW_IPS='*' por padrao. Portanto,
+        # request.client.host pode ter sido reescrito por X-Forwarded-For.
+        # Enquanto o header da Cloudflare nao for validado para o servico,
+        # todos os visitantes compartilham uma cota conservadora.
+        client_id = resolve_normalization_client_identity(
+            request,
+            render_runtime=render_runtime,
+            trust_cloudflare=trust_cloudflare,
+        )
 
-        now = monotonic()
-        with rate_lock:
-            bucket = normalization_requests[client_ip]
-            while bucket and now - bucket[0] >= rate_window_seconds:
-                bucket.popleft()
-            if len(bucket) >= rate_limit:
-                raise HTTPException(
-                    status_code=429,
-                    detail="Limite de normalizações atingido. Tente novamente em instantes.",
-                    headers={"Retry-After": "60"},
-                )
-            bucket.append(now)
+        if client_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Não foi possível validar a identidade da requisição.",
+            )
+
+        if not normalization_limiter.allow(client_id):
+            raise HTTPException(
+                status_code=429,
+                detail="Limite de normalizações atingido. Tente novamente em instantes.",
+                headers={"Retry-After": "60"},
+            )
 
     def execute(callable_: Any, *args: Any, **kwargs: Any) -> Any:
         try:

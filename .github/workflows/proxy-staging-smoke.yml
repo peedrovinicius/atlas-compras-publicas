@@ -1,0 +1,115 @@
+name: Proxy staging smoke (isolated)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/normalization-rate-limit-client-identity-20261103
+    paths:
+      - ".github/workflows/proxy-staging-smoke.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proxy-staging-smoke-isolated
+  cancel-in-progress: false
+
+jobs:
+  quota-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      egress_hash: ${{ steps.egress.outputs.hash }}
+      quota_finished: ${{ steps.check.outputs.finished }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "httpx>=0.28,<1"
+      - name: Confirm API reports only synthetic demonstration data
+        run: |
+          python - <<'PY'
+          import httpx
+          url = "https://atlas-compras-publicas-proxy-staging.onrender.com/api/v1/meta"
+          with httpx.Client(timeout=12, follow_redirects=False, trust_env=False) as client:
+              response = client.get(url)
+          response.raise_for_status()
+          payload = response.json()
+          provenance = payload.get("provenance")
+          if not isinstance(provenance, dict):
+              raise SystemExit("FALHA: metadados de proveniência ausentes")
+          expected = {
+              "source_type": "offline_synthetic",
+              "procurement_count": 1,
+              "result_count": 12,
+          }
+          for field, value in expected.items():
+              if provenance.get(field) != value:
+                  raise SystemExit(f"FALHA: {field} divergente na versão publicada")
+          if payload.get("database_available") is not True:
+              raise SystemExit("FALHA: banco de demonstração indisponível")
+          if not isinstance(provenance.get("observation_count"), int) or provenance["observation_count"] < 1:
+              raise SystemExit("FALHA: não há observações válidas")
+          print(
+              "Proveniência do staging: offline_synthetic; "
+              f"compras={provenance['procurement_count']}; "
+              f"resultados={provenance['result_count']}; "
+              f"observações={provenance['observation_count']}."
+          )
+          PY
+      - name: Record runner egress identity without publishing its IP
+        id: egress
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          from urllib.request import urlopen
+          from hashlib import sha256
+          ip = urlopen("https://api.ipify.org", timeout=10).read().decode().strip()
+          print("hash=" + sha256(ip.encode()).hexdigest())
+          PY
+      - name: Test one visitor quota and X-Forwarded-For rotation (61 requests max)
+        id: check
+        run: |
+          python scripts/smoke_proxy_staging.py \
+            --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+            --mode quota-a --execute --confirm-staging
+          echo "finished=$(date -u +%s)" >> "$GITHUB_OUTPUT"
+
+  quota-b-and-edge:
+    needs: quota-a
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "httpx>=0.28,<1"
+      - name: Verify a genuinely separate egress IP and a short handoff
+        env:
+          ORIGIN_A_HASH: ${{ needs.quota-a.outputs.egress_hash }}
+          A_FINISHED: ${{ needs.quota-a.outputs.quota_finished }}
+        run: |
+          python - <<'PY'
+          import hashlib, os, time
+          from urllib.request import urlopen
+          current = urlopen("https://api.ipify.org", timeout=10).read().decode().strip()
+          other_hash = hashlib.sha256(current.encode()).hexdigest()
+          if other_hash == os.environ["ORIGIN_A_HASH"]:
+              raise SystemExit("Inconclusivo: os dois runners usam o mesmo IP publico.")
+          elapsed = time.time() - int(os.environ["A_FINISHED"])
+          if elapsed < 0 or elapsed >= 40:
+              raise SystemExit("Inconclusivo: a segunda origem iniciou fora da mesma janela.")
+          print(f"Origem B distinta de A; intervalo de inicio: {elapsed:.1f}s.")
+          PY
+      - name: Second visitor must retain its own quota
+        run: |
+          python scripts/smoke_proxy_staging.py \
+            --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+            --mode quota-b --execute --confirm-staging
+      - name: Separate edge rejection of client-provided CF-Connecting-IP
+        run: |
+          python scripts/smoke_proxy_staging.py \
+            --target https://atlas-compras-publicas-proxy-staging.onrender.com \
+            --mode cf-rejection --execute --confirm-staging
